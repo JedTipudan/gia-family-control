@@ -203,6 +203,12 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
     private fun startMonitoringServices() {
         Log.d("ChildDashboard", "User clicked Start Monitoring")
         
+        // Check if accessibility service is enabled
+        if (!isAccessibilityServiceEnabled()) {
+            showAccessibilityPrompt()
+            return
+        }
+        
         binding.btnStartMonitoring.isEnabled = false
         binding.btnStartMonitoring.text = "Starting..."
         
@@ -215,6 +221,40 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
         binding.tvStatus.text = "✅ Monitoring active! Your parent can now track and lock your device."
         
         Toast.makeText(this, "✅ Monitoring started! Services running in background.", Toast.LENGTH_LONG).show()
+    }
+    
+    private fun isAccessibilityServiceEnabled(): Boolean {
+        val service = "${packageName}/${com.gia.familycontrol.service.GiaAccessibilityService::class.java.name}"
+        val enabledServices = android.provider.Settings.Secure.getString(
+            contentResolver,
+            android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+        )
+        return enabledServices?.contains(service) == true
+    }
+    
+    private fun showAccessibilityPrompt() {
+        AlertDialog.Builder(this)
+            .setTitle("Enable Accessibility Service")
+            .setMessage("To enable remote lock functionality, you must enable the Gia Family Control accessibility service.\n\nThis allows the app to lock your device when your parent sends a lock command.\n\nGo to Settings → Accessibility → Gia Family Control → Enable")
+            .setPositiveButton("Open Settings") { _, _ ->
+                try {
+                    startActivity(Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                } catch (e: Exception) {
+                    Toast.makeText(this, "Please enable accessibility service manually", Toast.LENGTH_LONG).show()
+                }
+            }
+            .setNegativeButton("Skip") { _, _ ->
+                Toast.makeText(this, "⚠️ Remote lock will not work without accessibility service", Toast.LENGTH_LONG).show()
+                // Start services anyway
+                binding.btnStartMonitoring.isEnabled = false
+                binding.btnStartMonitoring.text = "Starting..."
+                syncInstalledApps()
+                startTrackingServices()
+                binding.btnStartMonitoring.text = "✅ Monitoring Active"
+                binding.tvStatus.text = "✅ Monitoring active (lock disabled)"
+            }
+            .setCancelable(false)
+            .show()
     }
     
     private fun syncInstalledApps() {

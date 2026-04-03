@@ -3,4 +3,5 @@
     <string name="app_name">Gia Family Control</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="accessibility_service_description">Gia Family Control uses this service to enforce parental lock when enabled by your parent. This service monitors screen state to ensure the device remains locked when required.</string>
 </resources>

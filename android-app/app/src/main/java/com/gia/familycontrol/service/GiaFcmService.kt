@@ -66,7 +66,7 @@ class GiaFcmService : FirebaseMessagingService() {
         
         android.util.Log.d("GiaFcmService", "Lock state saved")
         
-        // Use Device Admin to lock screen immediately
+        // Immediately lock device using Device Admin
         try {
             val dpm = getSystemService(android.app.admin.DevicePolicyManager::class.java)
             val adminComponent = android.content.ComponentName(this, com.gia.familycontrol.admin.GiaDeviceAdminReceiver::class.java)
@@ -75,19 +75,65 @@ class GiaFcmService : FirebaseMessagingService() {
                 dpm.lockNow()
                 android.util.Log.d("GiaFcmService", "Device locked using Device Admin")
             } else {
-                android.util.Log.e("GiaFcmService", "Device Admin not active, cannot lock")
+                android.util.Log.e("GiaFcmService", "Device Admin not active")
             }
         } catch (e: Exception) {
             android.util.Log.e("GiaFcmService", "Failed to lock device", e)
         }
         
-        // Ensure LockMonitorService is running to show overlay after unlock
+        // Show lock overlay
+        val lockIntent = Intent(this, LockScreenActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                    Intent.FLAG_ACTIVITY_NO_HISTORY or
+                    Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
+        }
+        
+        try {
+            startActivity(lockIntent)
+        } catch (e: Exception) {
+            android.util.Log.e("GiaFcmService", "Failed to show lock screen", e)
+        }
+        
+        // Ensure LockMonitorService is running
         val serviceIntent = Intent(this, LockMonitorService::class.java)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(serviceIntent)
         } else {
             startService(serviceIntent)
         }
+        
+        // Show notification
+        showLockNotification()
+    }
+    
+    private fun showLockNotification() {
+        val notificationManager = getSystemService(NotificationManager::class.java)
+        
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                "device_lock",
+                "Device Lock",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Notifications when device is locked by parent"
+                setSound(null, null)
+            }
+            notificationManager.createNotificationChannel(channel)
+        }
+        
+        val notification = NotificationCompat.Builder(this, "device_lock")
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setContentTitle("🔒 Device Locked")
+            .setContentText("This device is locked by your parent")
+            .setStyle(NotificationCompat.BigTextStyle()
+                .bigText("This device has been locked by your parent. You cannot use it until they unlock it."))
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setOngoing(true)
+            .setAutoCancel(false)
+            .build()
+        
+        notificationManager.notify(8888, notification)
     }
 
     private fun unlockDevice() {
@@ -98,6 +144,10 @@ class GiaFcmService : FirebaseMessagingService() {
         
         // Stop LockMonitorService
         stopService(Intent(this, LockMonitorService::class.java))
+        
+        // Cancel lock notification
+        val notificationManager = getSystemService(NotificationManager::class.java)
+        notificationManager.cancel(8888)
     }
 
     private fun updateAppBlock(packageName: String, block: Boolean) {

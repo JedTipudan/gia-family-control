@@ -22,7 +22,6 @@ class AppMonitorService : LifecycleService() {
     private val api by lazy { RetrofitClient.create(this) }
     private var blockedPackages = mutableSetOf<String>()
     private var monitorJob: Job? = null
-    private var lastBlockedApp: String? = null
     private val notifiedGames = mutableSetOf<String>()
     private val gameKeywords = listOf("game", "play", "arcade", "puzzle", "racing", "action", "adventure")
 
@@ -112,7 +111,7 @@ class AppMonitorService : LifecycleService() {
     }
 
     private fun getForegroundApp(): String? {
-        val usm = getSystemService(UsageStatsManager::class.java)
+        val usm = getSystemService(UsageStatsManager::class.java) ?: return null
         val now = System.currentTimeMillis()
         val stats = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, now - 5000, now)
         return stats?.maxByOrNull { it.lastTimeUsed }?.packageName
