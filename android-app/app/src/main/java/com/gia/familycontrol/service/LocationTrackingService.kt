@@ -38,17 +38,19 @@ class LocationTrackingService : LifecycleService() {
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(result: LocationResult) {
                 result.lastLocation?.let { location ->
+                    android.util.Log.d("LocationService", "Location: ${location.latitude}, ${location.longitude}")
                     lifecycleScope.launch {
                         try {
-                            api.updateLocation(LocationUpdateRequest(
+                            val response = api.updateLocation(LocationUpdateRequest(
                                 latitude = location.latitude,
                                 longitude = location.longitude,
                                 accuracy = location.accuracy,
                                 speed = location.speed,
                                 batteryLevel = getBatteryLevel()
                             ))
+                            android.util.Log.d("LocationService", "Location sent: ${response.isSuccessful}")
                         } catch (e: Exception) {
-                            // Silently retry on next interval
+                            android.util.Log.e("LocationService", "Failed to send location", e)
                         }
                     }
                 }

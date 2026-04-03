@@ -41,6 +41,13 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
+        // Check if device is locked
+        val lockPrefs = getSharedPreferences("gia_lock", MODE_PRIVATE)
+        if (lockPrefs.getBoolean("is_locked", false)) {
+            val lockIntent = Intent(this, LockScreenActivity::class.java)
+            startActivity(lockIntent)
+        }
+        
         try {
             binding = ActivityChildDashboardBinding.inflate(layoutInflater)
             setContentView(binding.root)

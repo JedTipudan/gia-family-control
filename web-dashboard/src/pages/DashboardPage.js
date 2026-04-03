@@ -29,12 +29,20 @@ export default function DashboardPage() {
 
   // Fallback: poll REST API if Firebase not available
   useEffect(() => {
-    const interval = setInterval(async () => {
+    const fetchLocation = async () => {
       try {
         const { data } = await locationApi.getLatest(childDeviceId);
-        if (data) setLocation({ lat: data.latitude, lng: data.longitude });
-      } catch { /* ignore */ }
-    }, 10000);
+        console.log('Location data:', data);
+        if (data && data.latitude && data.longitude) {
+          setLocation({ lat: data.latitude, lng: data.longitude });
+        }
+      } catch (err) {
+        console.error('Failed to fetch location:', err);
+      }
+    };
+    
+    fetchLocation(); // Fetch immediately
+    const interval = setInterval(fetchLocation, 5000); // Poll every 5 seconds
     return () => clearInterval(interval);
   }, [childDeviceId]);
 
@@ -88,6 +96,7 @@ export default function DashboardPage() {
 
       {activeTab === 'map' && (
         <div style={styles.mapContainer}>
+          {!location && <p style={styles.noLocation}>⏳ Waiting for location data from child device...</p>}
           {isLoaded ? (
             <GoogleMap mapContainerStyle={MAP_CONTAINER}
               center={location ? { lat: location.lat, lng: location.lng } : DEFAULT_CENTER}
@@ -136,5 +145,6 @@ const styles = {
   mapContainer: { padding: 24 },
   mapPlaceholder: { height: 400, display: 'flex', alignItems: 'center', justifyContent: 'center',
     background: '#e2e8f0', borderRadius: 8 },
+  noLocation: { padding: 16, textAlign: 'center', color: '#64748b', fontSize: 14 },
   coords: { marginTop: 8, color: '#64748b', fontSize: 13 },
 };

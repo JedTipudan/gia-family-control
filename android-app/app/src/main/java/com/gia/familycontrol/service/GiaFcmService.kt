@@ -56,15 +56,22 @@ class GiaFcmService : FirebaseMessagingService() {
     }
 
     private fun lockDevice() {
+        // Save lock state
+        getSharedPreferences("gia_lock", MODE_PRIVATE)
+            .edit().putBoolean("is_locked", true).apply()
+        
         val intent = Intent(this, LockScreenActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or
                     Intent.FLAG_ACTIVITY_CLEAR_TASK or
-                    Intent.FLAG_ACTIVITY_NO_HISTORY
+                    Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
         }
         startActivity(intent)
     }
 
     private fun unlockDevice() {
+        // Clear lock state
+        getSharedPreferences("gia_lock", MODE_PRIVATE)
+            .edit().putBoolean("is_locked", false).apply()
         LockScreenActivity.dismiss()
     }
 
