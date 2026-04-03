@@ -3,10 +3,11 @@ package com.gia.familycontrol.auth
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
+import android.view.animation.AnimationUtils
 import androidx.appcompat.app.AppCompatActivity
 import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.lifecycleScope
+import com.gia.familycontrol.R
 import com.gia.familycontrol.databinding.ActivityLoginBinding
 import com.gia.familycontrol.model.LoginRequest
 import com.gia.familycontrol.network.JWT_TOKEN_KEY
@@ -26,9 +27,16 @@ class LoginActivity : AppCompatActivity() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Animate card sliding up
+        val slideUp = AnimationUtils.loadAnimation(this, R.anim.slide_up)
+        val fadeIn = AnimationUtils.loadAnimation(this, R.anim.fade_in)
+        binding.cardForm.startAnimation(slideUp)
+        binding.layoutBranding.startAnimation(fadeIn)
+
         binding.btnLogin.setOnClickListener { doLogin() }
         binding.tvRegister.setOnClickListener {
             startActivity(Intent(this, RegisterActivity::class.java))
+            overridePendingTransition(R.anim.slide_up, R.anim.fade_in)
         }
     }
 
@@ -58,6 +66,7 @@ class LoginActivity : AppCompatActivity() {
                     val dest = if (auth.role == "PARENT") ParentDashboardActivity::class.java
                                else ChildDashboardActivity::class.java
                     startActivity(Intent(this@LoginActivity, dest))
+                    overridePendingTransition(R.anim.fade_in, R.anim.fade_in)
                     finish()
                 } else {
                     setLoading(false)

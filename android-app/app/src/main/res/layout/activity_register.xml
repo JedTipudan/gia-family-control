@@ -1,61 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F0F2F5">
+    android:background="#4F46E5">
 
+    <!-- Top branding -->
     <LinearLayout
+        android:id="@+id/layoutBranding"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:gravity="center_horizontal"
-        android:padding="32dp">
+        android:gravity="center"
+        android:paddingTop="48dp"
+        android:paddingBottom="24dp"
+        android:layout_alignParentTop="true">
 
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
+        <ImageView
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:src="@mipmap/ic_launcher"
+            android:scaleType="centerCrop"
+            android:layout_marginBottom="12dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="8dp"
-            app:cardBackgroundColor="#FFFFFF">
+            android:text="Create Account"
+            android:textColor="#FFFFFF"
+            android:textSize="24sp"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Join Gia Family Control"
+            android:textColor="#CCE0E7FF"
+            android:textSize="13sp"
+            android:layout_marginTop="4dp"/>
+
+    </LinearLayout>
+
+    <!-- Bottom card -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        app:cardCornerRadius="28dp"
+        app:cardElevation="16dp"
+        app:cardBackgroundColor="#FFFFFF">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="28dp"
-                android:gravity="center_horizontal">
-
-                <ImageView
-                    android:layout_width="80dp"
-                    android:layout_height="80dp"
-                    android:src="@mipmap/ic_launcher"
-                    android:layout_marginBottom="12dp"
-                    android:scaleType="centerCrop"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Create Account"
-                    android:textSize="22sp"
-                    android:textStyle="bold"
-                    android:textColor="#1A1A2E"
-                    android:layout_marginBottom="4dp"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Join Gia Family Control"
-                    android:textSize="13sp"
-                    android:textColor="#888888"
-                    android:layout_marginBottom="24dp"/>
+                android:padding="28dp">
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Full Name"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                    android:layout_marginBottom="16dp">
+                    app:boxCornerRadiusTopStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusBottomEnd="12dp"
+                    android:layout_marginBottom="14dp">
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etFullName"
                         android:layout_width="match_parent"
@@ -69,7 +83,11 @@
                     android:layout_height="wrap_content"
                     android:hint="Email Address"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                    android:layout_marginBottom="16dp">
+                    app:boxCornerRadiusTopStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusBottomEnd="12dp"
+                    android:layout_marginBottom="14dp">
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etEmail"
                         android:layout_width="match_parent"
@@ -84,7 +102,11 @@
                     android:hint="Password (min 6 characters)"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     app:endIconMode="password_toggle"
-                    android:layout_marginBottom="20dp">
+                    app:boxCornerRadiusTopStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusBottomEnd="12dp"
+                    android:layout_marginBottom="16dp">
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etPassword"
                         android:layout_width="match_parent"
@@ -93,39 +115,50 @@
                         android:imeOptions="actionDone"/>
                 </com.google.android.material.textfield.TextInputLayout>
 
+                <!-- Role Selection -->
                 <TextView
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="I am a:"
-                    android:textColor="#555555"
+                    android:text="I am registering as:"
+                    android:textColor="#374151"
                     android:textSize="14sp"
-                    android:layout_marginBottom="8dp"/>
+                    android:textStyle="bold"
+                    android:layout_marginBottom="10dp"/>
 
-                <RadioGroup
-                    android:id="@+id/rgRole"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginBottom="20dp">
+                    android:layout_marginBottom="16dp">
 
-                    <RadioButton
-                        android:id="@+id/rbParent"
-                        android:layout_width="0dp"
+                    <RadioGroup
+                        android:id="@+id/rgRole"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="👨‍👧 Parent"
-                        android:checked="true"
-                        android:textSize="14sp"/>
+                        android:orientation="horizontal">
 
-                    <RadioButton
-                        android:id="@+id/rbChild"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="👦 Child"
-                        android:textSize="14sp"/>
+                        <com.google.android.material.radiobutton.MaterialRadioButton
+                            android:id="@+id/rbParent"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="👨‍👧 Parent"
+                            android:checked="true"
+                            android:textSize="14sp"
+                            android:padding="8dp"/>
 
-                </RadioGroup>
+                        <com.google.android.material.radiobutton.MaterialRadioButton
+                            android:id="@+id/rbChild"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="👦 Child"
+                            android:textSize="14sp"
+                            android:padding="8dp"/>
+
+                    </RadioGroup>
+
+                </LinearLayout>
 
                 <TextView
                     android:id="@+id/tvError"
@@ -134,28 +167,31 @@
                     android:text=""
                     android:textColor="#EF4444"
                     android:textSize="13sp"
-                    android:layout_marginBottom="12dp"
+                    android:layout_marginBottom="8dp"
                     android:visibility="gone"/>
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnRegister"
                     android:layout_width="match_parent"
                     android:layout_height="52dp"
                     android:text="Create Account"
                     android:textSize="16sp"
-                    android:backgroundTint="#4F46E5"
+                    android:textStyle="bold"
+                    app:backgroundTint="#4F46E5"
+                    app:cornerRadius="12dp"
                     android:layout_marginBottom="16dp"/>
 
                 <LinearLayout
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:gravity="center"
                     android:orientation="horizontal">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Already have an account? "
-                        android:textColor="#888888"
+                        android:text="Already have an account?  "
+                        android:textColor="#6B7280"
                         android:textSize="14sp"/>
 
                     <TextView
@@ -169,8 +205,10 @@
 
                 </LinearLayout>
 
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
+                <View android:layout_width="match_parent" android:layout_height="16dp"/>
 
-    </LinearLayout>
-</ScrollView>
+            </LinearLayout>
+        </ScrollView>
+    </androidx.cardview.widget.CardView>
+
+</RelativeLayout>

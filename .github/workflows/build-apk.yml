@@ -30,6 +30,10 @@ jobs:
           echo "File size: $(wc -c < android-app/app/google-services.json)"
           head -c 50 android-app/app/google-services.json
 
+      - name: Inject Maps API Key
+        run: |
+          sed -i 's/${MAPS_API_KEY}/${{ secrets.MAPS_API_KEY }}/g' android-app/app/src/main/AndroidManifest.xml
+
       - name: Decode Keystore
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}

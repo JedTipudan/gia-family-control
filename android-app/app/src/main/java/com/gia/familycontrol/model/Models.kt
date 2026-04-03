@@ -85,3 +85,11 @@ data class InstalledApp(
     val isSystem: Boolean,
     var isBlocked: Boolean = false
 )
+
+data class UserProfileResponse(
+    val id: Long,
+    val email: String,
+    val fullName: String,
+    val role: String,
+    val pairCode: String?
+)

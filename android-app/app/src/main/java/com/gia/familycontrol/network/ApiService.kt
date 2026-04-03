@@ -44,4 +44,7 @@ interface ApiService {
         @Path("deviceId") deviceId: Long,
         @Path("packageName") packageName: String
     ): Response<Unit>
+
+    @GET("api/users/{userId}")
+    suspend fun getUserProfile(@Path("userId") userId: Long): Response<UserProfileResponse>
 }
