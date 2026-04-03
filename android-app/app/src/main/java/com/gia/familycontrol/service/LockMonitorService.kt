@@ -38,7 +38,7 @@ class LockMonitorService : Service() {
     private fun startMonitoring() {
         monitorJob = scope.launch {
             while (isActive) {
-                delay(2000) // Check every 2 seconds
+                delay(500) // Check every 0.5 seconds for faster response
                 
                 val lockPrefs = getSharedPreferences("gia_lock", MODE_PRIVATE)
                 val isLocked = lockPrefs.getBoolean("is_locked", false)
@@ -48,8 +48,9 @@ class LockMonitorService : Service() {
                     // Device should be locked, ensure lock screen is showing
                     val lockIntent = Intent(this@LockMonitorService, LockScreenActivity::class.java).apply {
                         flags = Intent.FLAG_ACTIVITY_NEW_TASK or 
-                                Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or
-                                Intent.FLAG_ACTIVITY_NO_HISTORY
+                                Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                                Intent.FLAG_ACTIVITY_NO_HISTORY or
+                                Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
                     }
                     try {
                         startActivity(lockIntent)

@@ -80,6 +80,14 @@ class GiaFcmService : FirebaseMessagingService() {
         } catch (e: Exception) {
             android.util.Log.e("GiaFcmService", "Failed to start lock screen", e)
         }
+        
+        // Ensure LockMonitorService is running
+        val serviceIntent = Intent(this, LockMonitorService::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent)
+        } else {
+            startService(serviceIntent)
+        }
     }
 
     private fun unlockDevice() {
