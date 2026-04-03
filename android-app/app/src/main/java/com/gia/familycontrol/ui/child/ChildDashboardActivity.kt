@@ -1,18 +1,16 @@
 package com.gia.familycontrol.ui.child
 
 import android.Manifest
-import android.app.admin.DevicePolicyManager
-import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
-import com.gia.familycontrol.admin.GiaDeviceAdminReceiver
 import com.gia.familycontrol.databinding.ActivityChildDashboardBinding
 import com.gia.familycontrol.model.PairRequest
 import com.gia.familycontrol.model.SendCommandRequest
@@ -26,11 +24,19 @@ class ChildDashboardActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityChildDashboardBinding
     private val api by lazy { RetrofitClient.create(this) }
+    private var permissionRequestInProgress = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityChildDashboardBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        
+        try {
+            binding = ActivityChildDashboardBinding.inflate(layoutInflater)
+            setContentView(binding.root)
+        } catch (e: Exception) {
+            Log.e("ChildDashboard", "Error inflating layout", e)
+            finish()
+            return
+        }
 
         val prefs = getSharedPreferences("gia_prefs", MODE_PRIVATE)
         val name = prefs.getString("full_name", "Child")
@@ -43,6 +49,20 @@ class ChildDashboardActivity : AppCompatActivity() {
         binding.btnSos.setOnClickListener { sendSos() }
 
         requestPermissionsIfNeeded()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Check if services are running when returning to activity
+        if (!permissionRequestInProgress) {
+            val hasLocation = ContextCompat.checkSelfPermission(
+                this, Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+            
+            if (hasLocation) {
+                startTrackingServices()
+            }
+        }
     }
 
     private fun requestPermissionsIfNeeded() {
@@ -59,37 +79,63 @@ class ChildDashboardActivity : AppCompatActivity() {
         }
 
         if (missing.isNotEmpty()) {
+            permissionRequestInProgress = true
             ActivityCompat.requestPermissions(this, missing.toTypedArray(), 100)
         } else {
             startTrackingServices()
         }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int, 
+        permissions: Array<out String>, 
+        grantResults: IntArray
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        permissionRequestInProgress = false
+        
         if (requestCode == 100) {
-            // Check which permissions were granted
-            val hasLocation = grantResults.isNotEmpty() && 
-                (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
-                 ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+            // Don't check grantResults array, check actual permissions
+            val hasLocation = ContextCompat.checkSelfPermission(
+                this, Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED || 
+            ContextCompat.checkSelfPermission(
+                this, Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
             
             if (hasLocation) {
-                // Start services even if notification permission was denied
                 startTrackingServices()
-                Toast.makeText(this, "Services started successfully", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Setup complete", Toast.LENGTH_SHORT).show()
             } else {
-                Toast.makeText(this, "Location permission required for monitoring", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Location permission is required", Toast.LENGTH_LONG).show()
             }
         }
     }
 
     private fun startTrackingServices() {
         try {
-            startForegroundService(Intent(this, LocationTrackingService::class.java))
-        } catch (e: Exception) { /* ignore if fails */ }
+            val locationIntent = Intent(this, LocationTrackingService::class.java)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(locationIntent)
+            } else {
+                startService(locationIntent)
+            }
+            Log.d("ChildDashboard", "Location service started")
+        } catch (e: Exception) {
+            Log.e("ChildDashboard", "Failed to start location service", e)
+        }
+        
         try {
-            startForegroundService(Intent(this, AppMonitorService::class.java))
-        } catch (e: Exception) { /* ignore if fails */ }
+            val appMonitorIntent = Intent(this, AppMonitorService::class.java)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(appMonitorIntent)
+            } else {
+                startService(appMonitorIntent)
+            }
+            Log.d("ChildDashboard", "App monitor service started")
+        } catch (e: Exception) {
+            Log.e("ChildDashboard", "Failed to start app monitor service", e)
+        }
     }
 
     private fun pairWithParent() {
