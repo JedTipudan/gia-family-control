@@ -65,7 +65,14 @@ class ChildDashboardActivity : AppCompatActivity() {
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == 100) {
-            startTrackingServices()
+            // Don't finish activity, just start services if permissions granted
+            val allGranted = grantResults.all { it == PackageManager.PERMISSION_GRANTED }
+            if (allGranted) {
+                startTrackingServices()
+                Toast.makeText(this, "Permissions granted. Services started.", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "Some permissions denied. App may not work properly.", Toast.LENGTH_LONG).show()
+            }
         }
     }
 

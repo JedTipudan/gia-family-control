@@ -55,7 +55,8 @@ data class LocationResponse(
 data class SendCommandRequest(
     val targetDeviceId: Long,
     val commandType: String,
-    val packageName: String? = null
+    val packageName: String? = null,
+    val metadata: String? = null
 )
 
 data class CommandResponse(

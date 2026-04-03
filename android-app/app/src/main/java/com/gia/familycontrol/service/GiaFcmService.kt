@@ -1,6 +1,14 @@
 package com.gia.familycontrol.service
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Intent
+import android.os.Build
+import androidx.core.app.NotificationCompat
+import com.gia.familycontrol.GiaApplication
+import com.gia.familycontrol.R
+import com.gia.familycontrol.ui.parent.ParentDashboardActivity
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.gia.familycontrol.model.DeviceStatusUpdate
@@ -28,6 +36,14 @@ class GiaFcmService : FirebaseMessagingService() {
                 val pkg = message.data["packageName"] ?: return
                 updateAppBlock(pkg, false)
             }
+            "GAME_ALERT" -> {
+                val appName = message.data["appName"] ?: "Unknown Game"
+                showGameNotification(appName, "opened")
+            }
+            "GAME_INSTALLED" -> {
+                val appName = message.data["appName"] ?: "Unknown Game"
+                showGameNotification(appName, "installed")
+            }
             "EMERGENCY" -> handleEmergency(message.data["message"])
         }
     }
@@ -54,6 +70,56 @@ class GiaFcmService : FirebaseMessagingService() {
 
     private fun handleEmergency(message: String?) {
         // Show high-priority notification to parent
+    }
+
+    private fun showGameNotification(appName: String, action: String) {
+        val notificationManager = getSystemService(NotificationManager::class.java)
+        
+        // Create notification channel for Android O+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                "game_alerts",
+                "Game Alerts",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Alerts when child opens or installs games"
+                enableVibration(true)
+            }
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        // Create intent to open parent dashboard
+        val intent = Intent(this, ParentDashboardActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            this, 0, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val title = if (action == "installed") "📥 Game Installed" else "🎮 Game Opened"
+        val text = if (action == "installed") 
+            "Your child installed: $appName" 
+        else 
+            "Your child opened: $appName"
+        val bigText = if (action == "installed")
+            "Your child just installed the game: $appName. Tap to manage apps."
+        else
+            "Your child just opened the game: $appName. Tap to view dashboard."
+
+        // Build notification
+        val notification = NotificationCompat.Builder(this, "game_alerts")
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setContentTitle(title)
+            .setContentText(text)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(bigText))
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
+            .setVibrate(longArrayOf(0, 500, 200, 500))
+            .build()
+
+        notificationManager.notify(System.currentTimeMillis().toInt(), notification)
     }
 
     override fun onNewToken(token: String) {

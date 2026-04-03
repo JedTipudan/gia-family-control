@@ -3,10 +3,12 @@ package com.gia.familycontrol.service
 import android.app.Notification
 import android.app.usage.UsageStatsManager
 import android.content.Intent
+import android.content.pm.ApplicationInfo
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.gia.familycontrol.GiaApplication
 import com.gia.familycontrol.R
+import com.gia.familycontrol.model.SendCommandRequest
 import com.gia.familycontrol.network.RetrofitClient
 import com.gia.familycontrol.ui.child.AppBlockOverlayActivity
 import androidx.core.app.NotificationCompat
@@ -18,6 +20,8 @@ class AppMonitorService : LifecycleService() {
     private var blockedPackages = mutableSetOf<String>()
     private var monitorJob: Job? = null
     private var lastBlockedApp: String? = null
+    private val notifiedGames = mutableSetOf<String>()
+    private val gameKeywords = listOf("game", "play", "arcade", "puzzle", "racing", "action", "adventure")
 
     override fun onCreate() {
         super.onCreate()
@@ -45,12 +49,20 @@ class AppMonitorService : LifecycleService() {
         monitorJob = lifecycleScope.launch {
             while (isActive) {
                 val foregroundApp = getForegroundApp()
-                if (foregroundApp != null && foregroundApp in blockedPackages
-                    && foregroundApp != lastBlockedApp) {
-                    lastBlockedApp = foregroundApp
-                    showBlockOverlay(foregroundApp)
-                } else if (foregroundApp !in blockedPackages) {
-                    lastBlockedApp = null
+                if (foregroundApp != null) {
+                    // Check if it's a blocked app
+                    if (foregroundApp in blockedPackages && foregroundApp != lastBlockedApp) {
+                        lastBlockedApp = foregroundApp
+                        showBlockOverlay(foregroundApp)
+                    } else if (foregroundApp !in blockedPackages) {
+                        lastBlockedApp = null
+                    }
+                    
+                    // Check if it's a game and notify parent
+                    if (isGameApp(foregroundApp) && foregroundApp !in notifiedGames) {
+                        notifiedGames.add(foregroundApp)
+                        notifyParentAboutGame(foregroundApp)
+                    }
                 }
                 delay(1000L)
             }
@@ -70,6 +82,44 @@ class AppMonitorService : LifecycleService() {
             putExtra("blocked_package", packageName)
         }
         startActivity(intent)
+    }
+
+    private fun isGameApp(packageName: String): Boolean {
+        try {
+            val pm = packageManager
+            val appInfo = pm.getApplicationInfo(packageName, 0)
+            val appName = pm.getApplicationLabel(appInfo).toString().lowercase()
+            
+            // Check if app is in GAME category
+            if (appInfo.category == ApplicationInfo.CATEGORY_GAME) {
+                return true
+            }
+            
+            // Check if app name contains game keywords
+            return gameKeywords.any { appName.contains(it) }
+        } catch (e: Exception) {
+            return false
+        }
+    }
+
+    private fun notifyParentAboutGame(packageName: String) {
+        lifecycleScope.launch {
+            try {
+                val deviceId = fetchDeviceId() ?: return@launch
+                val pm = packageManager
+                val appInfo = pm.getApplicationInfo(packageName, 0)
+                val appName = pm.getApplicationLabel(appInfo).toString()
+                
+                // Send alert to backend which will notify parent via FCM
+                api.sendCommand(SendCommandRequest(
+                    deviceId = deviceId,
+                    commandType = "GAME_ALERT",
+                    metadata = "Child opened game: $appName ($packageName)"
+                ))
+            } catch (e: Exception) {
+                // Silently fail
+            }
+        }
     }
 
     fun updateBlockedApps(packages: Set<String>) {
