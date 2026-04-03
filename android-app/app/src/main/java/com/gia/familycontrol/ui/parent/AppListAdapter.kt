@@ -18,6 +18,15 @@ class AppListAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val app = apps[position]
+        val pm = holder.binding.root.context.packageManager
+        
+        try {
+            val appIcon = pm.getApplicationIcon(app.packageName)
+            holder.binding.ivAppIcon.setImageDrawable(appIcon)
+        } catch (e: Exception) {
+            holder.binding.ivAppIcon.setImageResource(android.R.drawable.sym_def_app_icon)
+        }
+        
         holder.binding.tvAppName.text = app.appName
         holder.binding.tvPackageName.text = app.packageName
         holder.binding.switchBlock.isChecked = app.isBlocked

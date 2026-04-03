@@ -39,6 +39,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".auth.RegisterActivity" android:exported="false"/>
 
         <!-- Parent Activities -->
         <activity android:name=".ui.parent.ParentDashboardActivity" android:exported="false"/>

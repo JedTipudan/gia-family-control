@@ -1,9 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#4F46E5">
+    android:fillViewport="true"
+    android:background="@drawable/gradient_background">
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="24dp">
 
     <!-- Top branding section -->
     <LinearLayout
@@ -12,23 +20,22 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:gravity="center"
-        android:paddingTop="64dp"
-        android:paddingBottom="32dp"
-        android:layout_alignParentTop="true">
+        android:layout_marginTop="40dp"
+        android:layout_marginBottom="32dp">
 
         <ImageView
-            android:layout_width="80dp"
-            android:layout_height="80dp"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
             android:src="@mipmap/ic_launcher"
             android:scaleType="centerCrop"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="20dp"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Gia Family Control"
             android:textColor="#FFFFFF"
-            android:textSize="26sp"
+            android:textSize="28sp"
             android:textStyle="bold"
             android:letterSpacing="0.02"/>
 
@@ -36,44 +43,43 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Keep your family safe"
-            android:textColor="#CCE0E7FF"
-            android:textSize="14sp"
-            android:layout_marginTop="4dp"/>
+            android:textColor="#E0E7FF"
+            android:textSize="15sp"
+            android:layout_marginTop="8dp"/>
 
     </LinearLayout>
 
-    <!-- Bottom card -->
+    <!-- Login card -->
     <androidx.cardview.widget.CardView
         android:id="@+id/cardForm"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        app:cardCornerRadius="28dp"
-        app:cardElevation="16dp"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="8dp"
         app:cardBackgroundColor="#FFFFFF">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="28dp">
+            android:padding="32dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Welcome back"
-                android:textSize="22sp"
+                android:textSize="24sp"
                 android:textStyle="bold"
-                android:textColor="#1A1A2E"
-                android:layout_marginBottom="4dp"/>
+                android:textColor="#1F2937"
+                android:layout_marginBottom="6dp"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Sign in to continue"
-                android:textSize="14sp"
-                android:textColor="#9CA3AF"
-                android:layout_marginBottom="24dp"/>
+                android:textSize="15sp"
+                android:textColor="#6B7280"
+                android:layout_marginBottom="28dp"/>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
@@ -84,12 +90,15 @@
                 app:boxCornerRadiusTopEnd="12dp"
                 app:boxCornerRadiusBottomStart="12dp"
                 app:boxCornerRadiusBottomEnd="12dp"
-                android:layout_marginBottom="16dp">
+                app:hintTextColor="#6B7280"
+                android:layout_marginBottom="18dp">
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etEmail"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="textEmailAddress"
+                    android:textColor="#1F2937"
+                    android:textSize="16sp"
                     android:imeOptions="actionNext"/>
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -103,12 +112,15 @@
                 app:boxCornerRadiusTopEnd="12dp"
                 app:boxCornerRadiusBottomStart="12dp"
                 app:boxCornerRadiusBottomEnd="12dp"
-                android:layout_marginBottom="8dp">
+                app:hintTextColor="#6B7280"
+                android:layout_marginBottom="12dp">
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etPassword"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="textPassword"
+                    android:textColor="#1F2937"
+                    android:textSize="16sp"
                     android:imeOptions="actionDone"/>
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -125,14 +137,15 @@
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnLogin"
                 android:layout_width="match_parent"
-                android:layout_height="52dp"
+                android:layout_height="56dp"
                 android:text="Sign In"
-                android:textSize="16sp"
+                android:textSize="17sp"
                 android:textStyle="bold"
+                android:textColor="#FFFFFF"
                 app:backgroundTint="#4F46E5"
                 app:cornerRadius="12dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="20dp"/>
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="24dp"/>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -158,11 +171,8 @@
 
             </LinearLayout>
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="16dp"/>
-
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
-</RelativeLayout>
+</LinearLayout>
+</ScrollView>
