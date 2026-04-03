@@ -24,7 +24,11 @@ jobs:
 
       - name: Decode Keystore
         run: |
-          echo '${{ secrets.KEYSTORE_BASE64 }}' | base64 --decode > android-app/app/gia-release.keystore
+          echo '${{ secrets.KEYSTORE_BASE64 }}' > keystore_base64.txt
+          base64 -d keystore_base64.txt > android-app/app/gia-release.keystore || \
+          cat keystore_base64.txt | tr -d '\n\r ' | base64 -d > android-app/app/gia-release.keystore || \
+          openssl base64 -d -in keystore_base64.txt -out android-app/app/gia-release.keystore
+          echo "Keystore size: $(wc -c < android-app/app/gia-release.keystore) bytes"
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
