@@ -61,6 +61,7 @@ class LoginActivity : AppCompatActivity() {
                         .putString("role", auth.role)
                         .putLong("user_id", auth.userId)
                         .putString("full_name", auth.fullName)
+                        .putString("email", email)
                         .apply()
 
                     val dest = if (auth.role == "PARENT") ParentDashboardActivity::class.java

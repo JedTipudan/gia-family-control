@@ -194,10 +194,12 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback, Navigat
                     val errorBody = response.errorBody()?.string()
                     android.util.Log.e("ParentDashboard", "❌ API Error ${response.code()}: $errorBody")
                     binding.tvChildName.text = "Error Loading (Tap to Retry)"
+                    Toast.makeText(this@ParentDashboardActivity, "Error: ${response.code()} - Check backend logs", Toast.LENGTH_LONG).show()
                 }
             } catch (e: Exception) {
                 android.util.Log.e("ParentDashboard", "❌ Exception loading devices", e)
                 binding.tvChildName.text = "Connection Error (Tap to Retry)"
+                Toast.makeText(this@ParentDashboardActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
             }
         }
     }
