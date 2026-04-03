@@ -22,10 +22,10 @@ public class Geofence {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false, precision = 10, scale = 8)
+    @Column(nullable = false)
     private Double latitude;
 
-    @Column(nullable = false, precision = 11, scale = 8)
+    @Column(nullable = false)
     private Double longitude;
 
     @Column(name = "radius_m", nullable = false)

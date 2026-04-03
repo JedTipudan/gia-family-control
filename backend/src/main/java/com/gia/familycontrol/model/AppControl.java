@@ -36,7 +36,7 @@ public class AppControl {
     @Column(name = "schedule_days")
     private String scheduleDays;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "updated_at")
