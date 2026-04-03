@@ -30,7 +30,7 @@ jobs:
 
       - name: Build Release APK
         working-directory: android-app
-        run: ./gradlew assembleRelease --no-daemon
+        run: ./gradlew assembleRelease --no-daemon --stacktrace --info
 
       - name: Sign APK
         run: |
