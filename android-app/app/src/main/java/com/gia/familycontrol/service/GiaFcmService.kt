@@ -151,10 +151,33 @@ class GiaFcmService : FirebaseMessagingService() {
     }
 
     private fun updateAppBlock(packageName: String, block: Boolean) {
+        android.util.Log.d("GiaFcmService", "App block update: $packageName = $block")
+        
+        // Update SharedPreferences for immediate effect
         val prefs = getSharedPreferences("gia_blocked_apps", MODE_PRIVATE)
         val blocked = prefs.getStringSet("blocked", mutableSetOf())!!.toMutableSet()
-        if (block) blocked.add(packageName) else blocked.remove(packageName)
+        if (block) {
+            blocked.add(packageName)
+            android.util.Log.d("GiaFcmService", "Added $packageName to blocked list")
+        } else {
+            blocked.remove(packageName)
+            android.util.Log.d("GiaFcmService", "Removed $packageName from blocked list")
+        }
         prefs.edit().putStringSet("blocked", blocked).apply()
+        
+        // Notify AppMonitorService to refresh immediately
+        val intent = Intent("com.gia.familycontrol.REFRESH_BLOCKED_APPS")
+        sendBroadcast(intent)
+        
+        // If blocking, check if app is currently running and close it
+        if (block) {
+            val homeIntent = Intent(Intent.ACTION_MAIN).apply {
+                addCategory(Intent.CATEGORY_HOME)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            startActivity(homeIntent)
+            android.util.Log.d("GiaFcmService", "Sent to home screen to close $packageName")
+        }
     }
 
     private fun unpairDevice() {

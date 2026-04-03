@@ -3,8 +3,10 @@ package com.gia.familycontrol.service
 import android.app.Notification
 import android.app.PendingIntent
 import android.app.usage.UsageStatsManager
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.ApplicationInfo
 import android.util.Log
 import androidx.lifecycle.LifecycleService
@@ -24,13 +26,26 @@ class AppMonitorService : LifecycleService() {
     private var monitorJob: Job? = null
     private val notifiedGames = mutableSetOf<String>()
     private val gameKeywords = listOf("game", "play", "arcade", "puzzle", "racing", "action", "adventure")
+    
+    private val refreshReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            Log.d("AppMonitorService", "Received refresh broadcast")
+            loadBlockedAppsFromPrefs()
+        }
+    }
 
     override fun onCreate() {
         super.onCreate()
         Log.d("AppMonitorService", "=== Service onCreate ===")
         try {
             startForeground(NOTIFICATION_ID, buildNotification())
-            loadBlockedApps()
+            
+            // Register broadcast receiver
+            val filter = IntentFilter("com.gia.familycontrol.REFRESH_BLOCKED_APPS")
+            registerReceiver(refreshReceiver, filter)
+            
+            loadBlockedAppsFromPrefs()
+            loadBlockedAppsFromApi()
             startMonitoring()
             Log.d("AppMonitorService", "✅ Service created successfully")
         } catch (e: Exception) {
@@ -39,22 +54,37 @@ class AppMonitorService : LifecycleService() {
         }
     }
 
-    private fun loadBlockedApps() {
+    private fun loadBlockedAppsFromPrefs() {
+        val prefs = getSharedPreferences("gia_blocked_apps", MODE_PRIVATE)
+        val blocked = prefs.getStringSet("blocked", mutableSetOf()) ?: mutableSetOf()
+        blockedPackages = blocked.toMutableSet()
+        Log.d("AppMonitorService", "Loaded ${blockedPackages.size} blocked apps from prefs: $blockedPackages")
+    }
+    
+    private fun loadBlockedAppsFromApi() {
         lifecycleScope.launch {
             try {
                 val deviceId = fetchDeviceId() ?: return@launch
                 val response = api.getAppControls(deviceId)
                 if (response.isSuccessful) {
-                    val newBlocked = response.body()
+                    val apiBlocked = response.body()
                         ?.filter { it.controlType == "BLOCKED" }
                         ?.map { it.packageName }
                         ?.toMutableSet() ?: mutableSetOf()
                     
-                    blockedPackages = newBlocked
-                    Log.d("AppMonitorService", "Loaded ${blockedPackages.size} blocked apps: $blockedPackages")
+                    // Merge with SharedPreferences
+                    blockedPackages.addAll(apiBlocked)
+                    
+                    // Update SharedPreferences to sync
+                    getSharedPreferences("gia_blocked_apps", MODE_PRIVATE)
+                        .edit()
+                        .putStringSet("blocked", blockedPackages)
+                        .apply()
+                    
+                    Log.d("AppMonitorService", "Synced with API. Total blocked: ${blockedPackages.size}")
                 }
             } catch (e: Exception) { 
-                Log.e("AppMonitorService", "Failed to load blocked apps", e)
+                Log.e("AppMonitorService", "Failed to load from API", e)
             }
         }
     }
@@ -63,9 +93,9 @@ class AppMonitorService : LifecycleService() {
         monitorJob = lifecycleScope.launch {
             var refreshCounter = 0
             while (isActive) {
-                // Refresh blocked apps list every 10 seconds
-                if (refreshCounter % 10 == 0) {
-                    loadBlockedApps()
+                // Refresh from API every 30 seconds (reduced from 10 for better performance)
+                if (refreshCounter % 30 == 0) {
+                    loadBlockedAppsFromApi()
                 }
                 refreshCounter++
                 
@@ -184,6 +214,9 @@ class AppMonitorService : LifecycleService() {
             .build()
 
     override fun onDestroy() {
+        try {
+            unregisterReceiver(refreshReceiver)
+        } catch (e: Exception) {}
         monitorJob?.cancel()
         super.onDestroy()
     }
