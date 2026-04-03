@@ -54,6 +54,101 @@ class GiaFcmService : FirebaseMessagingService() {
                 showNetworkNotification(false, "")
             }
             "EMERGENCY" -> handleEmergency(message.data["message"])
+            "SOS" -> handleSosAlert(message.data)
+        }
+    }
+    
+    private fun handleSosAlert(data: Map<String, String>) {
+        val childName = data["childName"] ?: "Your child"
+        val location = data["location"] ?: "Unknown location"
+        
+        val notificationManager = getSystemService(NotificationManager::class.java)
+        
+        // Create high priority channel for SOS
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                "sos_alerts",
+                "SOS Emergency Alerts",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Critical emergency alerts from your child"
+                enableVibration(true)
+                vibrationPattern = longArrayOf(0, 1000, 500, 1000, 500, 1000)
+                setSound(
+                    android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_ALARM),
+                    android.media.AudioAttributes.Builder()
+                        .setUsage(android.media.AudioAttributes.USAGE_ALARM)
+                        .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .build()
+                )
+                setBypassDnd(true)
+                lockscreenVisibility = android.app.Notification.VISIBILITY_PUBLIC
+            }
+            notificationManager.createNotificationChannel(channel)
+        }
+        
+        // Create intent to open parent dashboard
+        val intent = Intent(this, ParentDashboardActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra("show_location", true)
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            this, 0, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        
+        // Build urgent notification
+        val notification = NotificationCompat.Builder(this, "sos_alerts")
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setContentTitle("🆘 EMERGENCY SOS ALERT")
+            .setContentText("$childName needs help!")
+            .setStyle(NotificationCompat.BigTextStyle()
+                .bigText("🆘 EMERGENCY SOS ALERT\n\n$childName has sent an SOS alert!\n\nLocation: $location\n\nTap to view their location immediately."))
+            .setPriority(NotificationCompat.PRIORITY_MAX)
+            .setCategory(NotificationCompat.CATEGORY_ALARM)
+            .setAutoCancel(false)
+            .setOngoing(true)
+            .setContentIntent(pendingIntent)
+            .setVibrate(longArrayOf(0, 1000, 500, 1000, 500, 1000))
+            .setSound(android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_ALARM))
+            .setFullScreenIntent(pendingIntent, true)
+            .build()
+        
+        notificationManager.notify(7777, notification)
+        
+        // Play alarm sound
+        try {
+            val ringtone = android.media.RingtoneManager.getRingtone(
+                this,
+                android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_ALARM)
+            )
+            ringtone.play()
+            
+            // Stop after 10 seconds
+            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                ringtone.stop()
+            }, 10000)
+        } catch (e: Exception) {
+            android.util.Log.e("GiaFcmService", "Failed to play alarm", e)
+        }
+        
+        // Vibrate
+        try {
+            val vibrator = getSystemService(android.os.Vibrator::class.java)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vibrator.vibrate(
+                    android.os.VibrationEffect.createWaveform(
+                        longArrayOf(0, 1000, 500, 1000, 500, 1000),
+                        -1
+                    )
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                vibrator.vibrate(longArrayOf(0, 1000, 500, 1000, 500, 1000), -1)
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("GiaFcmService", "Failed to vibrate", e)
+        }
         }
     }
 

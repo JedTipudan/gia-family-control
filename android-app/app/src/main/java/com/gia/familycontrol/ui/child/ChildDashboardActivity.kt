@@ -408,13 +408,40 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
             try {
                 val deviceId = getSharedPreferences("gia_prefs", MODE_PRIVATE).getLong("device_id", -1L)
                 if (deviceId != -1L) {
-                    api.sendCommand(SendCommandRequest(deviceId, "SOS"))
-                    Toast.makeText(this@ChildDashboardActivity, "🆘 SOS sent to parent!", Toast.LENGTH_LONG).show()
+                    // Get current location if available
+                    var locationStr = "Location unavailable"
+                    try {
+                        val locationManager = getSystemService(android.location.LocationManager::class.java)
+                        val location = locationManager.getLastKnownLocation(android.location.LocationManager.GPS_PROVIDER)
+                            ?: locationManager.getLastKnownLocation(android.location.LocationManager.NETWORK_PROVIDER)
+                        
+                        if (location != null) {
+                            locationStr = "Lat: ${location.latitude}, Lng: ${location.longitude}"
+                        }
+                    } catch (e: Exception) {
+                        Log.e("ChildDashboard", "Failed to get location for SOS", e)
+                    }
+                    
+                    api.sendCommand(SendCommandRequest(
+                        targetDeviceId = deviceId,
+                        commandType = "SOS",
+                        metadata = locationStr
+                    ))
+                    
+                    Toast.makeText(this@ChildDashboardActivity, "🆘 SOS ALERT SENT TO PARENT!", Toast.LENGTH_LONG).show()
+                    
+                    // Show confirmation dialog
+                    AlertDialog.Builder(this@ChildDashboardActivity)
+                        .setTitle("🆘 SOS Alert Sent")
+                        .setMessage("Your parent has been notified with an emergency alert and your location.\n\nHelp is on the way!")
+                        .setPositiveButton("OK", null)
+                        .show()
                 } else {
                     Toast.makeText(this@ChildDashboardActivity, "Pair with parent first", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(this@ChildDashboardActivity, "Failed to send SOS", Toast.LENGTH_SHORT).show()
+                Log.e("ChildDashboard", "Failed to send SOS", e)
+                Toast.makeText(this@ChildDashboardActivity, "Failed to send SOS: ${e.message}", Toast.LENGTH_LONG).show()
             }
         }
     }

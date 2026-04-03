@@ -93,7 +93,7 @@ class AppMonitorService : LifecycleService() {
         monitorJob = lifecycleScope.launch {
             var refreshCounter = 0
             while (isActive) {
-                // Refresh from API every 30 seconds (reduced from 10 for better performance)
+                // Refresh from API every 30 seconds
                 if (refreshCounter % 30 == 0) {
                     loadBlockedAppsFromApi()
                 }
@@ -101,19 +101,19 @@ class AppMonitorService : LifecycleService() {
                 
                 val foregroundApp = getForegroundApp()
                 if (foregroundApp != null && foregroundApp != packageName) {
-                    // Check if it's a blocked app
+                    // Check if it's a blocked app - check EVERY time
                     if (foregroundApp in blockedPackages) {
                         Log.d("AppMonitorService", "Blocked app detected: $foregroundApp - Force closing")
                         forceCloseApp(foregroundApp)
                     }
                     
-                    // Check if it's a game and notify parent
+                    // Check if it's a game and notify parent (only once)
                     if (isGameApp(foregroundApp) && foregroundApp !in notifiedGames) {
                         notifiedGames.add(foregroundApp)
                         notifyParentAboutGame(foregroundApp)
                     }
                 }
-                delay(1000L)
+                delay(500L) // Check every 0.5 seconds for faster blocking
             }
         }
     }
