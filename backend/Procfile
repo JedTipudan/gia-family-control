@@ -1,0 +1,1 @@
+web: java -jar target/family-control-1.0.0.jar

@@ -3,8 +3,8 @@
 -- MySQL 8.0+
 -- ============================================================
 
-CREATE DATABASE IF NOT EXISTS gia_family_control CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE gia_family_control;
+CREATE DATABASE IF NOT EXISTS railway CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE railway;
 
 -- USERS
 CREATE TABLE users (
