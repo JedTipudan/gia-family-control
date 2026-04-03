@@ -48,20 +48,24 @@ class ChildDashboardActivity : AppCompatActivity() {
         }
         binding.btnSos.setOnClickListener { sendSos() }
 
-        requestPermissionsIfNeeded()
+        // Don't request permissions immediately - let user interact first
     }
 
     override fun onResume() {
         super.onResume()
-        // Check if services are running when returning to activity
+        // Only check permissions, don't start services automatically
         if (!permissionRequestInProgress) {
-            val hasLocation = ContextCompat.checkSelfPermission(
-                this, Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-            
-            if (hasLocation) {
-                startTrackingServices()
-            }
+            checkAndRequestPermissions()
+        }
+    }
+
+    private fun checkAndRequestPermissions() {
+        val hasLocation = ContextCompat.checkSelfPermission(
+            this, Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+        
+        if (!hasLocation) {
+            requestPermissionsIfNeeded()
         }
     }
 
@@ -95,7 +99,6 @@ class ChildDashboardActivity : AppCompatActivity() {
         permissionRequestInProgress = false
         
         if (requestCode == 100) {
-            // Don't check grantResults array, check actual permissions
             val hasLocation = ContextCompat.checkSelfPermission(
                 this, Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED || 
@@ -104,8 +107,8 @@ class ChildDashboardActivity : AppCompatActivity() {
             ) == PackageManager.PERMISSION_GRANTED
             
             if (hasLocation) {
-                startTrackingServices()
-                Toast.makeText(this, "Setup complete", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Permissions granted", Toast.LENGTH_SHORT).show()
+                // Services will start when child pairs with parent
             } else {
                 Toast.makeText(this, "Location permission is required", Toast.LENGTH_LONG).show()
             }
@@ -164,7 +167,11 @@ class ChildDashboardActivity : AppCompatActivity() {
                             .putLong("device_id", device.id).apply()
                         binding.tvStatus.text = "✅ Paired with parent successfully!"
                         binding.btnPair.text = "Paired ✓"
-                        Toast.makeText(this@ChildDashboardActivity, "Paired successfully!", Toast.LENGTH_SHORT).show()
+                        
+                        // Start services after successful pairing
+                        startTrackingServices()
+                        
+                        Toast.makeText(this@ChildDashboardActivity, "Paired successfully! Monitoring started.", Toast.LENGTH_SHORT).show()
                     } else {
                         binding.btnPair.isEnabled = true
                         binding.btnPair.text = "Pair with Parent"
