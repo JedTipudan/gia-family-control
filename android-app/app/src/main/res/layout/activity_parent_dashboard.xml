@@ -274,6 +274,19 @@
                     app:backgroundTint="?attr/colorPrimary"
                     app:cornerRadius="12dp"
                     app:icon="@android:drawable/ic_menu_manage"
+                    app:iconGravity="textStart"
+                    android:layout_marginBottom="12dp"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnUnpair"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:text="🔗 Unpair Device"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    app:backgroundTint="#F59E0B"
+                    app:cornerRadius="12dp"
+                    app:icon="@android:drawable/ic_menu_close_clear_cancel"
                     app:iconGravity="textStart"/>
 
             </LinearLayout>

@@ -28,6 +28,7 @@ class GiaFcmService : FirebaseMessagingService() {
         when (command) {
             "LOCK" -> lockDevice()
             "UNLOCK" -> unlockDevice()
+            "UNPAIR" -> unpairDevice()
             "BLOCK_APP" -> {
                 val pkg = message.data["packageName"] ?: return
                 updateAppBlock(pkg, true)
@@ -82,8 +83,27 @@ class GiaFcmService : FirebaseMessagingService() {
         prefs.edit().putStringSet("blocked", blocked).apply()
     }
 
-    private fun handleEmergency(message: String?) {
-        // Show high-priority notification to parent
+    private fun unpairDevice() {
+        // Clear pairing data
+        val prefs = getSharedPreferences("gia_prefs", MODE_PRIVATE)
+        prefs.edit()
+            .remove("device_id")
+            .apply()
+        
+        // Stop all services
+        stopService(Intent(this, LocationTrackingService::class.java))
+        stopService(Intent(this, AppMonitorService::class.java))
+        
+        // Show notification
+        val notificationManager = getSystemService(NotificationManager::class.java)
+        val notification = NotificationCompat.Builder(this, GiaApplication.CHANNEL_COMMANDS)
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setContentTitle("Device Unpaired")
+            .setContentText("Your parent has unpaired this device. You can now uninstall the app.")
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            .build()
+        notificationManager.notify(9999, notification)
     }
 
     private fun showGameNotification(appName: String, action: String) {
@@ -175,6 +195,10 @@ class GiaFcmService : FirebaseMessagingService() {
             .build()
 
         notificationManager.notify(System.currentTimeMillis().toInt(), notification)
+    }
+
+    private fun handleEmergency(message: String?) {
+        // Show high-priority notification to parent
     }
 
     override fun onNewToken(token: String) {

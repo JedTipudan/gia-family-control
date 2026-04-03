@@ -1,13 +1,17 @@
 package com.gia.familycontrol.ui.child
 
 import android.app.ActivityManager
+import android.app.admin.DevicePolicyManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
+import com.gia.familycontrol.admin.GiaDeviceAdminReceiver
 import com.gia.familycontrol.databinding.ActivityLockScreenBinding
 import kotlinx.coroutines.*
 
@@ -15,6 +19,8 @@ class LockScreenActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLockScreenBinding
     private var monitorJob: Job? = null
+    private lateinit var dpm: DevicePolicyManager
+    private lateinit var adminComponent: ComponentName
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,6 +30,9 @@ class LockScreenActivity : AppCompatActivity() {
             finish()
             return
         }
+
+        dpm = getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        adminComponent = ComponentName(this, GiaDeviceAdminReceiver::class.java)
 
         // Make fullscreen and block everything
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
@@ -48,6 +57,9 @@ class LockScreenActivity : AppCompatActivity() {
         binding.tvMessage.text = "Device locked by parent"
         binding.tvSubMessage.text = "Contact your parent to unlock"
         
+        // Start Lock Task Mode (Kiosk Mode)
+        startLockTaskMode()
+        
         // Start monitoring to bring back to front if user tries to leave
         startMonitoring()
     }
@@ -55,6 +67,29 @@ class LockScreenActivity : AppCompatActivity() {
     private fun isLocked(): Boolean {
         return getSharedPreferences("gia_lock", MODE_PRIVATE)
             .getBoolean("is_locked", false)
+    }
+
+    private fun startLockTaskMode() {
+        try {
+            if (dpm.isDeviceOwnerApp(packageName)) {
+                // Device Owner - can use lock task mode without user interaction
+                dpm.setLockTaskPackages(adminComponent, arrayOf(packageName))
+                startLockTask()
+                Log.d("LockScreen", "Lock task mode started (Device Owner)")
+            } else if (dpm.isAdminActive(adminComponent)) {
+                // Device Admin - try to start lock task (may require user approval on some devices)
+                try {
+                    startLockTask()
+                    Log.d("LockScreen", "Lock task mode started (Device Admin)")
+                } catch (e: Exception) {
+                    Log.w("LockScreen", "Lock task mode not available, using fallback", e)
+                }
+            } else {
+                Log.w("LockScreen", "Device admin not active, using fallback lock")
+            }
+        } catch (e: Exception) {
+            Log.e("LockScreen", "Failed to start lock task mode", e)
+        }
     }
 
     // Block all hardware back/home key presses
@@ -73,6 +108,7 @@ class LockScreenActivity : AppCompatActivity() {
                 delay(300)
                 // Check if still locked
                 if (!isLocked()) {
+                    stopLockTaskModeIfNeeded()
                     finish()
                     return@launch
                 }
@@ -95,6 +131,7 @@ class LockScreenActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         if (!isLocked()) {
+            stopLockTaskModeIfNeeded()
             finish()
             return
         }
@@ -128,8 +165,20 @@ class LockScreenActivity : AppCompatActivity() {
         // Do nothing — prevent exit
     }
 
+    private fun stopLockTaskModeIfNeeded() {
+        try {
+            if (dpm.isDeviceOwnerApp(packageName) || dpm.isAdminActive(adminComponent)) {
+                stopLockTask()
+                Log.d("LockScreen", "Lock task mode stopped")
+            }
+        } catch (e: Exception) {
+            Log.e("LockScreen", "Failed to stop lock task mode", e)
+        }
+    }
+
     override fun onDestroy() {
         monitorJob?.cancel()
+        stopLockTaskModeIfNeeded()
         if (instance == this) instance = null
         super.onDestroy()
     }

@@ -2,6 +2,7 @@ package com.gia.familycontrol.service;
 
 import com.gia.familycontrol.dto.AuthDto;
 import com.gia.familycontrol.dto.CommandDto;
+import com.gia.familycontrol.firebase.FcmService;
 import com.gia.familycontrol.model.Device;
 import com.gia.familycontrol.model.User;
 import com.gia.familycontrol.repository.DeviceRepository;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +20,7 @@ public class DeviceService {
 
     private final DeviceRepository deviceRepository;
     private final UserRepository userRepository;
+    private final FcmService fcmService;
 
     @Transactional
     public Device pairDevice(String childEmail, AuthDto.PairRequest request) {
@@ -43,6 +46,32 @@ public class DeviceService {
         device.setIsOnline(true);
         device.setLastSeen(LocalDateTime.now());
         return deviceRepository.save(device);
+    }
+
+    @Transactional
+    public void unpairDevice(String parentEmail, Long deviceId) {
+        User parent = userRepository.findByEmail(parentEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        Device device = deviceRepository.findById(deviceId)
+                .orElseThrow(() -> new RuntimeException("Device not found"));
+        
+        User child = userRepository.findById(device.getUserId())
+                .orElseThrow(() -> new RuntimeException("Child user not found"));
+        
+        // Verify parent owns this child device
+        if (!parent.getId().equals(child.getParentId())) {
+            throw new RuntimeException("Unauthorized: You don't own this device");
+        }
+        
+        // Send unpair command to child device
+        if (device.getFcmToken() != null) {
+            fcmService.sendCommand(device.getFcmToken(), "UNPAIR", Map.of());
+        }
+        
+        // Remove parent relationship
+        child.setParentId(null);
+        userRepository.save(child);
     }
 
     @Transactional

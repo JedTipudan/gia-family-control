@@ -7,6 +7,7 @@ import com.gia.familycontrol.service.DeviceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,6 +24,13 @@ public class DeviceController {
     public ResponseEntity<Device> pairDevice(Principal principal,
                                               @Valid @RequestBody AuthDto.PairRequest request) {
         return ResponseEntity.ok(deviceService.pairDevice(principal.getName(), request));
+    }
+
+    @PostMapping("/unpair-device/{deviceId}")
+    @PreAuthorize("hasRole('PARENT')")
+    public ResponseEntity<Void> unpairDevice(Principal principal, @PathVariable Long deviceId) {
+        deviceService.unpairDevice(principal.getName(), deviceId);
+        return ResponseEntity.ok().build();
     }
 
     @PutMapping("/device/status")

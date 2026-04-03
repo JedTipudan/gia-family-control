@@ -136,6 +136,7 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback, Navigat
         binding.btnApps.setOnClickListener {
             startActivity(Intent(this, AppManagerActivity::class.java))
         }
+        binding.btnUnpair.setOnClickListener { unpairDevice() }
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -183,6 +184,37 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback, Navigat
                 Toast.makeText(this@ParentDashboardActivity, "Failed to send command", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    private fun unpairDevice() {
+        if (childDeviceId == -1L) {
+            Toast.makeText(this, "No child device paired", Toast.LENGTH_SHORT).show()
+            return
+        }
+        
+        AlertDialog.Builder(this)
+            .setTitle("Unpair Device")
+            .setMessage("Are you sure you want to unpair this child device? The child will be able to uninstall the app after unpairing.")
+            .setPositiveButton("Unpair") { _, _ ->
+                lifecycleScope.launch {
+                    try {
+                        val response = api.unpairDevice(childDeviceId)
+                        if (response.isSuccessful) {
+                            Toast.makeText(this@ParentDashboardActivity, "Device unpaired successfully", Toast.LENGTH_SHORT).show()
+                            getSharedPreferences("gia_prefs", MODE_PRIVATE)
+                                .edit().remove("child_device_id").apply()
+                            childDeviceId = -1L
+                            binding.tvChildName.text = "No Device Paired"
+                        } else {
+                            Toast.makeText(this@ParentDashboardActivity, "Failed to unpair device", Toast.LENGTH_SHORT).show()
+                        }
+                    } catch (e: Exception) {
+                        Toast.makeText(this@ParentDashboardActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {

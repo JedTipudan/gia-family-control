@@ -324,11 +324,25 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
     }
 
     private fun logout() {
+        // Check if paired - if paired, prevent logout
+        val prefs = getSharedPreferences("gia_prefs", MODE_PRIVATE)
+        val deviceId = prefs.getLong("device_id", -1L)
+        
+        if (deviceId != -1L) {
+            AlertDialog.Builder(this)
+                .setTitle("Cannot Logout")
+                .setMessage("This device is paired with a parent account. Only your parent can unpair this device.\n\nYou can uninstall the app if needed.")
+                .setPositiveButton("OK", null)
+                .show()
+            return
+        }
+        
+        // Not paired yet, allow logout
         AlertDialog.Builder(this)
             .setTitle("Logout")
-            .setMessage("Are you sure you want to logout? This will stop monitoring.")
+            .setMessage("Are you sure you want to logout?")
             .setPositiveButton("Yes") { _, _ ->
-                getSharedPreferences("gia_prefs", MODE_PRIVATE).edit().clear().apply()
+                prefs.edit().clear().apply()
                 startActivity(Intent(this, LoginActivity::class.java))
                 finishAffinity()
             }

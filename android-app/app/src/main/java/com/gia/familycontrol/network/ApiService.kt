@@ -33,6 +33,9 @@ interface ApiService {
     @POST("api/send-command")
     suspend fun sendCommand(@Body request: SendCommandRequest): Response<CommandResponse>
 
+    @POST("api/unpair-device/{deviceId}")
+    suspend fun unpairDevice(@Path("deviceId") deviceId: Long): Response<Unit>
+
     @GET("api/apps/controls/{deviceId}")
     suspend fun getAppControls(@Path("deviceId") deviceId: Long): Response<List<AppControlResponse>>
 
