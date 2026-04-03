@@ -17,11 +17,14 @@ android {
     }
 
     buildTypes {
+        debug {
+            debuggable true
+        }
         release {
+            debuggable false
             minifyEnabled false
             shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.debug
         }
     }
 
@@ -36,6 +39,12 @@ android {
 
     kotlinOptions {
         jvmTarget = '17'
+    }
+
+    packagingOptions {
+        resources {
+            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+        }
     }
 }
 

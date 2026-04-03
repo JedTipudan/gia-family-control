@@ -28,29 +28,14 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x android-app/gradlew
 
-      - name: Build Release APK
+      - name: Build Debug APK
         working-directory: android-app
-        run: ./gradlew assembleRelease --no-daemon --stacktrace --info
+        run: ./gradlew assembleDebug --no-daemon
 
-      - name: Sign APK
+      - name: Rename APK
         run: |
-          keytool -genkey -v \
-            -keystore release.keystore \
-            -alias gia \
-            -keyalg RSA \
-            -keysize 2048 \
-            -validity 10000 \
-            -storepass gia12345 \
-            -keypass gia12345 \
-            -dname "CN=Gia Family Control, OU=Mobile, O=Gia, L=Manila, S=NCR, C=PH"
-
-          $ANDROID_HOME/build-tools/34.0.0/apksigner sign \
-            --ks release.keystore \
-            --ks-pass pass:gia12345 \
-            --key-pass pass:gia12345 \
-            --ks-key-alias gia \
-            --out android-app/app/build/outputs/apk/release/GiaFamilyControl.apk \
-            android-app/app/build/outputs/apk/release/app-release-unsigned.apk
+          mv android-app/app/build/outputs/apk/debug/app-debug.apk \
+             android-app/app/build/outputs/apk/debug/GiaFamilyControl.apk
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
@@ -58,24 +43,29 @@ jobs:
           tag_name: v${{ github.run_number }}
           name: "Gia Family Control v${{ github.run_number }}"
           body: |
-            ## Gia Family Control - Latest Release
+            ## Gia Family Control - Latest Build
 
-            ### How to Install:
+            ### How to Install on Android:
             1. Download **GiaFamilyControl.apk** below
             2. On your Android phone:
-               - Go to **Settings → Security**
+               - Go to **Settings → Security** (or Privacy)
                - Enable **Install unknown apps**
-            3. Open the APK and tap **Install**
-            4. Grant all permissions when asked
+               - Or allow your browser to install unknown apps
+            3. Open the downloaded APK file
+            4. Tap **Install**
+            5. Grant all permissions when asked (Location, Usage Stats, etc.)
+
+            ### First Time Setup:
+            - **Parent**: Login → your pair code will be shown
+            - **Child**: Login → enter parent's pair code to link devices
 
             ### Features:
             - Real-time GPS location tracking
             - Remote device lock/unlock
             - App blocking & monitoring
             - SOS emergency alert
-            - Geofencing alerts
-            - Battery monitoring
-          files: android-app/app/build/outputs/apk/release/GiaFamilyControl.apk
+            - Battery & online status monitoring
+          files: android-app/app/build/outputs/apk/debug/GiaFamilyControl.apk
           draft: false
           prerelease: false
         env:
