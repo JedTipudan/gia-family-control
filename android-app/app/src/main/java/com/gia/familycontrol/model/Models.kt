@@ -94,3 +94,16 @@ data class UserProfileResponse(
     val role: String,
     val pairCode: String?
 )
+
+data class AppInfo(
+    val packageName: String,
+    val appName: String,
+    val isSystem: Boolean
+)
+
+data class AppResponse(
+    val id: Long,
+    val packageName: String,
+    val appName: String,
+    val isSystem: Boolean
+)

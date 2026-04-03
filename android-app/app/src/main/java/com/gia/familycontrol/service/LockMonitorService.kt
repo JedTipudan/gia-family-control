@@ -3,6 +3,7 @@ package com.gia.familycontrol.service
 import android.app.Notification
 import android.app.PendingIntent
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
@@ -81,6 +82,24 @@ class LockMonitorService : Service() {
         monitorJob?.cancel()
         scope.cancel()
         super.onDestroy()
+    }
+    
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        super.onTaskRemoved(rootIntent)
+        android.util.Log.d("LockMonitorService", "Task removed, restarting service")
+        
+        val restartIntent = Intent(applicationContext, LockMonitorService::class.java)
+        val pendingIntent = PendingIntent.getService(
+            applicationContext, 3, restartIntent, 
+            PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
+        )
+        
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
+        alarmManager.set(
+            android.app.AlarmManager.ELAPSED_REALTIME_WAKEUP,
+            android.os.SystemClock.elapsedRealtime() + 1000,
+            pendingIntent
+        )
     }
 
     override fun onBind(intent: Intent?): IBinder? = null

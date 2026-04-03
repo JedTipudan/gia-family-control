@@ -29,8 +29,45 @@ class AppManagerActivity : AppCompatActivity() {
     }
 
     private fun loadAppsAndControls() {
-        Toast.makeText(this, "App Manager feature coming soon. Child must sync apps first.", Toast.LENGTH_LONG).show()
-        finish()
+        if (childDeviceId == -1L) {
+            Toast.makeText(this, "No child device paired", Toast.LENGTH_SHORT).show()
+            finish()
+            return
+        }
+        
+        lifecycleScope.launch {
+            try {
+                // Load installed apps from backend
+                val appsResponse = api.getInstalledApps(childDeviceId)
+                val controlsResponse = api.getAppControls(childDeviceId)
+                
+                if (!appsResponse.isSuccessful) {
+                    Toast.makeText(this@AppManagerActivity, "Child must start monitoring first to sync apps", Toast.LENGTH_LONG).show()
+                    finish()
+                    return@launch
+                }
+                
+                val blockedPackages = controlsResponse.body()
+                    ?.filter { it.controlType == "BLOCKED" }
+                    ?.map { it.packageName }?.toSet() ?: emptySet()
+
+                val installedApps = appsResponse.body()?.map { app ->
+                    InstalledApp(
+                        packageName = app.packageName,
+                        appName = app.appName,
+                        isSystem = app.isSystem,
+                        isBlocked = app.packageName in blockedPackages
+                    )
+                } ?: emptyList()
+
+                apps.clear()
+                apps.addAll(installedApps)
+                setupRecyclerView()
+            } catch (e: Exception) {
+                Toast.makeText(this@AppManagerActivity, "Failed to load apps: ${e.message}", Toast.LENGTH_SHORT).show()
+                finish()
+            }
+        }
     }
 
     private fun setupRecyclerView() {

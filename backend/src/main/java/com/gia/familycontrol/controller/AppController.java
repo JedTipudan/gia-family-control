@@ -38,4 +38,15 @@ public class AppController {
         appControlService.removeAppControl(deviceId, packageName);
         return ResponseEntity.ok().build();
     }
+    
+    @GetMapping("/installed/{deviceId}")
+    public ResponseEntity<List<com.gia.familycontrol.model.App>> getInstalledApps(@PathVariable Long deviceId) {
+        return ResponseEntity.ok(appControlService.getInstalledApps(deviceId));
+    }
+    
+    @PostMapping("/sync")
+    public ResponseEntity<Void> syncApps(Principal principal, @RequestBody java.util.List<CommandDto.AppInfo> apps) {
+        appControlService.syncApps(principal.getName(), apps);
+        return ResponseEntity.ok().build();
+    }
 }

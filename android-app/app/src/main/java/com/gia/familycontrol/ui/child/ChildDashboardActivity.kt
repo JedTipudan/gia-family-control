@@ -206,12 +206,37 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
         binding.btnStartMonitoring.isEnabled = false
         binding.btnStartMonitoring.text = "Starting..."
         
+        // Sync installed apps to backend
+        syncInstalledApps()
+        
         startTrackingServices()
         
         binding.btnStartMonitoring.text = "✅ Monitoring Active"
         binding.tvStatus.text = "✅ Monitoring active! Your parent can now track and lock your device."
         
         Toast.makeText(this, "✅ Monitoring started! Services running in background.", Toast.LENGTH_LONG).show()
+    }
+    
+    private fun syncInstalledApps() {
+        lifecycleScope.launch {
+            try {
+                val pm = packageManager
+                val installedApps = pm.getInstalledApplications(PackageManager.GET_META_DATA)
+                    .filter { (it.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) == 0 } // Only user apps
+                    .map { info ->
+                        com.gia.familycontrol.model.AppInfo(
+                            packageName = info.packageName,
+                            appName = pm.getApplicationLabel(info).toString(),
+                            isSystem = false
+                        )
+                    }
+                
+                api.syncApps(installedApps)
+                Log.d("ChildDashboard", "Synced ${installedApps.size} apps to backend")
+            } catch (e: Exception) {
+                Log.e("ChildDashboard", "Failed to sync apps", e)
+            }
+        }
     }
     
     private fun startTrackingServices() {

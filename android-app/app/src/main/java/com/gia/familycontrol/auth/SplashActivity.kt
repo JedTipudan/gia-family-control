@@ -28,13 +28,12 @@ class SplashActivity : AppCompatActivity() {
     private fun checkAuth() {
         val prefs = getSharedPreferences("gia_prefs", MODE_PRIVATE)
         val role = prefs.getString("role", null)
-        val token = prefs.getString("jwt_token", null)
 
         // Child stays logged in permanently
         // Parent requires active session
         val dest = when {
-            role == "CHILD" && token != null -> ChildDashboardActivity::class.java
-            role == "PARENT" && token != null && isParentSessionActive() -> ParentDashboardActivity::class.java
+            role == "CHILD" -> ChildDashboardActivity::class.java
+            role == "PARENT" && isParentSessionActive() -> ParentDashboardActivity::class.java
             else -> LoginActivity::class.java
         }
 

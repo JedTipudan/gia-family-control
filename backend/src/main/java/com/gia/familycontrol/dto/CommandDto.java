@@ -45,4 +45,13 @@ public class CommandDto {
         private Boolean isOnline;
         private String fcmToken;
     }
+    
+    @Data
+    public static class AppInfo {
+        @NotBlank
+        private String packageName;
+        @NotBlank
+        private String appName;
+        private Boolean isSystem;
+    }
 }

@@ -2,6 +2,7 @@ package com.gia.familycontrol.service
 
 import android.app.Notification
 import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.os.Looper
 import android.util.Log
@@ -45,7 +46,7 @@ class LocationTrackingService : LifecycleService() {
         } catch (e: Exception) {
             Log.e("LocationService", "❌ Failed to start location updates", e)
         }
-        return START_STICKY
+        return START_STICKY // Service will restart if killed
     }
 
     private fun setupLocationCallback() {
@@ -125,6 +126,25 @@ class LocationTrackingService : LifecycleService() {
         Log.d("LocationService", "Service destroyed")
         fusedLocationClient.removeLocationUpdates(locationCallback)
         super.onDestroy()
+    }
+    
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        super.onTaskRemoved(rootIntent)
+        Log.d("LocationService", "Task removed, restarting service")
+        
+        // Restart the service
+        val restartIntent = Intent(applicationContext, LocationTrackingService::class.java)
+        val pendingIntent = PendingIntent.getService(
+            applicationContext, 1, restartIntent, 
+            PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
+        )
+        
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
+        alarmManager.set(
+            android.app.AlarmManager.ELAPSED_REALTIME_WAKEUP,
+            android.os.SystemClock.elapsedRealtime() + 1000,
+            pendingIntent
+        )
     }
 
     companion object {

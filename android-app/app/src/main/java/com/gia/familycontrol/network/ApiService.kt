@@ -48,6 +48,12 @@ interface ApiService {
         @Path("packageName") packageName: String
     ): Response<Unit>
 
+    @GET("api/apps/installed/{deviceId}")
+    suspend fun getInstalledApps(@Path("deviceId") deviceId: Long): Response<List<AppResponse>>
+    
+    @POST("api/apps/sync")
+    suspend fun syncApps(@Body apps: List<AppInfo>): Response<Unit>
+
     @GET("api/users/{userId}")
     suspend fun getUserProfile(@Path("userId") userId: Long): Response<UserProfileResponse>
     
