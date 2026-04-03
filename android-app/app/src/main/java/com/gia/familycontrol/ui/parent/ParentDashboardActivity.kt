@@ -100,6 +100,9 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback, Navigat
         } else {
             loadPairCode()
         }
+        
+        // Load child devices from backend
+        loadChildDevices()
     }
 
     private fun loadPairCode() {
@@ -117,6 +120,29 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback, Navigat
                     }
                 }
             } catch (e: Exception) { /* ignore */ }
+        }
+    }
+    
+    private fun loadChildDevices() {
+        lifecycleScope.launch {
+            try {
+                val response = api.getChildDevices()
+                if (response.isSuccessful) {
+                    val devices = response.body()
+                    if (!devices.isNullOrEmpty()) {
+                        val firstDevice = devices[0]
+                        childDeviceId = firstDevice.id
+                        getSharedPreferences("gia_prefs", MODE_PRIVATE)
+                            .edit().putLong("child_device_id", childDeviceId).apply()
+                        binding.tvChildName.text = firstDevice.deviceName ?: "Child Device"
+                        
+                        // Start location polling if map is ready
+                        if (map != null) startLocationPolling()
+                    }
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("ParentDashboard", "Failed to load child devices", e)
+            }
         }
     }
 
@@ -142,6 +168,12 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback, Navigat
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
         if (childDeviceId != -1L) startLocationPolling()
+    }
+    
+    override fun onResume() {
+        super.onResume()
+        // Reload child devices in case pairing happened while app was in background
+        loadChildDevices()
     }
 
     private fun startLocationPolling() {
@@ -171,17 +203,22 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback, Navigat
             Toast.makeText(this, "No child device linked yet.\nShare your pair code with your child.", Toast.LENGTH_LONG).show()
             return
         }
+        android.util.Log.d("ParentDashboard", "Sending $type command to device $childDeviceId")
         lifecycleScope.launch {
             try {
                 val response = api.sendCommand(SendCommandRequest(childDeviceId, type))
+                android.util.Log.d("ParentDashboard", "Command response: ${response.code()} - ${response.message()}")
                 if (response.isSuccessful) {
                     val msg = if (type == "LOCK") "🔒 Device locked" else "🔓 Device unlocked"
                     Toast.makeText(this@ParentDashboardActivity, msg, Toast.LENGTH_SHORT).show()
                     binding.tvLockStatus.text = if (type == "LOCK") "Locked" else "Unlocked"
                     binding.tvLockIcon.text = if (type == "LOCK") "🔒" else "🔓"
+                } else {
+                    Toast.makeText(this@ParentDashboardActivity, "Failed: ${response.message()}", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(this@ParentDashboardActivity, "Failed to send command", Toast.LENGTH_SHORT).show()
+                android.util.Log.e("ParentDashboard", "Failed to send command", e)
+                Toast.makeText(this@ParentDashboardActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }

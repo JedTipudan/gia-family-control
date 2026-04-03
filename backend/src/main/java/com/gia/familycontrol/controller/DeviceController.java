@@ -12,6 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -24,6 +25,12 @@ public class DeviceController {
     public ResponseEntity<Device> pairDevice(Principal principal,
                                               @Valid @RequestBody AuthDto.PairRequest request) {
         return ResponseEntity.ok(deviceService.pairDevice(principal.getName(), request));
+    }
+
+    @GetMapping("/child-devices")
+    @PreAuthorize("hasRole('PARENT')")
+    public ResponseEntity<List<Device>> getChildDevices(Principal principal) {
+        return ResponseEntity.ok(deviceService.getChildDevices(principal.getName()));
     }
 
     @PostMapping("/unpair-device/{deviceId}")

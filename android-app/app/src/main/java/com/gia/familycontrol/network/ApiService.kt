@@ -50,4 +50,7 @@ interface ApiService {
 
     @GET("api/users/{userId}")
     suspend fun getUserProfile(@Path("userId") userId: Long): Response<UserProfileResponse>
+    
+    @GET("api/child-devices")
+    suspend fun getChildDevices(): Response<List<DeviceResponse>>
 }

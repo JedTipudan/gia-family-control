@@ -45,7 +45,21 @@ public class DeviceService {
         device.setFcmToken(request.getFcmToken());
         device.setIsOnline(true);
         device.setLastSeen(LocalDateTime.now());
-        return deviceRepository.save(device);
+        Device savedDevice = deviceRepository.save(device);
+        
+        // Notify parent about new pairing
+        deviceRepository.findByUserId(parent.getId()).ifPresent(parentDevice -> {
+            if (parentDevice.getFcmToken() != null) {
+                fcmService.sendCommand(parentDevice.getFcmToken(), "CHILD_PAIRED", 
+                    Map.of(
+                        "childDeviceId", String.valueOf(savedDevice.getId()),
+                        "deviceName", request.getDeviceName(),
+                        "deviceModel", request.getDeviceModel()
+                    ));
+            }
+        });
+        
+        return savedDevice;
     }
 
     @Transactional
@@ -91,5 +105,20 @@ public class DeviceService {
     public Device getDeviceByUserId(Long userId) {
         return deviceRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Device not found"));
+    }
+    
+    public List<Device> getChildDevices(String parentEmail) {
+        User parent = userRepository.findByEmail(parentEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        // Find all children of this parent
+        List<User> children = userRepository.findByParentId(parent.getId());
+        
+        // Get devices for all children
+        return children.stream()
+                .map(child -> deviceRepository.findByUserId(child.getId()))
+                .filter(opt -> opt.isPresent())
+                .map(opt -> opt.get())
+                .toList();
     }
 }
