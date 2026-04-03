@@ -24,16 +24,27 @@ class LocationTrackingService : LifecycleService() {
 
     override fun onCreate() {
         super.onCreate()
-        Log.d("LocationService", "Service created")
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-        setupLocationCallback()
-        startForeground(NOTIFICATION_ID, buildNotification())
+        Log.d("LocationService", "=== Service onCreate ===")
+        try {
+            fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+            setupLocationCallback()
+            startForeground(NOTIFICATION_ID, buildNotification())
+            Log.d("LocationService", "✅ Service created successfully")
+        } catch (e: Exception) {
+            Log.e("LocationService", "❌ Failed to create service", e)
+            stopSelf()
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
-        Log.d("LocationService", "Service started")
-        startLocationUpdates()
+        Log.d("LocationService", "=== Service onStartCommand ===")
+        try {
+            startLocationUpdates()
+            Log.d("LocationService", "✅ Location updates started")
+        } catch (e: Exception) {
+            Log.e("LocationService", "❌ Failed to start location updates", e)
+        }
         return START_STICKY
     }
 

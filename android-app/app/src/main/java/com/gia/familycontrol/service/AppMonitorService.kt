@@ -25,9 +25,16 @@ class AppMonitorService : LifecycleService() {
 
     override fun onCreate() {
         super.onCreate()
-        startForeground(NOTIFICATION_ID, buildNotification())
-        loadBlockedApps()
-        startMonitoring()
+        Log.d("AppMonitorService", "=== Service onCreate ===")
+        try {
+            startForeground(NOTIFICATION_ID, buildNotification())
+            loadBlockedApps()
+            startMonitoring()
+            Log.d("AppMonitorService", "✅ Service created successfully")
+        } catch (e: Exception) {
+            Log.e("AppMonitorService", "❌ Failed to create service", e)
+            stopSelf()
+        }
     }
 
     private fun loadBlockedApps() {

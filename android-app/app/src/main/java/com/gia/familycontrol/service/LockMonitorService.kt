@@ -19,8 +19,15 @@ class LockMonitorService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        startForeground(NOTIFICATION_ID, buildNotification())
-        startMonitoring()
+        android.util.Log.d("LockMonitorService", "=== Service onCreate ===")
+        try {
+            startForeground(NOTIFICATION_ID, buildNotification())
+            startMonitoring()
+            android.util.Log.d("LockMonitorService", "✅ Service created successfully")
+        } catch (e: Exception) {
+            android.util.Log.e("LockMonitorService", "❌ Failed to create service", e)
+            stopSelf()
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
