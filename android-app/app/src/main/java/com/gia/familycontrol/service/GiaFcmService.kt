@@ -3,7 +3,7 @@ package com.gia.familycontrol.service
 import android.content.Intent
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
-import com.gia.familycontrol.network.DeviceStatusUpdate
+import com.gia.familycontrol.model.DeviceStatusUpdate
 import com.gia.familycontrol.network.RetrofitClient
 import com.gia.familycontrol.ui.child.LockScreenActivity
 import kotlinx.coroutines.CoroutineScope
@@ -60,7 +60,7 @@ class GiaFcmService : FirebaseMessagingService() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 api.updateDeviceStatus(
-                    com.gia.familycontrol.model.DeviceStatusUpdate(
+                    DeviceStatusUpdate(
                         batteryLevel = null,
                         isOnline = true,
                         fcmToken = token

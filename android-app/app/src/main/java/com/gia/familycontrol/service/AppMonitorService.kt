@@ -29,7 +29,7 @@ class AppMonitorService : LifecycleService() {
     private fun loadBlockedApps() {
         lifecycleScope.launch {
             try {
-                val deviceId = getDeviceId() ?: return@launch
+                val deviceId = fetchDeviceId() ?: return@launch
                 val response = api.getAppControls(deviceId)
                 if (response.isSuccessful) {
                     blockedPackages = response.body()
@@ -76,8 +76,8 @@ class AppMonitorService : LifecycleService() {
         blockedPackages = packages.toMutableSet()
     }
 
-    private fun getDeviceId(): Long? {
-        val prefs = getSharedPreferences("gia_device", MODE_PRIVATE)
+    private fun fetchDeviceId(): Long? {
+        val prefs = getSharedPreferences("gia_prefs", MODE_PRIVATE)
         val id = prefs.getLong("device_id", -1L)
         return if (id == -1L) null else id
     }
