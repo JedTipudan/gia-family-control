@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.GiaFamilyControl" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">#6366F1</item>
+        <item name="colorPrimaryVariant">#4F46E5</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorSecondary">#10B981</item>
+        <item name="android:windowBackground">#1F2937</item>
+        <item name="android:windowActivityTransitions">true</item>
+        <item name="android:windowEnterTransition">@android:transition/fade</item>
+        <item name="android:windowExitTransition">@android:transition/fade</item>
+        
+        <!-- Custom attributes for dark mode -->
+        <item name="backgroundColor">#1F2937</item>
+        <item name="cardBackgroundColor">#374151</item>
+        <item name="textColorPrimary">#F9FAFB</item>
+        <item name="textColorSecondary">#D1D5DB</item>
+        <item name="drawerBackgroundColor">#374151</item>
+    </style>
+
+</resources>

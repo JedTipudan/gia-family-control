@@ -4,48 +4,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F0F2F5">
+    android:background="?attr/backgroundColor">
 
-    <!-- Header -->
-    <LinearLayout
+    <!-- Toolbar -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:background="#4F46E5"
-        android:padding="16dp"
-        android:gravity="center_vertical">
-
-        <ImageView
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:src="@mipmap/ic_launcher"
-            android:scaleType="centerCrop"
-            android:layout_marginEnd="10dp"/>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Gia Family Control"
-                android:textColor="#FFFFFF"
-                android:textSize="16sp"
-                android:textStyle="bold"/>
-
-            <TextView
-                android:id="@+id/tvWelcome"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Child Device"
-                android:textColor="#CCE0E7FF"
-                android:textSize="12sp"/>
-
-        </LinearLayout>
-
-    </LinearLayout>
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:elevation="4dp"
+        app:title="Child Dashboard"
+        app:titleTextColor="@android:color/white"/>
 
     <ScrollView
         android:layout_width="match_parent"
@@ -57,13 +26,63 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Status Card -->
-            <androidx.cardview.widget.CardView
+            <!-- Welcome Card -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="4dp"
-                app:cardBackgroundColor="#FFFFFF"
+                app:cardBackgroundColor="?attr/cardBackgroundColor"
+                android:layout_marginBottom="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="20dp"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:src="@mipmap/ic_launcher"
+                        android:layout_marginEnd="16dp"/>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tvWelcome"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Welcome!"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/textColorPrimary"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Your device is protected"
+                            android:textSize="14sp"
+                            android:textColor="?attr/textColorSecondary"
+                            android:layout_marginTop="4dp"/>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Status Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="?attr/cardBackgroundColor"
                 android:layout_marginBottom="16dp">
 
                 <LinearLayout
@@ -75,10 +94,10 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Device Status"
+                        android:text="📊 Device Status"
                         android:textSize="16sp"
                         android:textStyle="bold"
-                        android:textColor="#1A1A2E"
+                        android:textColor="?attr/textColorPrimary"
                         android:layout_marginBottom="12dp"/>
 
                     <TextView
@@ -87,20 +106,20 @@
                         android:layout_height="wrap_content"
                         android:text="⚪ Not paired with parent"
                         android:textSize="14sp"
-                        android:textColor="#6B7280"
+                        android:textColor="?attr/textColorSecondary"
                         android:padding="12dp"
-                        android:background="#F9FAFB"/>
+                        android:background="#10000000"/>
 
                 </LinearLayout>
-            </androidx.cardview.widget.CardView>
+            </com.google.android.material.card.MaterialCardView>
 
             <!-- Pair Card -->
-            <androidx.cardview.widget.CardView
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="4dp"
-                app:cardBackgroundColor="#FFFFFF"
+                app:cardBackgroundColor="?attr/cardBackgroundColor"
                 android:layout_marginBottom="16dp">
 
                 <LinearLayout
@@ -115,7 +134,7 @@
                         android:text="🔗 Pair with Parent"
                         android:textSize="16sp"
                         android:textStyle="bold"
-                        android:textColor="#1A1A2E"
+                        android:textColor="?attr/textColorPrimary"
                         android:layout_marginBottom="6dp"/>
 
                     <TextView
@@ -123,7 +142,7 @@
                         android:layout_height="wrap_content"
                         android:text="Enter the pair code from your parent's app"
                         android:textSize="13sp"
-                        android:textColor="#9CA3AF"
+                        android:textColor="?attr/textColorSecondary"
                         android:layout_marginBottom="16dp"/>
 
                     <com.google.android.material.textfield.TextInputLayout
@@ -141,28 +160,29 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="textCapCharacters"
+                            android:textColor="?attr/textColorPrimary"
                             android:letterSpacing="0.1"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnPair"
                         android:layout_width="match_parent"
-                        android:layout_height="48dp"
+                        android:layout_height="56dp"
                         android:text="Pair with Parent"
                         android:textStyle="bold"
-                        app:backgroundTint="#4F46E5"
+                        app:backgroundTint="?attr/colorPrimary"
                         app:cornerRadius="12dp"/>
 
                 </LinearLayout>
-            </androidx.cardview.widget.CardView>
+            </com.google.android.material.card.MaterialCardView>
 
             <!-- SOS Card -->
-            <androidx.cardview.widget.CardView
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="4dp"
-                app:cardBackgroundColor="#FFF1F2"
+                app:cardBackgroundColor="#FFEBEE"
                 android:layout_marginBottom="16dp">
 
                 <LinearLayout
@@ -175,25 +195,25 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Emergency Alert"
-                        android:textSize="16sp"
+                        android:text="🆘 Emergency Alert"
+                        android:textSize="18sp"
                         android:textStyle="bold"
-                        android:textColor="#DC2626"
-                        android:layout_marginBottom="6dp"/>
+                        android:textColor="#C62828"
+                        android:layout_marginBottom="8dp"/>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Tap to immediately alert your parent"
                         android:textSize="13sp"
-                        android:textColor="#9CA3AF"
+                        android:textColor="#6B7280"
                         android:layout_marginBottom="16dp"/>
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnSos"
                         android:layout_width="match_parent"
-                        android:layout_height="56dp"
-                        android:text="🆘  SEND SOS ALERT"
+                        android:layout_height="60dp"
+                        android:text="SEND SOS ALERT"
                         android:textSize="16sp"
                         android:textStyle="bold"
                         android:letterSpacing="0.05"
@@ -201,15 +221,15 @@
                         app:cornerRadius="12dp"/>
 
                 </LinearLayout>
-            </androidx.cardview.widget.CardView>
+            </com.google.android.material.card.MaterialCardView>
 
             <!-- Info Card -->
-            <androidx.cardview.widget.CardView
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="2dp"
-                app:cardBackgroundColor="#EEF2FF">
+                app:cardBackgroundColor="#E8EAF6">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -222,7 +242,7 @@
                         android:layout_height="wrap_content"
                         android:text="ℹ️  This device is being monitored"
                         android:textSize="13sp"
-                        android:textColor="#4F46E5"
+                        android:textColor="#3F51B5"
                         android:textStyle="bold"/>
 
                     <TextView
@@ -234,7 +254,7 @@
                         android:layout_marginTop="4dp"/>
 
                 </LinearLayout>
-            </androidx.cardview.widget.CardView>
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
     </ScrollView>
