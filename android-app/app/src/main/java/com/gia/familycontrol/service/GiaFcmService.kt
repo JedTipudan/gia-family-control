@@ -44,6 +44,13 @@ class GiaFcmService : FirebaseMessagingService() {
                 val appName = message.data["appName"] ?: "Unknown Game"
                 showGameNotification(appName, "installed")
             }
+            "NETWORK_CONNECTED" -> {
+                val connectionType = message.data["connectionType"] ?: "Internet"
+                showNetworkNotification(true, connectionType)
+            }
+            "NETWORK_DISCONNECTED" -> {
+                showNetworkNotification(false, "")
+            }
             "EMERGENCY" -> handleEmergency(message.data["message"])
         }
     }
@@ -117,6 +124,47 @@ class GiaFcmService : FirebaseMessagingService() {
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
             .setVibrate(longArrayOf(0, 500, 200, 500))
+            .build()
+
+        notificationManager.notify(System.currentTimeMillis().toInt(), notification)
+    }
+
+    private fun showNetworkNotification(isConnected: Boolean, connectionType: String) {
+        val notificationManager = getSystemService(NotificationManager::class.java)
+        
+        // Create notification channel
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                "network_alerts",
+                "Network Alerts",
+                NotificationManager.IMPORTANCE_DEFAULT
+            ).apply {
+                description = "Alerts when child connects/disconnects from internet"
+            }
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        val intent = Intent(this, ParentDashboardActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            this, 0, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val title = if (isConnected) "📶 Child Connected" else "📵 Child Disconnected"
+        val text = if (isConnected) 
+            "Your child connected to $connectionType" 
+        else 
+            "Your child disconnected from internet"
+
+        val notification = NotificationCompat.Builder(this, "network_alerts")
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setContentTitle(title)
+            .setContentText(text)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
             .build()
 
         notificationManager.notify(System.currentTimeMillis().toInt(), notification)

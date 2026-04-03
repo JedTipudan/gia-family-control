@@ -2,7 +2,9 @@ package com.gia.familycontrol.ui.parent
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.MenuItem
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
@@ -16,6 +18,7 @@ import com.gia.familycontrol.auth.LoginActivity
 import com.gia.familycontrol.databinding.ActivityParentDashboardBinding
 import com.gia.familycontrol.model.SendCommandRequest
 import com.gia.familycontrol.network.RetrofitClient
+import com.gia.familycontrol.util.QRCodeGenerator
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -93,6 +96,7 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback, Navigat
         
         if (pairCode.isNotEmpty()) {
             binding.tvPairCode.text = "Pair Code: $pairCode"
+            binding.tvPairCode.setOnClickListener { showQRCodeDialog(pairCode) }
         } else {
             loadPairCode()
         }
@@ -109,6 +113,7 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback, Navigat
                         getSharedPreferences("gia_prefs", MODE_PRIVATE)
                             .edit().putString("pair_code", code).apply()
                         binding.tvPairCode.text = "Pair Code: $code"
+                        binding.tvPairCode.setOnClickListener { showQRCodeDialog(code) }
                     }
                 }
             } catch (e: Exception) { /* ignore */ }
@@ -242,6 +247,25 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback, Navigat
             }
             .setNegativeButton("Cancel", null)
             .show()
+    }
+
+    private fun showQRCodeDialog(pairCode: String) {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_qr_code, null)
+        val ivQRCode = dialogView.findViewById<ImageView>(R.id.ivQRCode)
+        val tvPairCode = dialogView.findViewById<TextView>(R.id.tvPairCode)
+        
+        tvPairCode.text = pairCode
+        val qrBitmap = QRCodeGenerator.generateQRCode(pairCode, 512, 512)
+        ivQRCode.setImageBitmap(qrBitmap)
+        
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .create()
+        
+        dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnClose)
+            .setOnClickListener { dialog.dismiss() }
+        
+        dialog.show()
     }
 
     override fun onBackPressed() {

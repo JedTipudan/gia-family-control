@@ -18,6 +18,8 @@
         xmlns:tools="http://schemas.android.com/tools"/>
     <uses-permission android:name="android.permission.BIND_DEVICE_ADMIN" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:name=".GiaApplication"
@@ -51,6 +53,8 @@
 
         <!-- Child Activities -->
         <activity android:name=".ui.child.ChildDashboardActivity" android:exported="false"/>
+        <activity android:name=".ui.child.QRScannerActivity" android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".ui.child.LockScreenActivity"
             android:exported="false"
@@ -110,6 +114,13 @@
             <intent-filter>
                 <action android:name="android.intent.action.PACKAGE_ADDED"/>
                 <data android:scheme="package"/>
+            </intent-filter>
+        </receiver>
+
+        <!-- Network Change Receiver -->
+        <receiver android:name=".receiver.NetworkChangeReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_ACTION"/>
             </intent-filter>
         </receiver>
 

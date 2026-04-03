@@ -171,6 +171,16 @@
                         android:text="Pair with Parent"
                         android:textStyle="bold"
                         app:backgroundTint="?attr/colorPrimary"
+                        app:cornerRadius="12dp"
+                        android:layout_marginBottom="12dp"/>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnScanQR"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:text="📷 Scan QR Code"
+                        android:textStyle="bold"
+                        app:backgroundTint="#10B981"
                         app:cornerRadius="12dp"/>
 
                 </LinearLayout>

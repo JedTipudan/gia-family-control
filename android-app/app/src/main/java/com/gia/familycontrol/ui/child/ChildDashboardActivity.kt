@@ -37,6 +37,9 @@ class ChildDashboardActivity : AppCompatActivity() {
         binding.tvStatus.text = "Welcome, $name"
 
         binding.btnPair.setOnClickListener { pairWithParent() }
+        binding.btnScanQR.setOnClickListener { 
+            startActivity(Intent(this, QRScannerActivity::class.java))
+        }
         binding.btnSos.setOnClickListener { sendSos() }
 
         requestPermissionsIfNeeded()
@@ -65,13 +68,17 @@ class ChildDashboardActivity : AppCompatActivity() {
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == 100) {
-            // Don't finish activity, just start services if permissions granted
-            val allGranted = grantResults.all { it == PackageManager.PERMISSION_GRANTED }
-            if (allGranted) {
+            // Check which permissions were granted
+            val hasLocation = grantResults.isNotEmpty() && 
+                (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+                 ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+            
+            if (hasLocation) {
+                // Start services even if notification permission was denied
                 startTrackingServices()
-                Toast.makeText(this, "Permissions granted. Services started.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Services started successfully", Toast.LENGTH_SHORT).show()
             } else {
-                Toast.makeText(this, "Some permissions denied. App may not work properly.", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Location permission required for monitoring", Toast.LENGTH_LONG).show()
             }
         }
     }
