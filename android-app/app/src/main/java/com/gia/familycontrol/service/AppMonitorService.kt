@@ -112,7 +112,7 @@ class AppMonitorService : LifecycleService() {
                 
                 // Send alert to backend which will notify parent via FCM
                 api.sendCommand(SendCommandRequest(
-                    deviceId = deviceId,
+                    targetDeviceId = deviceId,
                     commandType = "GAME_ALERT",
                     metadata = "Child opened game: $appName ($packageName)"
                 ))
