@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_dashboard"
+            android:icon="@android:drawable/ic_menu_view"
+            android:title="Dashboard"/>
+        <item
+            android:id="@+id/nav_pair"
+            android:icon="@android:drawable/ic_menu_add"
+            android:title="Pair with Parent"/>
+        <item
+            android:id="@+id/nav_sos"
+            android:icon="@android:drawable/ic_dialog_alert"
+            android:title="Emergency SOS"/>
+    </group>
+    <item android:title="Settings">
+        <menu>
+            <item
+                android:id="@+id/nav_dark_mode"
+                android:icon="@android:drawable/ic_menu_day"
+                android:title="Dark Mode"
+                android:checkable="true"/>
+            <item
+                android:id="@+id/nav_permissions"
+                android:icon="@android:drawable/ic_lock_lock"
+                android:title="Permissions"/>
+        </menu>
+    </item>
+    <item android:title="Account">
+        <menu>
+            <item
+                android:id="@+id/nav_logout"
+                android:icon="@android:drawable/ic_menu_close_clear_cancel"
+                android:title="Logout"/>
+        </menu>
+    </item>
+</menu>

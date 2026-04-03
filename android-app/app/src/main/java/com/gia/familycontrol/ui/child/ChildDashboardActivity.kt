@@ -1,26 +1,38 @@
 package com.gia.familycontrol.ui.child
 
 import android.Manifest
+import android.app.admin.DevicePolicyManager
+import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.MenuItem
+import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.GravityCompat
 import androidx.lifecycle.lifecycleScope
+import com.gia.familycontrol.R
+import com.gia.familycontrol.admin.GiaDeviceAdminReceiver
+import com.gia.familycontrol.auth.LoginActivity
 import com.gia.familycontrol.databinding.ActivityChildDashboardBinding
 import com.gia.familycontrol.model.PairRequest
 import com.gia.familycontrol.model.SendCommandRequest
 import com.gia.familycontrol.network.RetrofitClient
 import com.gia.familycontrol.service.AppMonitorService
 import com.gia.familycontrol.service.LocationTrackingService
+import com.google.android.material.navigation.NavigationView
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.launch
 
-class ChildDashboardActivity : AppCompatActivity() {
+class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
     private lateinit var binding: ActivityChildDashboardBinding
     private val api by lazy { RetrofitClient.create(this) }
@@ -38,22 +50,74 @@ class ChildDashboardActivity : AppCompatActivity() {
             return
         }
 
-        val prefs = getSharedPreferences("gia_prefs", MODE_PRIVATE)
-        val name = prefs.getString("full_name", "Child")
-        binding.tvStatus.text = "Welcome, $name"
+        setupToolbar()
+        setupNavigationDrawer()
+        loadUserData()
+        setupButtons()
+        enableDeviceAdmin()
+    }
 
+    private fun setupToolbar() {
+        setSupportActionBar(binding.toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_menu)
+    }
+
+    private fun setupNavigationDrawer() {
+        binding.navigationView.setNavigationItemSelectedListener(this)
+        
+        val toggle = ActionBarDrawerToggle(
+            this, binding.drawerLayout, binding.toolbar,
+            R.string.navigation_drawer_open, R.string.navigation_drawer_close
+        )
+        binding.drawerLayout.addDrawerListener(toggle)
+        toggle.syncState()
+
+        // Load dark mode preference
+        val prefs = getSharedPreferences("gia_prefs", MODE_PRIVATE)
+        val isDarkMode = prefs.getBoolean("dark_mode", false)
+        binding.navigationView.menu.findItem(R.id.nav_dark_mode).isChecked = isDarkMode
+    }
+
+    private fun loadUserData() {
+        val prefs = getSharedPreferences("gia_prefs", MODE_PRIVATE)
+        val name = prefs.getString("full_name", "Child") ?: "Child"
+        
+        binding.tvWelcome.text = "Welcome, $name!"
+        
+        // Update navigation header
+        val headerView = binding.navigationView.getHeaderView(0)
+        headerView.findViewById<TextView>(R.id.navHeaderName).text = name
+    }
+
+    private fun setupButtons() {
         binding.btnPair.setOnClickListener { pairWithParent() }
         binding.btnScanQR.setOnClickListener { 
             startActivity(Intent(this, QRScannerActivity::class.java))
         }
         binding.btnSos.setOnClickListener { sendSos() }
+    }
 
-        // Don't request permissions immediately - let user interact first
+    private fun enableDeviceAdmin() {
+        val dpm = getSystemService(DevicePolicyManager::class.java)
+        val adminComponent = ComponentName(this, GiaDeviceAdminReceiver::class.java)
+        
+        if (!dpm.isAdminActive(adminComponent)) {
+            val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN).apply {
+                putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, adminComponent)
+                putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION,
+                    "Enable device admin to prevent uninstallation and ensure child safety")
+            }
+            try {
+                startActivityForResult(intent, 200)
+            } catch (e: Exception) {
+                Log.e("ChildDashboard", "Failed to request device admin", e)
+            }
+        }
     }
 
     override fun onResume() {
         super.onResume()
-        // Only check permissions, don't start services automatically
         if (!permissionRequestInProgress) {
             checkAndRequestPermissions()
         }
@@ -85,8 +149,6 @@ class ChildDashboardActivity : AppCompatActivity() {
         if (missing.isNotEmpty()) {
             permissionRequestInProgress = true
             ActivityCompat.requestPermissions(this, missing.toTypedArray(), 100)
-        } else {
-            startTrackingServices()
         }
     }
 
@@ -108,7 +170,6 @@ class ChildDashboardActivity : AppCompatActivity() {
             
             if (hasLocation) {
                 Toast.makeText(this, "Permissions granted", Toast.LENGTH_SHORT).show()
-                // Services will start when child pairs with parent
             } else {
                 Toast.makeText(this, "Location permission is required", Toast.LENGTH_LONG).show()
             }
@@ -168,7 +229,6 @@ class ChildDashboardActivity : AppCompatActivity() {
                         binding.tvStatus.text = "✅ Paired with parent successfully!"
                         binding.btnPair.text = "Paired ✓"
                         
-                        // Start services after successful pairing
                         startTrackingServices()
                         
                         Toast.makeText(this@ChildDashboardActivity, "Paired successfully! Monitoring started.", Toast.LENGTH_SHORT).show()
@@ -203,6 +263,67 @@ class ChildDashboardActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 Toast.makeText(this@ChildDashboardActivity, "Failed to send SOS", Toast.LENGTH_SHORT).show()
             }
+        }
+    }
+
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.nav_dashboard -> {
+                // Already on dashboard
+            }
+            R.id.nav_pair -> {
+                binding.etPairCode.requestFocus()
+            }
+            R.id.nav_sos -> {
+                sendSos()
+            }
+            R.id.nav_dark_mode -> {
+                toggleDarkMode(item)
+            }
+            R.id.nav_permissions -> {
+                requestPermissionsIfNeeded()
+            }
+            R.id.nav_logout -> {
+                logout()
+            }
+        }
+        binding.drawerLayout.closeDrawer(GravityCompat.START)
+        return true
+    }
+
+    private fun toggleDarkMode(item: MenuItem) {
+        val prefs = getSharedPreferences("gia_prefs", MODE_PRIVATE)
+        val currentMode = prefs.getBoolean("dark_mode", false)
+        val newMode = !currentMode
+        
+        prefs.edit().putBoolean("dark_mode", newMode).apply()
+        item.isChecked = newMode
+        
+        if (newMode) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        }
+    }
+
+    private fun logout() {
+        AlertDialog.Builder(this)
+            .setTitle("Logout")
+            .setMessage("Are you sure you want to logout? This will stop monitoring.")
+            .setPositiveButton("Yes") { _, _ ->
+                getSharedPreferences("gia_prefs", MODE_PRIVATE).edit().clear().apply()
+                startActivity(Intent(this, LoginActivity::class.java))
+                finishAffinity()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    override fun onBackPressed() {
+        if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            binding.drawerLayout.closeDrawer(GravityCompat.START)
+        } else {
+            super.onBackPressed()
         }
     }
 }
