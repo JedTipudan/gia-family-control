@@ -71,14 +71,11 @@ class AppMonitorService : LifecycleService() {
                 refreshCounter++
                 
                 val foregroundApp = getForegroundApp()
-                if (foregroundApp != null) {
+                if (foregroundApp != null && foregroundApp != packageName) {
                     // Check if it's a blocked app
-                    if (foregroundApp in blockedPackages && foregroundApp != lastBlockedApp) {
-                        Log.d("AppMonitorService", "Blocked app detected: $foregroundApp")
-                        lastBlockedApp = foregroundApp
-                        showBlockOverlay(foregroundApp)
-                    } else if (foregroundApp !in blockedPackages) {
-                        lastBlockedApp = null
+                    if (foregroundApp in blockedPackages) {
+                        Log.d("AppMonitorService", "Blocked app detected: $foregroundApp - Force closing")
+                        forceCloseApp(foregroundApp)
                     }
                     
                     // Check if it's a game and notify parent
@@ -89,6 +86,28 @@ class AppMonitorService : LifecycleService() {
                 }
                 delay(1000L)
             }
+        }
+    }
+    
+    private fun forceCloseApp(packageName: String) {
+        try {
+            // Show block overlay
+            val intent = Intent(this, AppBlockOverlayActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                putExtra("blocked_package", packageName)
+            }
+            startActivity(intent)
+            
+            // Send to home screen to close the blocked app
+            val homeIntent = Intent(Intent.ACTION_MAIN).apply {
+                addCategory(Intent.CATEGORY_HOME)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            startActivity(homeIntent)
+            
+            Log.d("AppMonitorService", "Blocked app closed: $packageName")
+        } catch (e: Exception) {
+            Log.e("AppMonitorService", "Failed to close blocked app", e)
         }
     }
 

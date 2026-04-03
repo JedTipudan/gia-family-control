@@ -55,17 +55,20 @@ class BootReceiver : BroadcastReceiver() {
                 Log.e("BootReceiver", "Failed to start services", e)
             }
             
-            // Check if device is locked and show lock screen
+            // Check if device is locked and lock it immediately
             val lockPrefs = context.getSharedPreferences("gia_lock", Context.MODE_PRIVATE)
             if (lockPrefs.getBoolean("is_locked", false)) {
-                Log.d("BootReceiver", "Device is locked, showing lock screen")
-                val lockIntent = Intent(context, LockScreenActivity::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                }
+                Log.d("BootReceiver", "Device is locked, locking now")
                 try {
-                    context.startActivity(lockIntent)
+                    val dpm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as android.app.admin.DevicePolicyManager
+                    val adminComponent = android.content.ComponentName(context, com.gia.familycontrol.admin.GiaDeviceAdminReceiver::class.java)
+                    
+                    if (dpm.isAdminActive(adminComponent)) {
+                        dpm.lockNow()
+                        Log.d("BootReceiver", "Device locked using Device Admin")
+                    }
                 } catch (e: Exception) {
-                    Log.e("BootReceiver", "Failed to show lock screen", e)
+                    Log.e("BootReceiver", "Failed to lock device", e)
                 }
             }
         }

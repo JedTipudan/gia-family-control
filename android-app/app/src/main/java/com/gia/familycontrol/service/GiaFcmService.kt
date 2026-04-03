@@ -64,51 +64,30 @@ class GiaFcmService : FirebaseMessagingService() {
         getSharedPreferences("gia_lock", MODE_PRIVATE)
             .edit().putBoolean("is_locked", true).apply()
         
-        android.util.Log.d("GiaFcmService", "Lock state saved, launching lock screen")
+        android.util.Log.d("GiaFcmService", "Lock state saved")
         
-        // Launch lock screen activity
-        val intent = Intent(this, LockScreenActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or
-                    Intent.FLAG_ACTIVITY_CLEAR_TASK or
-                    Intent.FLAG_ACTIVITY_NO_HISTORY or
-                    Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
-        }
-        
+        // Use Device Admin to lock screen immediately
         try {
-            startActivity(intent)
-            android.util.Log.d("GiaFcmService", "Lock screen activity started")
+            val dpm = getSystemService(android.app.admin.DevicePolicyManager::class.java)
+            val adminComponent = android.content.ComponentName(this, com.gia.familycontrol.admin.GiaDeviceAdminReceiver::class.java)
+            
+            if (dpm.isAdminActive(adminComponent)) {
+                dpm.lockNow()
+                android.util.Log.d("GiaFcmService", "Device locked using Device Admin")
+            } else {
+                android.util.Log.e("GiaFcmService", "Device Admin not active, cannot lock")
+            }
         } catch (e: Exception) {
-            android.util.Log.e("GiaFcmService", "Failed to start lock screen", e)
+            android.util.Log.e("GiaFcmService", "Failed to lock device", e)
         }
         
-        // Ensure LockMonitorService is running
+        // Ensure LockMonitorService is running to show overlay after unlock
         val serviceIntent = Intent(this, LockMonitorService::class.java)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(serviceIntent)
         } else {
             startService(serviceIntent)
         }
-        
-        // Schedule repeating alarm to check lock state every 10 seconds
-        scheduleLockCheck()
-    }
-    
-    private fun scheduleLockCheck() {
-        val alarmManager = getSystemService(android.app.AlarmManager::class.java)
-        val intent = Intent(this, com.gia.familycontrol.receiver.LockCheckReceiver::class.java)
-        val pendingIntent = android.app.PendingIntent.getBroadcast(
-            this, 999, intent,
-            android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
-        )
-        
-        // Set repeating alarm every 10 seconds
-        alarmManager.setRepeating(
-            android.app.AlarmManager.ELAPSED_REALTIME_WAKEUP,
-            android.os.SystemClock.elapsedRealtime() + 10000,
-            10000,
-            pendingIntent
-        )
-        android.util.Log.d("GiaFcmService", "Lock check alarm scheduled")
     }
 
     private fun unlockDevice() {
@@ -117,15 +96,8 @@ class GiaFcmService : FirebaseMessagingService() {
             .edit().putBoolean("is_locked", false).apply()
         LockScreenActivity.dismiss()
         
-        // Cancel lock check alarm
-        val alarmManager = getSystemService(android.app.AlarmManager::class.java)
-        val intent = Intent(this, com.gia.familycontrol.receiver.LockCheckReceiver::class.java)
-        val pendingIntent = android.app.PendingIntent.getBroadcast(
-            this, 999, intent,
-            android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
-        )
-        alarmManager.cancel(pendingIntent)
-        android.util.Log.d("GiaFcmService", "Lock check alarm cancelled")
+        // Stop LockMonitorService
+        stopService(Intent(this, LockMonitorService::class.java))
     }
 
     private fun updateAppBlock(packageName: String, block: Boolean) {
