@@ -17,7 +17,7 @@ val JWT_TOKEN_KEY = stringPreferencesKey("jwt_token")
 
 object RetrofitClient {
 
-    private const val BASE_URL = "https://your-backend-url.com/"
+    private const val BASE_URL = "https://gia-family-control-production.up.railway.app/"
 
     fun create(context: Context): ApiService {
         val authInterceptor = Interceptor { chain ->
