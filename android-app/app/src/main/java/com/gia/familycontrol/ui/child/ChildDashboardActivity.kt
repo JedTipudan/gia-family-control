@@ -185,59 +185,42 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
     }
 
     private fun startTrackingServices() {
-        Log.d("ChildDashboard", "=== Starting tracking services ===")
+        Log.d("ChildDashboard", "Starting services...")
         
-        // Delay service start to ensure pairing is fully complete
-        lifecycleScope.launch {
-            delay(2000) // Wait 2 seconds
-            
-            // Check if we have location permission
-            val hasLocationPermission = ContextCompat.checkSelfPermission(
-                this@ChildDashboardActivity,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-            
-            if (!hasLocationPermission) {
-                Log.w("ChildDashboard", "Location permission not granted, skipping location service")
+        try {
+            val locationIntent = Intent(this, LocationTrackingService::class.java)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(locationIntent)
             } else {
-                try {
-                    val locationIntent = Intent(this@ChildDashboardActivity, LocationTrackingService::class.java)
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        startForegroundService(locationIntent)
-                    } else {
-                        startService(locationIntent)
-                    }
-                    Log.d("ChildDashboard", "✅ Location service started")
-                } catch (e: Exception) {
-                    Log.e("ChildDashboard", "❌ Failed to start location service", e)
-                }
+                startService(locationIntent)
             }
-            
-            try {
-                val appMonitorIntent = Intent(this@ChildDashboardActivity, AppMonitorService::class.java)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    startForegroundService(appMonitorIntent)
-                } else {
-                    startService(appMonitorIntent)
-                }
-                Log.d("ChildDashboard", "✅ App monitor service started")
-            } catch (e: Exception) {
-                Log.e("ChildDashboard", "❌ Failed to start app monitor service", e)
+            Log.d("ChildDashboard", "Location service started")
+        } catch (e: Exception) {
+            Log.e("ChildDashboard", "Failed to start location service", e)
+        }
+        
+        try {
+            val appMonitorIntent = Intent(this, AppMonitorService::class.java)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(appMonitorIntent)
+            } else {
+                startService(appMonitorIntent)
             }
-            
-            try {
-                val lockMonitorIntent = Intent(this@ChildDashboardActivity, LockMonitorService::class.java)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    startForegroundService(lockMonitorIntent)
-                } else {
-                    startService(lockMonitorIntent)
-                }
-                Log.d("ChildDashboard", "✅ Lock monitor service started")
-            } catch (e: Exception) {
-                Log.e("ChildDashboard", "❌ Failed to start lock monitor service", e)
+            Log.d("ChildDashboard", "App monitor service started")
+        } catch (e: Exception) {
+            Log.e("ChildDashboard", "Failed to start app monitor service", e)
+        }
+        
+        try {
+            val lockMonitorIntent = Intent(this, LockMonitorService::class.java)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(lockMonitorIntent)
+            } else {
+                startService(lockMonitorIntent)
             }
-            
-            Log.d("ChildDashboard", "=== All services started ===")
+            Log.d("ChildDashboard", "Lock monitor service started")
+        } catch (e: Exception) {
+            Log.e("ChildDashboard", "Failed to start lock monitor service", e)
         }
     }
 
@@ -284,10 +267,15 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
                         binding.tvStatus.text = "✅ Paired with parent successfully!"
                         binding.btnPair.text = "Paired ✓"
                         
-                        Log.d("ChildDashboard", "Starting tracking services...")
-                        startTrackingServices()
-                        
-                        Toast.makeText(this@ChildDashboardActivity, "✅ Paired! Monitoring started.", Toast.LENGTH_LONG).show()
+                        // Show dialog to restart app
+                        AlertDialog.Builder(this@ChildDashboardActivity)
+                            .setTitle("Pairing Successful!")
+                            .setMessage("Please close and reopen the app to start monitoring.")
+                            .setPositiveButton("Close App") { _, _ ->
+                                finishAffinity()
+                            }
+                            .setCancelable(false)
+                            .show()
                     } else {
                         val errorBody = response.errorBody()?.string()
                         Log.e("ChildDashboard", "❌ Pairing failed: ${response.code()} - $errorBody")

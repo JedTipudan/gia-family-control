@@ -42,34 +42,55 @@ class GiaApplication : Application() {
         
         // Auto-start services for paired child devices
         if (role == "CHILD" && deviceId != -1L) {
+            // Start services with error handling
             try {
                 val locationIntent = Intent(this, LocationTrackingService::class.java)
-                val appMonitorIntent = Intent(this, AppMonitorService::class.java)
-                val lockMonitorIntent = Intent(this, LockMonitorService::class.java)
-                
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     startForegroundService(locationIntent)
-                    startForegroundService(appMonitorIntent)
-                    startForegroundService(lockMonitorIntent)
                 } else {
                     startService(locationIntent)
+                }
+                Log.d("GiaApplication", "Location service started")
+            } catch (e: Exception) {
+                Log.e("GiaApplication", "Failed to start location service", e)
+            }
+            
+            try {
+                val appMonitorIntent = Intent(this, AppMonitorService::class.java)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(appMonitorIntent)
+                } else {
                     startService(appMonitorIntent)
+                }
+                Log.d("GiaApplication", "App monitor service started")
+            } catch (e: Exception) {
+                Log.e("GiaApplication", "Failed to start app monitor service", e)
+            }
+            
+            try {
+                val lockMonitorIntent = Intent(this, LockMonitorService::class.java)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(lockMonitorIntent)
+                } else {
                     startService(lockMonitorIntent)
                 }
-                
-                Log.d("GiaApplication", "Services started automatically")
+                Log.d("GiaApplication", "Lock monitor service started")
             } catch (e: Exception) {
-                Log.e("GiaApplication", "Failed to start services", e)
+                Log.e("GiaApplication", "Failed to start lock monitor service", e)
             }
             
             // Check if device is locked
             val lockPrefs = getSharedPreferences("gia_lock", Context.MODE_PRIVATE)
             if (lockPrefs.getBoolean("is_locked", false)) {
                 Log.d("GiaApplication", "Device is locked, showing lock screen")
-                val lockIntent = Intent(this, LockScreenActivity::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                try {
+                    val lockIntent = Intent(this, LockScreenActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    }
+                    startActivity(lockIntent)
+                } catch (e: Exception) {
+                    Log.e("GiaApplication", "Failed to show lock screen", e)
                 }
-                startActivity(lockIntent)
             }
         }
     }
