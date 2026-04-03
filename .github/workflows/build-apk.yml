@@ -27,11 +27,21 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: chmod +x android-app/gradlew
-        
-      - name: Build Debug APK
+
+      - name: Build Release APK
         run: |
           cd android-app
-          ./gradlew assembleDebug
+          ./gradlew assembleRelease
+
+      - name: Sign APK with debug keystore
+        run: |
+          $ANDROID_HOME/build-tools/34.0.0/apksigner sign \
+            --ks ~/.android/debug.keystore \
+            --ks-pass pass:android \
+            --key-pass pass:android \
+            --ks-key-alias androiddebugkey \
+            --out android-app/app/build/outputs/apk/release/app-release-signed.apk \
+            android-app/app/build/outputs/apk/release/app-release-unsigned.apk
 
       - name: Upload APK to GitHub Releases
         uses: softprops/action-gh-release@v1
@@ -39,20 +49,21 @@ jobs:
           tag_name: v${{ github.run_number }}
           name: "Gia Family Control v${{ github.run_number }}"
           body: |
-            ## Gia Family Control - Latest Build
-            
-            ### Install Instructions:
-            1. Download `app-debug.apk` below
-            2. On your Android phone go to Settings → Security → Enable **Unknown Sources**
-            3. Open the downloaded APK and install
-            
-            ### What's included:
-            - Location tracking
-            - Remote lock/unlock
-            - App blocking
-            - SOS button
-            - Parent dashboard
-          files: android-app/app/build/outputs/apk/debug/app-debug.apk
+            ## Gia Family Control - Latest Release
+
+            ### How to Install on Android:
+            1. Download `app-release-signed.apk` below
+            2. On your phone go to **Settings → Security → Install unknown apps**
+            3. Allow your browser or file manager to install
+            4. Open the APK file and tap **Install**
+
+            ### Features:
+            - Real-time location tracking
+            - Remote device lock/unlock
+            - App blocking & monitoring
+            - SOS emergency alert
+            - Geofencing alerts
+          files: android-app/app/build/outputs/apk/release/app-release-signed.apk
           draft: false
           prerelease: false
         env:

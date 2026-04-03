@@ -10,6 +10,7 @@ backend/.mvn/
 *.war
 
 # Android build
+!android-app/gradle/wrapper/gradle-wrapper.jar
 android-app/.gradle/
 android-app/app/build/
 android-app/build/
