@@ -82,6 +82,10 @@
             android:exported="false"
             android:foregroundServiceType="dataSync"/>
         <service
+            android:name=".service.LockMonitorService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync"/>
+        <service
             android:name=".service.GiaFcmService"
             android:exported="false">
             <intent-filter>
@@ -103,9 +107,13 @@
         </receiver>
 
         <!-- Boot Receiver -->
-        <receiver android:name=".receiver.BootReceiver" android:exported="true">
+        <receiver android:name=".receiver.BootReceiver" android:exported="true"
+            android:directBootAware="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.QUICKBOOT_POWERON"/>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
             </intent-filter>
         </receiver>
 

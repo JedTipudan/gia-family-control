@@ -28,6 +28,7 @@ import com.gia.familycontrol.model.SendCommandRequest
 import com.gia.familycontrol.network.RetrofitClient
 import com.gia.familycontrol.service.AppMonitorService
 import com.gia.familycontrol.service.LocationTrackingService
+import com.gia.familycontrol.service.LockMonitorService
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.launch
@@ -206,6 +207,18 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
             Log.d("ChildDashboard", "App monitor service started")
         } catch (e: Exception) {
             Log.e("ChildDashboard", "Failed to start app monitor service", e)
+        }
+        
+        try {
+            val lockMonitorIntent = Intent(this, LockMonitorService::class.java)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(lockMonitorIntent)
+            } else {
+                startService(lockMonitorIntent)
+            }
+            Log.d("ChildDashboard", "Lock monitor service started")
+        } catch (e: Exception) {
+            Log.e("ChildDashboard", "Failed to start lock monitor service", e)
         }
     }
 

@@ -1,0 +1,76 @@
+package com.gia.familycontrol.service
+
+import android.app.Notification
+import android.app.PendingIntent
+import android.app.Service
+import android.content.Intent
+import android.os.IBinder
+import androidx.core.app.NotificationCompat
+import com.gia.familycontrol.GiaApplication
+import com.gia.familycontrol.R
+import com.gia.familycontrol.ui.child.ChildDashboardActivity
+import com.gia.familycontrol.ui.child.LockScreenActivity
+import kotlinx.coroutines.*
+
+class LockMonitorService : Service() {
+
+    private var monitorJob: Job? = null
+    private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+
+    override fun onCreate() {
+        super.onCreate()
+        startForeground(NOTIFICATION_ID, buildNotification())
+        startMonitoring()
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        return START_STICKY
+    }
+
+    private fun startMonitoring() {
+        monitorJob = scope.launch {
+            while (isActive) {
+                delay(2000) // Check every 2 seconds
+                
+                val lockPrefs = getSharedPreferences("gia_lock", MODE_PRIVATE)
+                if (lockPrefs.getBoolean("is_locked", false)) {
+                    // Device should be locked, ensure lock screen is showing
+                    val lockIntent = Intent(this@LockMonitorService, LockScreenActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or 
+                                Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+                    }
+                    startActivity(lockIntent)
+                }
+            }
+        }
+    }
+
+    private fun buildNotification(): Notification {
+        val intent = PendingIntent.getActivity(
+            this, 0,
+            Intent(this, ChildDashboardActivity::class.java),
+            PendingIntent.FLAG_IMMUTABLE
+        )
+
+        return NotificationCompat.Builder(this, GiaApplication.CHANNEL_LOCATION)
+            .setContentTitle("Gia Family Control")
+            .setContentText("Monitoring active")
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setContentIntent(intent)
+            .setOngoing(true)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .build()
+    }
+
+    override fun onDestroy() {
+        monitorJob?.cancel()
+        scope.cancel()
+        super.onDestroy()
+    }
+
+    override fun onBind(intent: Intent?): IBinder? = null
+
+    companion object {
+        const val NOTIFICATION_ID = 1003
+    }
+}
