@@ -60,18 +60,22 @@ jobs:
 
       - name: Sign Release APK
         run: |
+          echo "Looking for APK files:"
+          find android-app/app/build/outputs/apk/ -name "*.apk"
+          APK_PATH=$(find android-app/app/build/outputs/apk/release/ -name "*.apk" | head -1)
+          echo "Found APK: $APK_PATH"
           $ANDROID_HOME/build-tools/34.0.0/apksigner sign \
             --ks android-app/app/gia-release.keystore \
             --ks-pass pass:${{ secrets.KEYSTORE_PASSWORD }} \
             --ks-key-alias ${{ secrets.KEY_ALIAS }} \
             --key-pass pass:${{ secrets.KEYSTORE_PASSWORD }} \
             --out android-app/app/build/outputs/apk/release/GiaFamilyControl.apk \
-            android-app/app/build/outputs/apk/release/app-release-unsigned.apk
+            "$APK_PATH"
 
       - name: Verify APK signature
         run: |
           $ANDROID_HOME/build-tools/34.0.0/apksigner verify \
-            android-app/app/build/outputs/apk/release/GiaFamilyControl.apk
+            android-app/app/build/outputs/apk/release/GiaFamilyControl.apk && \
           echo "APK signature verified successfully!"
 
       - name: Create GitHub Release
