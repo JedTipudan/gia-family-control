@@ -34,6 +34,17 @@ jobs:
           echo "$KEYSTORE_BASE64" | base64 -d > android-app/app/gia-release.keystore
           echo "Keystore size: $(wc -c < android-app/app/gia-release.keystore) bytes"
 
+      - name: Convert launcher icons to proper PNG
+        run: |
+          sudo apt-get install -y imagemagick
+          for dir in android-app/app/src/main/res/mipmap-*/; do
+            if [ -f "${dir}ic_launcher.png" ]; then
+              convert "${dir}ic_launcher.png" "${dir}ic_launcher_temp.png"
+              mv "${dir}ic_launcher_temp.png" "${dir}ic_launcher.png"
+            fi
+          done
+          echo "Icons converted successfully"
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
