@@ -16,6 +16,15 @@ android {
         versionName "1.0.0"
     }
 
+    signingConfigs {
+        release {
+            storeFile file('gia-release.keystore')
+            storePassword System.getenv('KEYSTORE_PASSWORD') ?: 'gia12345'
+            keyAlias System.getenv('KEY_ALIAS') ?: 'gia'
+            keyPassword System.getenv('KEYSTORE_PASSWORD') ?: 'gia12345'
+        }
+    }
+
     buildTypes {
         debug {
             debuggable true
@@ -24,6 +33,7 @@ android {
             debuggable false
             minifyEnabled false
             shrinkResources false
+            signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
