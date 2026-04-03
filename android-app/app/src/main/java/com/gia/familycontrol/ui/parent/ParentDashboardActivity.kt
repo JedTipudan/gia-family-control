@@ -18,11 +18,12 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import com.gia.familycontrol.R
+import com.gia.familycontrol.auth.LoginActivity
 
 class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var binding: ActivityParentDashboardBinding
-    private lateinit var map: GoogleMap
+    private var map: GoogleMap? = null
     private val api by lazy { RetrofitClient.create(this) }
     private var childDeviceId: Long = -1L
 
@@ -33,8 +34,10 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback {
 
         childDeviceId = getSharedPreferences("gia_prefs", MODE_PRIVATE).getLong("child_device_id", -1L)
 
-        val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
-        mapFragment.getMapAsync(this)
+        try {
+            val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as? SupportMapFragment
+            mapFragment?.getMapAsync(this)
+        } catch (e: Exception) { /* map not available */ }
 
         binding.btnLock.setOnClickListener { sendCommand("LOCK") }
         binding.btnUnlock.setOnClickListener { sendCommand("UNLOCK") }
@@ -49,21 +52,20 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun startLocationPolling() {
+        if (childDeviceId == -1L) return
         lifecycleScope.launch {
             while (isActive) {
-                if (childDeviceId != -1L) {
-                    try {
-                        val response = api.getLatestLocation(childDeviceId)
-                        if (response.isSuccessful) {
-                            response.body()?.let { loc ->
-                                val pos = LatLng(loc.latitude, loc.longitude)
-                                map.clear()
-                                map.addMarker(MarkerOptions().position(pos).title("Child"))
-                                map.animateCamera(CameraUpdateFactory.newLatLngZoom(pos, 16f))
-                            }
+                try {
+                    val response = api.getLatestLocation(childDeviceId)
+                    if (response.isSuccessful) {
+                        response.body()?.let { loc ->
+                            val pos = LatLng(loc.latitude, loc.longitude)
+                            map?.clear()
+                            map?.addMarker(MarkerOptions().position(pos).title("Child Location"))
+                            map?.animateCamera(CameraUpdateFactory.newLatLngZoom(pos, 16f))
                         }
-                    } catch (e: Exception) { /* ignore */ }
-                }
+                    }
+                } catch (e: Exception) { /* ignore */ }
                 delay(8000L)
             }
         }
@@ -71,14 +73,16 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun sendCommand(type: String) {
         if (childDeviceId == -1L) {
-            Toast.makeText(this, "No child device linked", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "No child device linked yet", Toast.LENGTH_SHORT).show()
             return
         }
         lifecycleScope.launch {
             try {
                 val response = api.sendCommand(SendCommandRequest(childDeviceId, type))
                 if (response.isSuccessful) {
-                    Toast.makeText(this@ParentDashboardActivity, "$type sent", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@ParentDashboardActivity,
+                        if (type == "LOCK") "🔒 Device locked" else "🔓 Device unlocked",
+                        Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 Toast.makeText(this@ParentDashboardActivity, "Failed to send command", Toast.LENGTH_SHORT).show()
