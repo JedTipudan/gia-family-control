@@ -203,52 +203,66 @@ class GiaFcmService : FirebaseMessagingService() {
     }
     
     private fun handleChildPaired(data: Map<String, String>) {
-        val childDeviceId = data["childDeviceId"]?.toLongOrNull() ?: return
-        val deviceName = data["deviceName"] ?: "Child Device"
-        val deviceModel = data["deviceModel"] ?: ""
-        
-        // Save child device ID
-        getSharedPreferences("gia_prefs", MODE_PRIVATE)
-            .edit()
-            .putLong("child_device_id", childDeviceId)
-            .apply()
-        
-        // Show notification
-        val notificationManager = getSystemService(NotificationManager::class.java)
-        
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                "pairing_alerts",
-                "Pairing Alerts",
-                NotificationManager.IMPORTANCE_HIGH
-            ).apply {
-                description = "Alerts when child device pairs"
-                enableVibration(true)
+        try {
+            val childDeviceId = data["childDeviceId"]?.toLongOrNull()
+            val deviceName = data["deviceName"] ?: "Child Device"
+            val deviceModel = data["deviceModel"] ?: ""
+            
+            android.util.Log.d("GiaFcmService", "CHILD_PAIRED received: deviceId=$childDeviceId, name=$deviceName")
+            
+            if (childDeviceId == null) {
+                android.util.Log.e("GiaFcmService", "Invalid child device ID")
+                return
             }
-            notificationManager.createNotificationChannel(channel)
+            
+            // Save child device ID
+            getSharedPreferences("gia_prefs", MODE_PRIVATE)
+                .edit()
+                .putLong("child_device_id", childDeviceId)
+                .apply()
+            
+            android.util.Log.d("GiaFcmService", "Child device ID saved: $childDeviceId")
+            
+            // Show notification
+            val notificationManager = getSystemService(NotificationManager::class.java)
+            
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val channel = NotificationChannel(
+                    "pairing_alerts",
+                    "Pairing Alerts",
+                    NotificationManager.IMPORTANCE_HIGH
+                ).apply {
+                    description = "Alerts when child device pairs"
+                    enableVibration(true)
+                }
+                notificationManager.createNotificationChannel(channel)
+            }
+            
+            val intent = Intent(this, ParentDashboardActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            }
+            val pendingIntent = PendingIntent.getActivity(
+                this, 0, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            
+            val notification = NotificationCompat.Builder(this, "pairing_alerts")
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle("✅ Child Device Paired")
+                .setContentText("$deviceName ($deviceModel) is now connected")
+                .setStyle(NotificationCompat.BigTextStyle()
+                    .bigText("$deviceName ($deviceModel) has been successfully paired with your account. Tap to view dashboard."))
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent)
+                .setVibrate(longArrayOf(0, 500, 200, 500))
+                .build()
+            
+            notificationManager.notify(System.currentTimeMillis().toInt(), notification)
+            android.util.Log.d("GiaFcmService", "Pairing notification shown")
+        } catch (e: Exception) {
+            android.util.Log.e("GiaFcmService", "Error handling CHILD_PAIRED", e)
         }
-        
-        val intent = Intent(this, ParentDashboardActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-        }
-        val pendingIntent = PendingIntent.getActivity(
-            this, 0, intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        
-        val notification = NotificationCompat.Builder(this, "pairing_alerts")
-            .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentTitle("✅ Child Device Paired")
-            .setContentText("$deviceName ($deviceModel) is now connected")
-            .setStyle(NotificationCompat.BigTextStyle()
-                .bigText("$deviceName ($deviceModel) has been successfully paired with your account. You can now monitor and control this device."))
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setAutoCancel(true)
-            .setContentIntent(pendingIntent)
-            .setVibrate(longArrayOf(0, 500, 200, 500))
-            .build()
-        
-        notificationManager.notify(System.currentTimeMillis().toInt(), notification)
     }
 
     override fun onNewToken(token: String) {

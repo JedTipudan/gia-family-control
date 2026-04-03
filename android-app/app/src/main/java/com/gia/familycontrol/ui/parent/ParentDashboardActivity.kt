@@ -56,6 +56,27 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback, Navigat
         loadUserData()
         setupMap()
         setupButtons()
+        registerFcmToken()
+    }
+    
+    private fun registerFcmToken() {
+        com.google.firebase.messaging.FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
+            android.util.Log.d("ParentDashboard", "FCM Token: $token")
+            lifecycleScope.launch {
+                try {
+                    api.updateDeviceStatus(
+                        com.gia.familycontrol.model.DeviceStatusUpdate(
+                            batteryLevel = null,
+                            isOnline = true,
+                            fcmToken = token
+                        )
+                    )
+                    android.util.Log.d("ParentDashboard", "FCM token registered")
+                } catch (e: Exception) {
+                    android.util.Log.e("ParentDashboard", "Failed to register FCM token", e)
+                }
+            }
+        }
     }
 
     private fun setupToolbar() {

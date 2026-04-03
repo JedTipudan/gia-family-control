@@ -53,20 +53,32 @@ public class DeviceService {
         
         System.out.println("Device saved: ID=" + savedDevice.getId() + ", Name=" + savedDevice.getDeviceName());
         
-        // Notify parent about new pairing
-        deviceRepository.findByUserId(parent.getId()).ifPresent(parentDevice -> {
-            if (parentDevice.getFcmToken() != null) {
-                System.out.println("Sending CHILD_PAIRED notification to parent");
-                fcmService.sendCommand(parentDevice.getFcmToken(), "CHILD_PAIRED", 
-                    Map.of(
-                        "childDeviceId", String.valueOf(savedDevice.getId()),
-                        "deviceName", request.getDeviceName(),
-                        "deviceModel", request.getDeviceModel()
-                    ));
-            } else {
-                System.out.println("Parent FCM token is null, cannot send notification");
-            }
-        });
+        // Notify parent about new pairing (if parent has FCM token)
+        try {
+            deviceRepository.findByUserId(parent.getId()).ifPresentOrElse(
+                parentDevice -> {
+                    if (parentDevice.getFcmToken() != null && !parentDevice.getFcmToken().isEmpty()) {
+                        System.out.println("Sending CHILD_PAIRED notification to parent FCM: " + parentDevice.getFcmToken());
+                        try {
+                            fcmService.sendCommand(parentDevice.getFcmToken(), "CHILD_PAIRED", 
+                                Map.of(
+                                    "childDeviceId", String.valueOf(savedDevice.getId()),
+                                    "deviceName", request.getDeviceName() != null ? request.getDeviceName() : "Child Device",
+                                    "deviceModel", request.getDeviceModel() != null ? request.getDeviceModel() : ""
+                                ));
+                            System.out.println("CHILD_PAIRED notification sent successfully");
+                        } catch (Exception e) {
+                            System.err.println("Failed to send FCM notification: " + e.getMessage());
+                        }
+                    } else {
+                        System.out.println("Parent FCM token is null or empty, skipping notification");
+                    }
+                },
+                () -> System.out.println("Parent device not found in database")
+            );
+        } catch (Exception e) {
+            System.err.println("Error sending pairing notification: " + e.getMessage());
+        }
         
         return savedDevice;
     }
