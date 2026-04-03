@@ -208,6 +208,11 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
             Toast.makeText(this, "Enter parent pair code", Toast.LENGTH_SHORT).show()
             return
         }
+        
+        if (!code.startsWith("GIA-")) {
+            Toast.makeText(this, "Invalid pair code format", Toast.LENGTH_SHORT).show()
+            return
+        }
 
         binding.btnPair.isEnabled = false
         binding.btnPair.text = "Pairing..."
@@ -235,12 +240,17 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
                     } else {
                         binding.btnPair.isEnabled = true
                         binding.btnPair.text = "Pair with Parent"
-                        Toast.makeText(this@ChildDashboardActivity, "Invalid pair code", Toast.LENGTH_SHORT).show()
+                        val errorMsg = when (response.code()) {
+                            400 -> "Invalid pair code or already used"
+                            404 -> "Pair code not found. Make sure it's from a PARENT account."
+                            else -> "Pairing failed. Try again."
+                        }
+                        Toast.makeText(this@ChildDashboardActivity, errorMsg, Toast.LENGTH_LONG).show()
                     }
                 } catch (e: Exception) {
                     binding.btnPair.isEnabled = true
                     binding.btnPair.text = "Pair with Parent"
-                    Toast.makeText(this@ChildDashboardActivity, "Connection error", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@ChildDashboardActivity, "Connection error: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }
         }.addOnFailureListener {
