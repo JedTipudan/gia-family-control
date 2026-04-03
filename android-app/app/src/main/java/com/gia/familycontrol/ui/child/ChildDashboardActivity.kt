@@ -234,12 +234,17 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
             return
         }
 
+        Log.d("ChildDashboard", "=== Starting pairing process ===")
+        Log.d("ChildDashboard", "Pair code: $code")
+        
         binding.btnPair.isEnabled = false
         binding.btnPair.text = "Pairing..."
 
         FirebaseMessaging.getInstance().token.addOnSuccessListener { fcmToken ->
+            Log.d("ChildDashboard", "FCM Token obtained: ${fcmToken.take(20)}...")
             lifecycleScope.launch {
                 try {
+                    Log.d("ChildDashboard", "Sending pair request to backend...")
                     val response = api.pairDevice(PairRequest(
                         pairCode = code,
                         deviceName = Build.MODEL,
@@ -247,36 +252,49 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
                         androidVersion = Build.VERSION.RELEASE,
                         fcmToken = fcmToken
                     ))
+                    
+                    Log.d("ChildDashboard", "Response code: ${response.code()}")
+                    
                     if (response.isSuccessful && response.body() != null) {
                         val device = response.body()!!
+                        Log.d("ChildDashboard", "✅ Pairing successful! Device ID: ${device.id}")
+                        
                         getSharedPreferences("gia_prefs", MODE_PRIVATE).edit()
                             .putLong("device_id", device.id).apply()
+                        
                         binding.tvStatus.text = "✅ Paired with parent successfully!"
                         binding.btnPair.text = "Paired ✓"
                         
+                        Log.d("ChildDashboard", "Starting tracking services...")
                         startTrackingServices()
                         
-                        Toast.makeText(this@ChildDashboardActivity, "Paired successfully! Monitoring started.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@ChildDashboardActivity, "✅ Paired! Monitoring started.", Toast.LENGTH_LONG).show()
                     } else {
+                        val errorBody = response.errorBody()?.string()
+                        Log.e("ChildDashboard", "❌ Pairing failed: ${response.code()} - $errorBody")
+                        
                         binding.btnPair.isEnabled = true
                         binding.btnPair.text = "Pair with Parent"
+                        
                         val errorMsg = when (response.code()) {
                             400 -> "Invalid pair code or already used"
                             404 -> "Pair code not found. Make sure it's from a PARENT account."
-                            else -> "Pairing failed. Try again."
+                            else -> "Pairing failed (${response.code()}). Try again."
                         }
                         Toast.makeText(this@ChildDashboardActivity, errorMsg, Toast.LENGTH_LONG).show()
                     }
                 } catch (e: Exception) {
+                    Log.e("ChildDashboard", "❌ Exception during pairing", e)
                     binding.btnPair.isEnabled = true
                     binding.btnPair.text = "Pair with Parent"
                     Toast.makeText(this@ChildDashboardActivity, "Connection error: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }
-        }.addOnFailureListener {
+        }.addOnFailureListener { e ->
+            Log.e("ChildDashboard", "❌ Failed to get FCM token", e)
             binding.btnPair.isEnabled = true
             binding.btnPair.text = "Pair with Parent"
-            Toast.makeText(this, "Failed to get device token", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Failed to get device token: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
 

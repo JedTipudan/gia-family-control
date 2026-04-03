@@ -64,18 +64,30 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback, Navigat
             android.util.Log.d("ParentDashboard", "FCM Token: $token")
             lifecycleScope.launch {
                 try {
-                    api.updateDeviceStatus(
-                        com.gia.familycontrol.model.DeviceStatusUpdate(
-                            batteryLevel = null,
-                            isOnline = true,
-                            fcmToken = token
-                        )
-                    )
+                    // Ensure parent device exists in database
+                    ensureParentDeviceExists(token)
                     android.util.Log.d("ParentDashboard", "FCM token registered")
                 } catch (e: Exception) {
                     android.util.Log.e("ParentDashboard", "Failed to register FCM token", e)
                 }
             }
+        }
+    }
+    
+    private suspend fun ensureParentDeviceExists(fcmToken: String) {
+        try {
+            // This will create or update the parent's device record
+            api.updateDeviceStatus(
+                com.gia.familycontrol.model.DeviceStatusUpdate(
+                    batteryLevel = 100,
+                    isOnline = true,
+                    fcmToken = fcmToken
+                )
+            )
+            android.util.Log.d("ParentDashboard", "Parent device record created/updated")
+        } catch (e: Exception) {
+            android.util.Log.e("ParentDashboard", "Failed to create parent device", e)
+            throw e
         }
     }
 
@@ -151,40 +163,41 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback, Navigat
     }
     
     private fun loadChildDevices() {
-        android.util.Log.d("ParentDashboard", "Loading child devices...")
+        android.util.Log.d("ParentDashboard", "=== Loading child devices ===")
         lifecycleScope.launch {
             try {
                 val response = api.getChildDevices()
-                android.util.Log.d("ParentDashboard", "Child devices response: ${response.code()} - ${response.message()}")
+                android.util.Log.d("ParentDashboard", "Response code: ${response.code()}")
                 
                 if (response.isSuccessful) {
                     val devices = response.body()
-                    android.util.Log.d("ParentDashboard", "Devices count: ${devices?.size ?: 0}")
+                    android.util.Log.d("ParentDashboard", "Devices received: ${devices?.size ?: 0}")
                     
                     if (!devices.isNullOrEmpty()) {
                         val firstDevice = devices[0]
-                        android.util.Log.d("ParentDashboard", "First device: ID=${firstDevice.id}, Name=${firstDevice.deviceName}")
+                        android.util.Log.d("ParentDashboard", "✅ Device found: ID=${firstDevice.id}, Name=${firstDevice.deviceName}")
                         
                         childDeviceId = firstDevice.id
                         getSharedPreferences("gia_prefs", MODE_PRIVATE)
                             .edit().putLong("child_device_id", childDeviceId).apply()
                         binding.tvChildName.text = firstDevice.deviceName ?: "Child Device"
                         
-                        Toast.makeText(this@ParentDashboardActivity, "✅ Child device connected: ${firstDevice.deviceName}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@ParentDashboardActivity, "✅ ${firstDevice.deviceName} connected", Toast.LENGTH_SHORT).show()
                         
                         // Start location polling if map is ready
                         if (map != null) startLocationPolling()
                     } else {
-                        android.util.Log.d("ParentDashboard", "No child devices found")
-                        binding.tvChildName.text = "No Device Paired"
+                        android.util.Log.w("ParentDashboard", "⚠️ No child devices found in response")
+                        binding.tvChildName.text = "No Device Paired (Tap to Refresh)"
                     }
                 } else {
-                    android.util.Log.e("ParentDashboard", "Failed to load devices: ${response.code()} - ${response.errorBody()?.string()}")
-                    Toast.makeText(this@ParentDashboardActivity, "Failed to load devices: ${response.message()}", Toast.LENGTH_SHORT).show()
+                    val errorBody = response.errorBody()?.string()
+                    android.util.Log.e("ParentDashboard", "❌ API Error ${response.code()}: $errorBody")
+                    binding.tvChildName.text = "Error Loading (Tap to Retry)"
                 }
             } catch (e: Exception) {
-                android.util.Log.e("ParentDashboard", "Error loading child devices", e)
-                Toast.makeText(this@ParentDashboardActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                android.util.Log.e("ParentDashboard", "❌ Exception loading devices", e)
+                binding.tvChildName.text = "Connection Error (Tap to Retry)"
             }
         }
     }

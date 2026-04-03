@@ -113,14 +113,24 @@ public class DeviceService {
     public void updateStatus(String email, CommandDto.DeviceStatusUpdate update) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        // Find or create device
         Device device = deviceRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new RuntimeException("Device not found"));
+                .orElseGet(() -> {
+                    System.out.println("Creating new device for user: " + user.getEmail() + " (ID: " + user.getId() + ")");
+                    Device newDevice = new Device();
+                    newDevice.setUserId(user.getId());
+                    newDevice.setDeviceName(user.getRole() == User.Role.PARENT ? "Parent Device" : "Child Device");
+                    return newDevice;
+                });
 
         if (update.getBatteryLevel() != null) device.setBatteryLevel(update.getBatteryLevel());
         if (update.getIsOnline() != null) device.setIsOnline(update.getIsOnline());
         if (update.getFcmToken() != null) device.setFcmToken(update.getFcmToken());
         device.setLastSeen(LocalDateTime.now());
         deviceRepository.save(device);
+        
+        System.out.println("Device status updated: User=" + user.getEmail() + ", Device ID=" + device.getId() + ", FCM Token=" + (device.getFcmToken() != null ? "SET" : "NULL"));
     }
 
     public Device getDeviceByUserId(Long userId) {
