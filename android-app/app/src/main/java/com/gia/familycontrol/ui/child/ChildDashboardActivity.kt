@@ -344,7 +344,7 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
         if (deviceId != -1L) {
             AlertDialog.Builder(this)
                 .setTitle("Cannot Logout")
-                .setMessage("This device is paired with a parent account. Only your parent can unpair this device.\n\nYou can uninstall the app if needed.")
+                .setMessage("This device is paired with a parent account. Only your parent can unpair this device.\n\nChild accounts stay logged in permanently for safety monitoring.")
                 .setPositiveButton("OK", null)
                 .show()
             return
@@ -367,7 +367,9 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
         if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
             binding.drawerLayout.closeDrawer(GravityCompat.START)
         } else {
-            super.onBackPressed()
+            // For child accounts, minimize app instead of closing
+            // This keeps services running
+            moveTaskToBack(true)
         }
     }
 }

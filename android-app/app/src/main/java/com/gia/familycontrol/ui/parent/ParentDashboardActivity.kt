@@ -194,8 +194,23 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback, Navigat
     
     override fun onResume() {
         super.onResume()
+        // Update parent last active timestamp
+        getSharedPreferences("gia_prefs", MODE_PRIVATE)
+            .edit()
+            .putLong("parent_last_active", System.currentTimeMillis())
+            .apply()
+        
         // Reload child devices in case pairing happened while app was in background
         loadChildDevices()
+    }
+    
+    override fun onPause() {
+        super.onPause()
+        // Update parent last active timestamp
+        getSharedPreferences("gia_prefs", MODE_PRIVATE)
+            .edit()
+            .putLong("parent_last_active", System.currentTimeMillis())
+            .apply()
     }
 
     private fun startLocationPolling() {

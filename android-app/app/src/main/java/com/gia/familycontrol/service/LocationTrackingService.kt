@@ -4,6 +4,7 @@ import android.app.Notification
 import android.app.PendingIntent
 import android.content.Intent
 import android.os.Looper
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
@@ -23,6 +24,7 @@ class LocationTrackingService : LifecycleService() {
 
     override fun onCreate() {
         super.onCreate()
+        Log.d("LocationService", "Service created")
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         setupLocationCallback()
         startForeground(NOTIFICATION_ID, buildNotification())
@@ -30,6 +32,7 @@ class LocationTrackingService : LifecycleService() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
+        Log.d("LocationService", "Service started")
         startLocationUpdates()
         return START_STICKY
     }
@@ -38,7 +41,17 @@ class LocationTrackingService : LifecycleService() {
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(result: LocationResult) {
                 result.lastLocation?.let { location ->
-                    android.util.Log.d("LocationService", "Location: ${location.latitude}, ${location.longitude}")
+                    Log.d("LocationService", "Location: ${location.latitude}, ${location.longitude}")
+                    
+                    // Check if device is paired
+                    val prefs = getSharedPreferences("gia_prefs", MODE_PRIVATE)
+                    val deviceId = prefs.getLong("device_id", -1L)
+                    
+                    if (deviceId == -1L) {
+                        Log.w("LocationService", "Device not paired, skipping location update")
+                        return
+                    }
+                    
                     lifecycleScope.launch {
                         try {
                             val response = api.updateLocation(LocationUpdateRequest(
@@ -48,9 +61,13 @@ class LocationTrackingService : LifecycleService() {
                                 speed = location.speed,
                                 batteryLevel = getBatteryLevel()
                             ))
-                            android.util.Log.d("LocationService", "Location sent: ${response.isSuccessful}")
+                            if (response.isSuccessful) {
+                                Log.d("LocationService", "Location sent successfully")
+                            } else {
+                                Log.e("LocationService", "Location send failed: ${response.code()} - ${response.message()}")
+                            }
                         } catch (e: Exception) {
-                            android.util.Log.e("LocationService", "Failed to send location", e)
+                            Log.e("LocationService", "Failed to send location", e)
                         }
                     }
                 }
@@ -59,14 +76,16 @@ class LocationTrackingService : LifecycleService() {
     }
 
     private fun startLocationUpdates() {
-        val request = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 7000L)
-            .setMinUpdateIntervalMillis(5000L)
+        val request = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 5000L)
+            .setMinUpdateIntervalMillis(3000L)
             .setMaxUpdateDelayMillis(10000L)
             .build()
 
         try {
             fusedLocationClient.requestLocationUpdates(request, locationCallback, Looper.getMainLooper())
+            Log.d("LocationService", "Location updates started (every 5 seconds)")
         } catch (e: SecurityException) {
+            Log.e("LocationService", "Location permission denied", e)
             stopSelf()
         }
     }
@@ -83,7 +102,7 @@ class LocationTrackingService : LifecycleService() {
 
         return NotificationCompat.Builder(this, GiaApplication.CHANNEL_LOCATION)
             .setContentTitle("Gia Family Control")
-            .setContentText("Device is being monitored by parent")
+            .setContentText("Sending location every 5 seconds")
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentIntent(intent)
             .setOngoing(true)
@@ -92,6 +111,7 @@ class LocationTrackingService : LifecycleService() {
     }
 
     override fun onDestroy() {
+        Log.d("LocationService", "Service destroyed")
         fusedLocationClient.removeLocationUpdates(locationCallback)
         super.onDestroy()
     }
