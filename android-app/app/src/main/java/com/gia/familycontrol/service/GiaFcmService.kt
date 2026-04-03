@@ -58,16 +58,28 @@ class GiaFcmService : FirebaseMessagingService() {
     }
 
     private fun lockDevice() {
+        android.util.Log.d("GiaFcmService", "LOCK command received")
+        
         // Save lock state
         getSharedPreferences("gia_lock", MODE_PRIVATE)
             .edit().putBoolean("is_locked", true).apply()
         
+        android.util.Log.d("GiaFcmService", "Lock state saved, launching lock screen")
+        
+        // Launch lock screen activity
         val intent = Intent(this, LockScreenActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or
                     Intent.FLAG_ACTIVITY_CLEAR_TASK or
+                    Intent.FLAG_ACTIVITY_NO_HISTORY or
                     Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
         }
-        startActivity(intent)
+        
+        try {
+            startActivity(intent)
+            android.util.Log.d("GiaFcmService", "Lock screen activity started")
+        } catch (e: Exception) {
+            android.util.Log.e("GiaFcmService", "Failed to start lock screen", e)
+        }
     }
 
     private fun unlockDevice() {

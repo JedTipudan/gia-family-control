@@ -29,32 +29,8 @@ class AppManagerActivity : AppCompatActivity() {
     }
 
     private fun loadAppsAndControls() {
-        lifecycleScope.launch {
-            try {
-                val controlsResponse = api.getAppControls(childDeviceId)
-                val blockedPackages = controlsResponse.body()
-                    ?.filter { it.controlType == "BLOCKED" }
-                    ?.map { it.packageName }?.toSet() ?: emptySet()
-
-                val pm = packageManager
-                val installedApps = pm.getInstalledApplications(PackageManager.GET_META_DATA)
-                    .filter { !it.flags.and(android.content.pm.ApplicationInfo.FLAG_SYSTEM).equals(0).not() }
-                    .map { info ->
-                        InstalledApp(
-                            packageName = info.packageName,
-                            appName = pm.getApplicationLabel(info).toString(),
-                            isSystem = (info.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) != 0,
-                            isBlocked = info.packageName in blockedPackages
-                        )
-                    }
-
-                apps.clear()
-                apps.addAll(installedApps)
-                setupRecyclerView()
-            } catch (e: Exception) {
-                Toast.makeText(this@AppManagerActivity, "Failed to load apps", Toast.LENGTH_SHORT).show()
-            }
-        }
+        Toast.makeText(this, "App Manager feature coming soon. Child must sync apps first.", Toast.LENGTH_LONG).show()
+        finish()
     }
 
     private fun setupRecyclerView() {

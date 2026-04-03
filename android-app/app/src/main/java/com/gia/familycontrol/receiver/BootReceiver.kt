@@ -33,6 +33,8 @@ class BootReceiver : BroadcastReceiver() {
         
         // Start services for child devices that are paired
         if (role == "CHILD" && deviceId != -1L) {
+            Log.d("BootReceiver", "Starting services after boot...")
+            
             try {
                 val locationIntent = Intent(context, LocationTrackingService::class.java)
                 val appMonitorIntent = Intent(context, AppMonitorService::class.java)
@@ -48,7 +50,7 @@ class BootReceiver : BroadcastReceiver() {
                     context.startService(lockMonitorIntent)
                 }
                 
-                Log.d("BootReceiver", "Services started successfully")
+                Log.d("BootReceiver", "All services started successfully")
             } catch (e: Exception) {
                 Log.e("BootReceiver", "Failed to start services", e)
             }
@@ -60,7 +62,11 @@ class BootReceiver : BroadcastReceiver() {
                 val lockIntent = Intent(context, LockScreenActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 }
-                context.startActivity(lockIntent)
+                try {
+                    context.startActivity(lockIntent)
+                } catch (e: Exception) {
+                    Log.e("BootReceiver", "Failed to show lock screen", e)
+                }
             }
         }
     }

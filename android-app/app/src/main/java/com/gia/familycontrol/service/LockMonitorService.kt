@@ -40,13 +40,21 @@ class LockMonitorService : Service() {
                 delay(2000) // Check every 2 seconds
                 
                 val lockPrefs = getSharedPreferences("gia_lock", MODE_PRIVATE)
-                if (lockPrefs.getBoolean("is_locked", false)) {
+                val isLocked = lockPrefs.getBoolean("is_locked", false)
+                
+                if (isLocked) {
+                    android.util.Log.d("LockMonitorService", "Device should be locked, showing lock screen")
                     // Device should be locked, ensure lock screen is showing
                     val lockIntent = Intent(this@LockMonitorService, LockScreenActivity::class.java).apply {
                         flags = Intent.FLAG_ACTIVITY_NEW_TASK or 
-                                Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+                                Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or
+                                Intent.FLAG_ACTIVITY_NO_HISTORY
                     }
-                    startActivity(lockIntent)
+                    try {
+                        startActivity(lockIntent)
+                    } catch (e: Exception) {
+                        android.util.Log.e("LockMonitorService", "Failed to show lock screen", e)
+                    }
                 }
             }
         }

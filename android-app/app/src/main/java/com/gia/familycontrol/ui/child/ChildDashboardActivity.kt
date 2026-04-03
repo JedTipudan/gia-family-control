@@ -209,9 +209,9 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
         startTrackingServices()
         
         binding.btnStartMonitoring.text = "✅ Monitoring Active"
-        binding.tvStatus.text = "✅ Monitoring active! Your parent can now track your device."
+        binding.tvStatus.text = "✅ Monitoring active! Your parent can now track and lock your device."
         
-        Toast.makeText(this, "✅ Monitoring started successfully!", Toast.LENGTH_LONG).show()
+        Toast.makeText(this, "✅ Monitoring started! Services running in background.", Toast.LENGTH_LONG).show()
     }
     
     private fun startTrackingServices() {
