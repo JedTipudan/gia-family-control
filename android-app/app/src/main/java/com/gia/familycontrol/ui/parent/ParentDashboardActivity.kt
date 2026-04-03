@@ -94,6 +94,12 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback, Navigat
 
         binding.tvChildName.text = if (childDeviceId != -1L) "Child Device" else "No Device Paired"
         
+        // Add click listener to refresh child devices
+        binding.tvChildName.setOnClickListener {
+            Toast.makeText(this, "Refreshing...", Toast.LENGTH_SHORT).show()
+            loadChildDevices()
+        }
+        
         if (pairCode.isNotEmpty()) {
             binding.tvPairCode.text = "Pair Code: $pairCode"
             binding.tvPairCode.setOnClickListener { showQRCodeDialog(pairCode) }
@@ -124,24 +130,40 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback, Navigat
     }
     
     private fun loadChildDevices() {
+        android.util.Log.d("ParentDashboard", "Loading child devices...")
         lifecycleScope.launch {
             try {
                 val response = api.getChildDevices()
+                android.util.Log.d("ParentDashboard", "Child devices response: ${response.code()} - ${response.message()}")
+                
                 if (response.isSuccessful) {
                     val devices = response.body()
+                    android.util.Log.d("ParentDashboard", "Devices count: ${devices?.size ?: 0}")
+                    
                     if (!devices.isNullOrEmpty()) {
                         val firstDevice = devices[0]
+                        android.util.Log.d("ParentDashboard", "First device: ID=${firstDevice.id}, Name=${firstDevice.deviceName}")
+                        
                         childDeviceId = firstDevice.id
                         getSharedPreferences("gia_prefs", MODE_PRIVATE)
                             .edit().putLong("child_device_id", childDeviceId).apply()
                         binding.tvChildName.text = firstDevice.deviceName ?: "Child Device"
                         
+                        Toast.makeText(this@ParentDashboardActivity, "✅ Child device connected: ${firstDevice.deviceName}", Toast.LENGTH_SHORT).show()
+                        
                         // Start location polling if map is ready
                         if (map != null) startLocationPolling()
+                    } else {
+                        android.util.Log.d("ParentDashboard", "No child devices found")
+                        binding.tvChildName.text = "No Device Paired"
                     }
+                } else {
+                    android.util.Log.e("ParentDashboard", "Failed to load devices: ${response.code()} - ${response.errorBody()?.string()}")
+                    Toast.makeText(this@ParentDashboardActivity, "Failed to load devices: ${response.message()}", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                android.util.Log.e("ParentDashboard", "Failed to load child devices", e)
+                android.util.Log.e("ParentDashboard", "Error loading child devices", e)
+                Toast.makeText(this@ParentDashboardActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }

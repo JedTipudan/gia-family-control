@@ -34,8 +34,12 @@ public class DeviceService {
             throw new RuntimeException("Invalid pair code");
         }
 
+        System.out.println("Pairing: Child=" + child.getEmail() + " (ID=" + child.getId() + ") with Parent=" + parent.getEmail() + " (ID=" + parent.getId() + ")");
+        
         child.setParentId(parent.getId());
         userRepository.save(child);
+        
+        System.out.println("Child parent_id set to: " + child.getParentId());
 
         Device device = deviceRepository.findByUserId(child.getId()).orElse(new Device());
         device.setUserId(child.getId());
@@ -47,15 +51,20 @@ public class DeviceService {
         device.setLastSeen(LocalDateTime.now());
         Device savedDevice = deviceRepository.save(device);
         
+        System.out.println("Device saved: ID=" + savedDevice.getId() + ", Name=" + savedDevice.getDeviceName());
+        
         // Notify parent about new pairing
         deviceRepository.findByUserId(parent.getId()).ifPresent(parentDevice -> {
             if (parentDevice.getFcmToken() != null) {
+                System.out.println("Sending CHILD_PAIRED notification to parent");
                 fcmService.sendCommand(parentDevice.getFcmToken(), "CHILD_PAIRED", 
                     Map.of(
                         "childDeviceId", String.valueOf(savedDevice.getId()),
                         "deviceName", request.getDeviceName(),
                         "deviceModel", request.getDeviceModel()
                     ));
+            } else {
+                System.out.println("Parent FCM token is null, cannot send notification");
             }
         });
         
@@ -114,11 +123,19 @@ public class DeviceService {
         // Find all children of this parent
         List<User> children = userRepository.findByParentId(parent.getId());
         
+        System.out.println("Parent ID: " + parent.getId() + ", Children count: " + children.size());
+        
         // Get devices for all children
-        return children.stream()
-                .map(child -> deviceRepository.findByUserId(child.getId()))
+        List<Device> devices = children.stream()
+                .map(child -> {
+                    System.out.println("Child ID: " + child.getId() + ", Email: " + child.getEmail());
+                    return deviceRepository.findByUserId(child.getId());
+                })
                 .filter(opt -> opt.isPresent())
                 .map(opt -> opt.get())
                 .toList();
+        
+        System.out.println("Devices found: " + devices.size());
+        return devices;
     }
 }
