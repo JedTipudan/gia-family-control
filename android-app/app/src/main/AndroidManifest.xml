@@ -131,6 +131,9 @@
                 <action android:name="android.net.conn.CONNECTIVITY_ACTION"/>
             </intent-filter>
         </receiver>
+        
+        <!-- Lock Check Receiver -->
+        <receiver android:name=".receiver.LockCheckReceiver" android:exported="false"/>
 
     </application>
 </manifest>

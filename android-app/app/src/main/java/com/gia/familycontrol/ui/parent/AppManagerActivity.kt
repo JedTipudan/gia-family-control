@@ -91,15 +91,27 @@ class AppManagerActivity : AppCompatActivity() {
     private fun toggleAppBlock(app: InstalledApp, block: Boolean) {
         lifecycleScope.launch {
             try {
-                api.setAppControl(AppControlRequest(
+                val response = api.setAppControl(AppControlRequest(
                     deviceId = childDeviceId,
                     packageName = app.packageName,
                     controlType = if (block) "BLOCKED" else "ALLOWED"
                 ))
-                app.isBlocked = block
-                binding.rvApps.adapter?.notifyDataSetChanged()
+                
+                if (response.isSuccessful) {
+                    app.isBlocked = block
+                    binding.rvApps.adapter?.notifyDataSetChanged()
+                    Toast.makeText(this@AppManagerActivity, 
+                        if (block) "${app.appName} blocked" else "${app.appName} allowed", 
+                        Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this@AppManagerActivity, "Failed to update", Toast.LENGTH_SHORT).show()
+                    // Revert switch
+                    binding.rvApps.adapter?.notifyDataSetChanged()
+                }
             } catch (e: Exception) {
-                Toast.makeText(this@AppManagerActivity, "Failed to update", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@AppManagerActivity, "Failed to update: ${e.message}", Toast.LENGTH_SHORT).show()
+                // Revert switch
+                binding.rvApps.adapter?.notifyDataSetChanged()
             }
         }
     }

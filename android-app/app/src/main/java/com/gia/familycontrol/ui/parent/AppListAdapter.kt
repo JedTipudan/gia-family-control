@@ -29,9 +29,16 @@ class AppListAdapter(
         
         holder.binding.tvAppName.text = app.appName
         holder.binding.tvPackageName.text = app.packageName
+        
+        // Remove listener before setting checked state to prevent triggering callback
+        holder.binding.switchBlock.setOnCheckedChangeListener(null)
         holder.binding.switchBlock.isChecked = app.isBlocked
+        
+        // Now set the listener
         holder.binding.switchBlock.setOnCheckedChangeListener { _, checked ->
-            onToggle(app, checked)
+            if (checked != app.isBlocked) {
+                onToggle(app, checked)
+            }
         }
     }
 

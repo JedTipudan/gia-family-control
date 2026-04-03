@@ -88,6 +88,27 @@ class GiaFcmService : FirebaseMessagingService() {
         } else {
             startService(serviceIntent)
         }
+        
+        // Schedule repeating alarm to check lock state every 10 seconds
+        scheduleLockCheck()
+    }
+    
+    private fun scheduleLockCheck() {
+        val alarmManager = getSystemService(android.app.AlarmManager::class.java)
+        val intent = Intent(this, com.gia.familycontrol.receiver.LockCheckReceiver::class.java)
+        val pendingIntent = android.app.PendingIntent.getBroadcast(
+            this, 999, intent,
+            android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
+        )
+        
+        // Set repeating alarm every 10 seconds
+        alarmManager.setRepeating(
+            android.app.AlarmManager.ELAPSED_REALTIME_WAKEUP,
+            android.os.SystemClock.elapsedRealtime() + 10000,
+            10000,
+            pendingIntent
+        )
+        android.util.Log.d("GiaFcmService", "Lock check alarm scheduled")
     }
 
     private fun unlockDevice() {
@@ -95,6 +116,16 @@ class GiaFcmService : FirebaseMessagingService() {
         getSharedPreferences("gia_lock", MODE_PRIVATE)
             .edit().putBoolean("is_locked", false).apply()
         LockScreenActivity.dismiss()
+        
+        // Cancel lock check alarm
+        val alarmManager = getSystemService(android.app.AlarmManager::class.java)
+        val intent = Intent(this, com.gia.familycontrol.receiver.LockCheckReceiver::class.java)
+        val pendingIntent = android.app.PendingIntent.getBroadcast(
+            this, 999, intent,
+            android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
+        )
+        alarmManager.cancel(pendingIntent)
+        android.util.Log.d("GiaFcmService", "Lock check alarm cancelled")
     }
 
     private fun updateAppBlock(packageName: String, block: Boolean) {

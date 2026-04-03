@@ -46,22 +46,35 @@ class AppMonitorService : LifecycleService() {
                 val deviceId = fetchDeviceId() ?: return@launch
                 val response = api.getAppControls(deviceId)
                 if (response.isSuccessful) {
-                    blockedPackages = response.body()
+                    val newBlocked = response.body()
                         ?.filter { it.controlType == "BLOCKED" }
                         ?.map { it.packageName }
                         ?.toMutableSet() ?: mutableSetOf()
+                    
+                    blockedPackages = newBlocked
+                    Log.d("AppMonitorService", "Loaded ${blockedPackages.size} blocked apps: $blockedPackages")
                 }
-            } catch (e: Exception) { /* use cached list */ }
+            } catch (e: Exception) { 
+                Log.e("AppMonitorService", "Failed to load blocked apps", e)
+            }
         }
     }
 
     private fun startMonitoring() {
         monitorJob = lifecycleScope.launch {
+            var refreshCounter = 0
             while (isActive) {
+                // Refresh blocked apps list every 10 seconds
+                if (refreshCounter % 10 == 0) {
+                    loadBlockedApps()
+                }
+                refreshCounter++
+                
                 val foregroundApp = getForegroundApp()
                 if (foregroundApp != null) {
                     // Check if it's a blocked app
                     if (foregroundApp in blockedPackages && foregroundApp != lastBlockedApp) {
+                        Log.d("AppMonitorService", "Blocked app detected: $foregroundApp")
                         lastBlockedApp = foregroundApp
                         showBlockOverlay(foregroundApp)
                     } else if (foregroundApp !in blockedPackages) {
