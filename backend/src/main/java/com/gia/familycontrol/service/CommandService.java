@@ -25,6 +25,37 @@ public class CommandService {
     private final FcmService fcmService;
 
     @Transactional
+    public Command sendSosCommand(String childEmail, CommandDto.SendCommandRequest request) {
+        User child = userRepository.findByEmail(childEmail)
+                .orElseThrow(() -> new RuntimeException("Child not found"));
+        
+        // Get child's device
+        Device childDevice = deviceRepository.findByUserId(child.getId())
+                .orElseThrow(() -> new RuntimeException("Device not found"));
+        
+        // Get parent
+        User parent = userRepository.findById(child.getParentId())
+                .orElseThrow(() -> new RuntimeException("Parent not found"));
+        
+        // Get parent's device
+        Device parentDevice = deviceRepository.findByUserId(parent.getId())
+                .orElseThrow(() -> new RuntimeException("Parent device not found"));
+        
+        // Save SOS command
+        Command command = new Command();
+        command.setSenderId(child.getId());
+        command.setTargetDeviceId(parentDevice.getId());
+        command.setCommandType(Command.CommandType.SOS);
+        command.setStatus(Command.Status.DELIVERED);
+        commandRepository.save(command);
+        
+        // Send urgent notification to parent with sound/vibration
+        fcmService.sendSosAlert(parentDevice.getFcmToken(), child.getFullName(), request.getMetadata());
+        
+        return command;
+    }
+    
+    @Transactional
     public Command sendCommand(String parentEmail, CommandDto.SendCommandRequest request) {
         User parent = userRepository.findByEmail(parentEmail)
                 .orElseThrow(() -> new RuntimeException("Parent not found"));

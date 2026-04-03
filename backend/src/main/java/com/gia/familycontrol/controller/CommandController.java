@@ -20,9 +20,13 @@ public class CommandController {
     private final CommandService commandService;
 
     @PostMapping("/send-command")
-    @PreAuthorize("hasRole('PARENT')")
     public ResponseEntity<Command> sendCommand(Principal principal,
                                                 @Valid @RequestBody CommandDto.SendCommandRequest request) {
+        // Check if it's an SOS command from child
+        if ("SOS".equals(request.getCommandType())) {
+            return ResponseEntity.ok(commandService.sendSosCommand(principal.getName(), request));
+        }
+        // Regular commands require PARENT role
         return ResponseEntity.ok(commandService.sendCommand(principal.getName(), request));
     }
 
