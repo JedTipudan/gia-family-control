@@ -148,7 +148,8 @@ class AppMonitorService : LifecycleService() {
             .setContentText("App monitoring active")
             .setSmallIcon(R.mipmap.ic_launcher)
             .setOngoing(true)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .build()
 
     override fun onDestroy() {

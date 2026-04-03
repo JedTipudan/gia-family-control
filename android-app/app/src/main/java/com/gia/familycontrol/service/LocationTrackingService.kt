@@ -114,11 +114,12 @@ class LocationTrackingService : LifecycleService() {
 
         return NotificationCompat.Builder(this, GiaApplication.CHANNEL_LOCATION)
             .setContentTitle("Gia Family Control")
-            .setContentText("Sending location every 5 seconds")
+            .setContentText("Location tracking active - Tap to open")
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentIntent(intent)
             .setOngoing(true)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .build()
     }
 

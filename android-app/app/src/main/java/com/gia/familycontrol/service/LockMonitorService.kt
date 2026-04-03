@@ -70,11 +70,12 @@ class LockMonitorService : Service() {
 
         return NotificationCompat.Builder(this, GiaApplication.CHANNEL_LOCATION)
             .setContentTitle("Gia Family Control")
-            .setContentText("Monitoring active")
+            .setContentText("Lock monitoring active")
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentIntent(intent)
             .setOngoing(true)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .build()
     }
 

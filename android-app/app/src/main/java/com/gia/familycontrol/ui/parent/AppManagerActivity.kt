@@ -29,6 +29,8 @@ class AppManagerActivity : AppCompatActivity() {
     }
 
     private fun loadAppsAndControls() {
+        android.util.Log.d("AppManager", "Loading apps for device: $childDeviceId")
+        
         if (childDeviceId == -1L) {
             Toast.makeText(this, "No child device paired", Toast.LENGTH_SHORT).show()
             finish()
@@ -37,11 +39,17 @@ class AppManagerActivity : AppCompatActivity() {
         
         lifecycleScope.launch {
             try {
+                android.util.Log.d("AppManager", "Fetching installed apps from backend...")
                 // Load installed apps from backend
                 val appsResponse = api.getInstalledApps(childDeviceId)
+                android.util.Log.d("AppManager", "Apps response: ${appsResponse.code()}")
+                
                 val controlsResponse = api.getAppControls(childDeviceId)
+                android.util.Log.d("AppManager", "Controls response: ${controlsResponse.code()}")
                 
                 if (!appsResponse.isSuccessful) {
+                    val error = appsResponse.errorBody()?.string()
+                    android.util.Log.e("AppManager", "Failed to load apps: $error")
                     Toast.makeText(this@AppManagerActivity, "Child must start monitoring first to sync apps", Toast.LENGTH_LONG).show()
                     finish()
                     return@launch
@@ -59,12 +67,15 @@ class AppManagerActivity : AppCompatActivity() {
                         isBlocked = app.packageName in blockedPackages
                     )
                 } ?: emptyList()
+                
+                android.util.Log.d("AppManager", "Loaded ${installedApps.size} apps")
 
                 apps.clear()
                 apps.addAll(installedApps)
                 setupRecyclerView()
             } catch (e: Exception) {
-                Toast.makeText(this@AppManagerActivity, "Failed to load apps: ${e.message}", Toast.LENGTH_SHORT).show()
+                android.util.Log.e("AppManager", "Exception loading apps", e)
+                Toast.makeText(this@AppManagerActivity, "Failed to load apps: ${e.message}", Toast.LENGTH_LONG).show()
                 finish()
             }
         }
