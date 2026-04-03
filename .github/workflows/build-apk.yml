@@ -19,31 +19,40 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
       - name: Add google-services.json
         run: echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > android-app/app/google-services.json
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
 
       - name: Grant execute permission for gradlew
         run: chmod +x android-app/gradlew
 
       - name: Build Release APK
-        run: |
-          cd android-app
-          ./gradlew assembleRelease
+        working-directory: android-app
+        run: ./gradlew assembleRelease --no-daemon
 
-      - name: Sign APK with debug keystore
+      - name: Sign APK
         run: |
+          keytool -genkey -v \
+            -keystore release.keystore \
+            -alias gia \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -storepass gia12345 \
+            -keypass gia12345 \
+            -dname "CN=Gia Family Control, OU=Mobile, O=Gia, L=Manila, S=NCR, C=PH"
+
           $ANDROID_HOME/build-tools/34.0.0/apksigner sign \
-            --ks ~/.android/debug.keystore \
-            --ks-pass pass:android \
-            --key-pass pass:android \
-            --ks-key-alias androiddebugkey \
-            --out android-app/app/build/outputs/apk/release/app-release-signed.apk \
+            --ks release.keystore \
+            --ks-pass pass:gia12345 \
+            --key-pass pass:gia12345 \
+            --ks-key-alias gia \
+            --out android-app/app/build/outputs/apk/release/GiaFamilyControl.apk \
             android-app/app/build/outputs/apk/release/app-release-unsigned.apk
 
-      - name: Upload APK to GitHub Releases
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ github.run_number }}
@@ -51,19 +60,22 @@ jobs:
           body: |
             ## Gia Family Control - Latest Release
 
-            ### How to Install on Android:
-            1. Download `app-release-signed.apk` below
-            2. On your phone go to **Settings → Security → Install unknown apps**
-            3. Allow your browser or file manager to install
-            4. Open the APK file and tap **Install**
+            ### How to Install:
+            1. Download **GiaFamilyControl.apk** below
+            2. On your Android phone:
+               - Go to **Settings → Security**
+               - Enable **Install unknown apps**
+            3. Open the APK and tap **Install**
+            4. Grant all permissions when asked
 
             ### Features:
-            - Real-time location tracking
+            - Real-time GPS location tracking
             - Remote device lock/unlock
             - App blocking & monitoring
             - SOS emergency alert
             - Geofencing alerts
-          files: android-app/app/build/outputs/apk/release/app-release-signed.apk
+            - Battery monitoring
+          files: android-app/app/build/outputs/apk/release/GiaFamilyControl.apk
           draft: false
           prerelease: false
         env:
