@@ -12,8 +12,8 @@ android {
         applicationId "com.gia.familycontrol"
         minSdk 26
         targetSdk 34
-        versionCode 69
-        versionName "1.1.0-build69"
+        versionCode 2
+        versionName "1.1.0"
     }
 
     signingConfigs {
@@ -28,14 +28,12 @@ android {
     buildTypes {
         debug {
             debuggable true
-            manifestPlaceholders = [MAPS_API_KEY: System.getenv('MAPS_API_KEY') ?: 'AIzaSyBcHuiG6Mvx5uD97ugZSqvqw7oDGGYJGks']
         }
         release {
             debuggable false
             minifyEnabled false
             shrinkResources false
             signingConfig signingConfigs.release
-            manifestPlaceholders = [MAPS_API_KEY: System.getenv('MAPS_API_KEY') ?: 'AIzaSyBcHuiG6Mvx5uD97ugZSqvqw7oDGGYJGks']
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }

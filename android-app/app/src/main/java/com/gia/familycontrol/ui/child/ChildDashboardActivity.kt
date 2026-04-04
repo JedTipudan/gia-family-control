@@ -26,16 +26,12 @@ import com.gia.familycontrol.auth.LoginActivity
 import com.gia.familycontrol.databinding.ActivityChildDashboardBinding
 import com.gia.familycontrol.model.PairRequest
 import com.gia.familycontrol.model.SendCommandRequest
-import com.gia.familycontrol.network.JWT_TOKEN_KEY
 import com.gia.familycontrol.network.RetrofitClient
-import com.gia.familycontrol.network.dataStore
 import com.gia.familycontrol.service.AppMonitorService
-import com.gia.familycontrol.service.DeviceStatusService
 import com.gia.familycontrol.service.LocationTrackingService
 import com.gia.familycontrol.service.LockMonitorService
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.messaging.FirebaseMessaging
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
@@ -363,18 +359,6 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
         } catch (e: Exception) {
             Log.e("ChildDashboard", "Failed to start lock monitor service", e)
         }
-        
-        try {
-            val statusIntent = Intent(this, DeviceStatusService::class.java)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(statusIntent)
-            } else {
-                startService(statusIntent)
-            }
-            Log.d("ChildDashboard", "Device status service started")
-        } catch (e: Exception) {
-            Log.e("ChildDashboard", "Failed to start device status service", e)
-        }
     }
 
     private fun pairWithParent() {
@@ -466,10 +450,8 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
         
         val prefs = getSharedPreferences("gia_prefs", MODE_PRIVATE)
         val deviceId = prefs.getLong("device_id", -1L)
-        val email = prefs.getString("email", null)
         
         Log.d("ChildDashboard", "Device ID: $deviceId")
-        Log.d("ChildDashboard", "Email: $email")
         
         if (deviceId == -1L) {
             Log.e("ChildDashboard", "No device ID - not paired")
@@ -481,28 +463,6 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
                 }
                 .show()
             return
-        }
-        
-        // Check if JWT token exists
-        lifecycleScope.launch {
-            val token = dataStore.data.first()[JWT_TOKEN_KEY]
-            Log.d("ChildDashboard", "JWT Token exists: ${token != null}")
-            if (token != null) {
-                Log.d("ChildDashboard", "Token preview: ${token.substring(0, minOf(30, token.length))}...")
-            } else {
-                Log.e("ChildDashboard", "NO JWT TOKEN FOUND!")
-                AlertDialog.Builder(this@ChildDashboardActivity)
-                    .setTitle("❌ Authentication Error")
-                    .setMessage("You are not logged in properly.\n\nPlease logout and login again.")
-                    .setPositiveButton("Logout") { _, _ ->
-                        prefs.edit().clear().apply()
-                        startActivity(Intent(this@ChildDashboardActivity, LoginActivity::class.java))
-                        finishAffinity()
-                    }
-                    .setNegativeButton("Cancel", null)
-                    .show()
-                return@launch
-            }
         }
         
         // Show loading
@@ -556,24 +516,21 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
                     val errorBody = response.errorBody()?.string()
                     Log.e("ChildDashboard", "SOS failed: ${response.code()} - $errorBody")
                     
-                    val errorMessage = when (response.code()) {
-                        403 -> "Authentication failed (403 Forbidden).\n\nYour login session may have expired.\n\nPlease logout and login again."
-                        404 -> "Parent device not found.\n\nPlease ask your parent to login to their app."
-                        500 -> "Server error.\n\nPlease try again in a moment."
-                        else -> "Failed to send SOS: ${response.message()}\n\nError code: ${response.code()}\n\nDetails: $errorBody"
+                    val errorMessage = when {
+                        errorBody?.contains("not paired", ignoreCase = true) == true -> 
+                            "You are not paired with a parent yet.\n\nPlease pair with your parent first."
+                        errorBody?.contains("not registered", ignoreCase = true) == true -> 
+                            "Your parent's device is not registered.\n\nPlease ask your parent to open the app and login."
+                        errorBody?.contains("not found", ignoreCase = true) == true -> 
+                            "Parent device not found.\n\nPlease ask your parent to login to their app."
+                        else -> 
+                            "Failed to send SOS: ${response.message()}\n\nError code: ${response.code()}"
                     }
                     
                     AlertDialog.Builder(this@ChildDashboardActivity)
                         .setTitle("❌ SOS Failed")
                         .setMessage(errorMessage)
-                        .setPositiveButton(if (response.code() == 403) "Logout & Re-login" else "OK") { _, _ ->
-                            if (response.code() == 403) {
-                                prefs.edit().clear().apply()
-                                startActivity(Intent(this@ChildDashboardActivity, LoginActivity::class.java))
-                                finishAffinity()
-                            }
-                        }
-                        .setNegativeButton("Cancel", null)
+                        .setPositiveButton("OK", null)
                         .show()
                 }
             } catch (e: Exception) {

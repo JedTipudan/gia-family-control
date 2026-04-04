@@ -29,8 +29,6 @@ CREATE TABLE devices (
     android_version VARCHAR(20),
     fcm_token       TEXT,
     battery_level   INT DEFAULT 0,
-    is_charging     BOOLEAN DEFAULT FALSE,
-    is_wifi_connected BOOLEAN DEFAULT FALSE,
     is_online       BOOLEAN DEFAULT FALSE,
     is_locked       BOOLEAN DEFAULT FALSE,
     last_seen       DATETIME,

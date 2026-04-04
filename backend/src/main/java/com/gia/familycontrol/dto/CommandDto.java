@@ -13,7 +13,7 @@ public class CommandDto {
         @NotBlank
         private String commandType;
         private String packageName; // for app block/unblock
-        private String metadata; // for SOS location or other command data
+        private String metadata; // for SOS location
     }
 
     @Data
@@ -45,8 +45,6 @@ public class CommandDto {
         private Integer batteryLevel;
         private Boolean isOnline;
         private String fcmToken;
-        private Boolean isCharging;
-        private Boolean isWifiConnected;
     }
     
     @Data

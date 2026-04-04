@@ -93,10 +93,6 @@
             android:exported="false"
             android:foregroundServiceType="dataSync"/>
         <service
-            android:name=".service.DeviceStatusService"
-            android:exported="false"
-            android:foregroundServiceType="dataSync"/>
-        <service
             android:name=".service.GiaFcmService"
             android:exported="false">
             <intent-filter>

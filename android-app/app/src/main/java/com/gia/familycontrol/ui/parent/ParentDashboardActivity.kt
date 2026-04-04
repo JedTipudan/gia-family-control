@@ -263,50 +263,6 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback, Navigat
                             binding.statusIndicator.setBackgroundResource(R.drawable.status_online)
                         }
                     }
-                    
-                    // Also fetch device status
-                    val deviceResponse = api.getChildDevices()
-                    if (deviceResponse.isSuccessful) {
-                        deviceResponse.body()?.firstOrNull()?.let { device ->
-                            // Update battery
-                            val batteryLevel = device.batteryLevel ?: 0
-                            binding.tvBattery.text = "$batteryLevel%"
-                            
-                            // Update charging status
-                            if (device.isCharging == true) {
-                                binding.tvChargingStatus.text = "⚡ Charging"
-                            } else {
-                                binding.tvChargingStatus.text = ""
-                            }
-                            
-                            // Update connection status
-                            if (device.isOnline == true) {
-                                binding.tvConnectionStatus.text = "Online"
-                                binding.tvConnectionIcon.text = "📶"
-                                binding.statusIndicator.setBackgroundResource(R.drawable.status_online)
-                                
-                                if (device.isWifiConnected == true) {
-                                    binding.tvWifiStatus.text = "📡 WiFi"
-                                } else {
-                                    binding.tvWifiStatus.text = "📱 Mobile Data"
-                                }
-                            } else {
-                                binding.tvConnectionStatus.text = "Offline"
-                                binding.tvConnectionIcon.text = "📵"
-                                binding.tvWifiStatus.text = ""
-                                binding.statusIndicator.setBackgroundResource(R.drawable.status_offline)
-                            }
-                            
-                            // Update lock status
-                            if (device.isLocked == true) {
-                                binding.tvLockStatus.text = "Locked"
-                                binding.tvLockIcon.text = "🔒"
-                            } else {
-                                binding.tvLockStatus.text = "Unlocked"
-                                binding.tvLockIcon.text = "🔓"
-                            }
-                        }
-                    }
                 } catch (e: Exception) {
                     binding.statusIndicator.setBackgroundResource(R.drawable.status_offline)
                 }

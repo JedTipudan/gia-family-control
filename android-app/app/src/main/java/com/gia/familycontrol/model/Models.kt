@@ -26,10 +26,7 @@ data class DeviceResponse(
     val id: Long,
     val deviceName: String?,
     val isLocked: Boolean,
-    val batteryLevel: Int,
-    val isCharging: Boolean? = false,
-    val isOnline: Boolean? = false,
-    val isWifiConnected: Boolean? = false
+    val batteryLevel: Int
 )
 
 data class DeviceStatusUpdate(

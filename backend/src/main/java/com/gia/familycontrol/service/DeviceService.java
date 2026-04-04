@@ -128,8 +128,6 @@ public class DeviceService {
         if (update.getBatteryLevel() != null) device.setBatteryLevel(update.getBatteryLevel());
         if (update.getIsOnline() != null) device.setIsOnline(update.getIsOnline());
         if (update.getFcmToken() != null) device.setFcmToken(update.getFcmToken());
-        if (update.getIsCharging() != null) device.setIsCharging(update.getIsCharging());
-        if (update.getIsWifiConnected() != null) device.setIsWifiConnected(update.getIsWifiConnected());
         device.setLastSeen(LocalDateTime.now());
         deviceRepository.save(device);
         
