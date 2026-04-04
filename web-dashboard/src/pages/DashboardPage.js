@@ -3,6 +3,7 @@ import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
 import { commandApi, locationApi } from '../services/api';
 import { subscribeToDeviceLocation, subscribeToDeviceStatus } from '../services/firebase';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import AppManagerPanel from '../components/AppManagerPanel';
 import DeviceStatusBar from '../components/DeviceStatusBar';
 import ActivityLog from '../components/ActivityLog';
@@ -29,6 +30,7 @@ const TABS = [
 
 export default function DashboardPage() {
   const { user, logout } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
   const [childDeviceId] = useState(() => Number(localStorage.getItem('child_device_id') || 1));
   const [location, setLocation] = useState(null);
   const [deviceStatus, setDeviceStatus] = useState({});
@@ -92,6 +94,9 @@ export default function DashboardPage() {
           </nav>
         </div>
         <div style={s.sideBottom}>
+          <button style={s.themeBtn} onClick={toggleTheme}>
+            {isDark ? '☀️' : '🌙'} {isDark ? 'Light' : 'Dark'} Mode
+          </button>
           <div style={s.userRow}>
             <div style={s.avatar}>{user?.fullName?.[0]?.toUpperCase() || 'P'}</div>
             <div style={s.userInfo}>
@@ -187,15 +192,14 @@ function CmdButton({ label, icon, color, loading, onClick }) {
 const s = {
   shell: {
     display: 'flex', minHeight: '100vh',
-    background: '#08090a',
-    fontFamily: "'Inter Variable', Inter, -apple-system, system-ui, sans-serif",
-    fontFeatureSettings: '"cv01","ss03"',
-    color: '#f7f8f8',
+    background: 'var(--bg-primary)',
+    fontFamily: "'Inter', -apple-system, system-ui, sans-serif",
+    color: 'var(--text-primary)',
   },
   sidebar: {
     width: 220, flexShrink: 0,
-    background: '#0f1011',
-    borderRight: '1px solid rgba(255,255,255,0.05)',
+    background: 'var(--bg-secondary)',
+    borderRight: '1px solid var(--border-subtle)',
     display: 'flex', flexDirection: 'column',
     justifyContent: 'space-between',
     padding: '20px 0',
@@ -203,50 +207,58 @@ const s = {
   },
   sideTop: { display: 'flex', flexDirection: 'column', gap: 28 },
   brand: { display: 'flex', alignItems: 'center', gap: 10, padding: '0 16px' },
-  brandLogo: { width: 28, height: 28, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.08)' },
-  brandName: { fontSize: 15, fontWeight: 590, color: '#f7f8f8', letterSpacing: '-0.165px' },
+  brandLogo: { width: 28, height: 28, borderRadius: '50%', border: '1px solid var(--border-subtle)' },
+  brandName: { fontSize: 15, fontWeight: 590, color: 'var(--text-primary)', letterSpacing: '-0.165px' },
   nav: { display: 'flex', flexDirection: 'column', gap: 2, padding: '0 8px' },
   navItem: {
     display: 'flex', alignItems: 'center', gap: 10,
     padding: '8px 10px', borderRadius: 6,
     background: 'none', border: 'none', cursor: 'pointer',
-    fontSize: 13, fontWeight: 510, color: '#8a8f98',
+    fontSize: 13, fontWeight: 510, color: 'var(--text-tertiary)',
     textAlign: 'left', width: '100%',
     transition: 'background 0.12s, color 0.12s',
     fontFamily: 'inherit',
   },
   navActive: {
-    background: 'rgba(255,255,255,0.05)',
-    color: '#f7f8f8',
+    background: 'var(--border-subtle)',
+    color: 'var(--text-primary)',
   },
   navIcon: { fontSize: 14, width: 18, textAlign: 'center' },
   sideBottom: { padding: '0 12px', display: 'flex', flexDirection: 'column', gap: 10 },
+  themeBtn: {
+    padding: '7px 12px',
+    background: 'var(--bg-elevated)',
+    border: '1px solid var(--border-subtle)',
+    borderRadius: 6, fontSize: 12, fontWeight: 510,
+    color: 'var(--text-tertiary)', cursor: 'pointer', fontFamily: 'inherit',
+    textAlign: 'center', transition: 'all 0.15s',
+  },
   userRow: { display: 'flex', alignItems: 'center', gap: 10, padding: '8px 4px' },
   avatar: {
     width: 28, height: 28, borderRadius: '50%',
-    background: '#5e6ad2', color: '#fff',
+    background: 'var(--accent-primary)', color: '#fff',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     fontSize: 12, fontWeight: 590, flexShrink: 0,
   },
   userInfo: { display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 },
-  userName: { fontSize: 13, fontWeight: 510, color: '#d0d6e0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
-  userRole: { fontSize: 11, color: '#62666d' },
+  userName: { fontSize: 13, fontWeight: 510, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+  userRole: { fontSize: 11, color: 'var(--text-quaternary)' },
   logoutBtn: {
     padding: '7px 12px',
-    background: 'rgba(255,255,255,0.02)',
-    border: '1px solid rgba(255,255,255,0.08)',
+    background: 'var(--bg-elevated)',
+    border: '1px solid var(--border-subtle)',
     borderRadius: 6, fontSize: 12, fontWeight: 510,
-    color: '#8a8f98', cursor: 'pointer', fontFamily: 'inherit',
+    color: 'var(--text-tertiary)', cursor: 'pointer', fontFamily: 'inherit',
     textAlign: 'center',
   },
   main: { flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 },
   topbar: {
     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
     padding: '16px 24px',
-    borderBottom: '1px solid rgba(255,255,255,0.05)',
-    background: '#0f1011',
+    borderBottom: '1px solid var(--border-subtle)',
+    background: 'var(--bg-secondary)',
   },
-  pageTitle: { margin: 0, fontSize: 18, fontWeight: 590, color: '#f7f8f8', letterSpacing: '-0.24px' },
+  pageTitle: { margin: 0, fontSize: 18, fontWeight: 590, color: 'var(--text-primary)', letterSpacing: '-0.24px' },
   cmdRow: { display: 'flex', gap: 8 },
   cmdBtn: {
     padding: '7px 14px', borderRadius: 6,
@@ -258,27 +270,27 @@ const s = {
   mapWrap: {
     position: 'relative',
     height: 'calc(100vh - 120px)',
-    background: '#0f1011',
+    background: 'var(--bg-secondary)',
   },
   mapOverlay: {
     position: 'absolute', inset: 0, zIndex: 10,
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     background: 'rgba(8,9,10,0.6)', pointerEvents: 'none',
   },
-  mapOverlayText: { fontSize: 14, color: '#8a8f98' },
+  mapOverlayText: { fontSize: 14, color: 'var(--text-tertiary)' },
   mapLoading: {
     height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-    color: '#62666d', fontSize: 14,
+    color: 'var(--text-quaternary)', fontSize: 14,
   },
   coordsBar: {
     position: 'absolute', bottom: 16, left: '50%', transform: 'translateX(-50%)',
     display: 'flex', alignItems: 'center', gap: 10,
     padding: '8px 16px',
-    background: 'rgba(15,16,17,0.9)',
-    border: '1px solid rgba(255,255,255,0.08)',
+    background: 'var(--bg-elevated)',
+    border: '1px solid var(--border-subtle)',
     borderRadius: 8, backdropFilter: 'blur(8px)',
     zIndex: 5,
   },
-  coordsLabel: { fontSize: 12, fontWeight: 510, color: '#d0d6e0' },
-  coords: { fontSize: 12, color: '#8a8f98', fontFamily: 'ui-monospace, "SF Mono", Menlo, monospace' },
+  coordsLabel: { fontSize: 12, fontWeight: 510, color: 'var(--text-secondary)' },
+  coords: { fontSize: 12, color: 'var(--text-tertiary)', fontFamily: 'ui-monospace, "SF Mono", Menlo, monospace' },
 };
