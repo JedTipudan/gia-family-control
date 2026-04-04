@@ -222,6 +222,7 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback, Navigat
             startActivity(Intent(this, AppManagerActivity::class.java))
         }
         binding.btnUnpair.setOnClickListener { unpairDevice() }
+        binding.btnRefresh.setOnClickListener { refreshDashboard() }
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -296,7 +297,7 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback, Navigat
                                         val duration = java.time.Duration.between(lastSeenTime, now)
                                         
                                         when {
-                                            duration.toMinutes() < 1 -> "Last: just now"
+                                            duration.toSeconds() < 60 -> "Last: ${duration.toSeconds()}s ago"
                                             duration.toMinutes() < 60 -> "Last: ${duration.toMinutes()}m ago"
                                             duration.toHours() < 24 -> "Last: ${duration.toHours()}h ago"
                                             else -> "Last: ${duration.toDays()}d ago"
@@ -336,7 +337,7 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback, Navigat
                     binding.tvConnectionStatus.text = "Offline"
                     binding.tvLastSeen.text = "Connection error"
                 }
-                delay(8000L)
+                delay(5000L)
             }
         }
     }
@@ -395,6 +396,96 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback, Navigat
             }
             .setNegativeButton("Cancel", null)
             .show()
+    }
+
+    private fun refreshDashboard() {
+        android.util.Log.d("ParentDashboard", "Manual refresh triggered")
+        Toast.makeText(this, "🔄 Refreshing...", Toast.LENGTH_SHORT).show()
+        
+        binding.btnRefresh.animate()
+            .rotation(360f)
+            .setDuration(500)
+            .withEndAction {
+                binding.btnRefresh.rotation = 0f
+            }
+            .start()
+        
+        lifecycleScope.launch {
+            try {
+                val deviceResponse = api.getChildDevices()
+                if (deviceResponse.isSuccessful) {
+                    deviceResponse.body()?.firstOrNull()?.let { device ->
+                        binding.tvBattery.text = "${device.batteryLevel}%"
+                        val isOnline = device.isOnline ?: false
+                        
+                        if (isOnline) {
+                            binding.statusIndicator.setBackgroundResource(R.drawable.status_online)
+                            when (device.connectionType) {
+                                "WIFI" -> {
+                                    binding.tvConnectionIcon.text = "📶"
+                                    binding.tvConnectionStatus.text = "WiFi"
+                                }
+                                "MOBILE_DATA" -> {
+                                    binding.tvConnectionIcon.text = "📱"
+                                    binding.tvConnectionStatus.text = "Mobile Data"
+                                }
+                                else -> {
+                                    binding.tvConnectionIcon.text = "🟢"
+                                    binding.tvConnectionStatus.text = "Online"
+                                }
+                            }
+                            binding.tvLastSeen.text = "Active now"
+                        } else {
+                            binding.statusIndicator.setBackgroundResource(R.drawable.status_offline)
+                            binding.tvConnectionIcon.text = "❌"
+                            binding.tvConnectionStatus.text = "Offline"
+                            
+                            val lastSeenText = device.lastSeen?.let { lastSeenStr ->
+                                try {
+                                    val formatter = java.time.format.DateTimeFormatter.ISO_DATE_TIME
+                                    val lastSeenTime = java.time.LocalDateTime.parse(lastSeenStr, formatter)
+                                    val now = java.time.LocalDateTime.now()
+                                    val duration = java.time.Duration.between(lastSeenTime, now)
+                                    
+                                    when {
+                                        duration.toSeconds() < 60 -> "Last: ${duration.toSeconds()}s ago"
+                                        duration.toMinutes() < 60 -> "Last: ${duration.toMinutes()}m ago"
+                                        duration.toHours() < 24 -> "Last: ${duration.toHours()}h ago"
+                                        else -> "Last: ${duration.toDays()}d ago"
+                                    }
+                                } catch (e: Exception) {
+                                    "Last: $lastSeenStr"
+                                }
+                            } ?: "Never connected"
+                            
+                            binding.tvLastSeen.text = lastSeenText
+                        }
+                        
+                        if (device.isLocked) {
+                            binding.tvLockStatus.text = "Locked"
+                            binding.tvLockIcon.text = "🔒"
+                        } else {
+                            binding.tvLockStatus.text = "Unlocked"
+                            binding.tvLockIcon.text = "🔓"
+                        }
+                    }
+                }
+                
+                val response = api.getLatestLocation(childDeviceId)
+                if (response.isSuccessful) {
+                    response.body()?.let { loc ->
+                        val pos = LatLng(loc.latitude, loc.longitude)
+                        map?.clear()
+                        map?.addMarker(MarkerOptions().position(pos).title("📍 Child"))
+                        map?.animateCamera(CameraUpdateFactory.newLatLngZoom(pos, 16f))
+                    }
+                }
+                
+                Toast.makeText(this@ParentDashboardActivity, "✅ Updated", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                Toast.makeText(this@ParentDashboardActivity, "❌ Failed to refresh", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {

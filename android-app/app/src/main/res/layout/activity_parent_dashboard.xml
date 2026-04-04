@@ -23,7 +23,20 @@
             android:elevation="4dp"
             app:title="Parent Dashboard"
             app:titleTextColor="@android:color/white"
-            app:navigationIcon="@drawable/ic_menu"/>
+            app:navigationIcon="@drawable/ic_menu">
+            
+            <ImageView
+                android:id="@+id/btnRefresh"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="end"
+                android:padding="12dp"
+                android:src="@android:drawable/ic_popup_sync"
+                android:contentDescription="Refresh"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                app:tint="@android:color/white"/>
+                
+        </com.google.android.material.appbar.MaterialToolbar>
 
         <!-- Status Cards -->
         <ScrollView
