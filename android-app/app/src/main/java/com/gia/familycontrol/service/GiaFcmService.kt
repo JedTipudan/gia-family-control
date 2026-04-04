@@ -250,33 +250,57 @@ class GiaFcmService : FirebaseMessagingService() {
     }
 
     private fun updateAppBlock(packageName: String, block: Boolean) {
-        android.util.Log.d("GiaFcmService", "App block update: $packageName = $block")
+        android.util.Log.d("GiaFcmService", "=== APP BLOCK UPDATE ===")
+        android.util.Log.d("GiaFcmService", "Package: $packageName, Block: $block")
         
         // Update SharedPreferences for immediate effect
         val prefs = getSharedPreferences("gia_blocked_apps", MODE_PRIVATE)
         val blocked = prefs.getStringSet("blocked", mutableSetOf())!!.toMutableSet()
+        
         if (block) {
             blocked.add(packageName)
-            android.util.Log.d("GiaFcmService", "Added $packageName to blocked list")
+            android.util.Log.d("GiaFcmService", "Added $packageName to blocked list. Total blocked: ${blocked.size}")
         } else {
             blocked.remove(packageName)
-            android.util.Log.d("GiaFcmService", "Removed $packageName from blocked list")
+            android.util.Log.d("GiaFcmService", "Removed $packageName from blocked list. Total blocked: ${blocked.size}")
         }
+        
         prefs.edit().putStringSet("blocked", blocked).apply()
+        android.util.Log.d("GiaFcmService", "SharedPreferences updated")
         
         // Notify AppMonitorService to refresh immediately
         val intent = Intent("com.gia.familycontrol.REFRESH_BLOCKED_APPS")
         sendBroadcast(intent)
+        android.util.Log.d("GiaFcmService", "Broadcast sent to refresh services")
         
-        // If blocking, check if app is currently running and close it
+        // If blocking, IMMEDIATELY close the app if it's running
         if (block) {
+            android.util.Log.d("GiaFcmService", "Blocking app - checking if currently running...")
+            
+            // Check if this app is currently in foreground
+            val usm = getSystemService(android.app.usage.UsageStatsManager::class.java)
+            val now = System.currentTimeMillis()
+            val stats = usm?.queryUsageStats(android.app.usage.UsageStatsManager.INTERVAL_DAILY, now - 3000, now)
+            val foregroundApp = stats?.maxByOrNull { it.lastTimeUsed }?.packageName
+            
+            android.util.Log.d("GiaFcmService", "Current foreground app: $foregroundApp")
+            
+            if (foregroundApp == packageName) {
+                android.util.Log.d("GiaFcmService", "Target app IS running - force closing NOW")
+            }
+            
+            // Send to home screen regardless (will close if running)
             val homeIntent = Intent(Intent.ACTION_MAIN).apply {
                 addCategory(Intent.CATEGORY_HOME)
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or 
+                        Intent.FLAG_ACTIVITY_CLEAR_TASK or
+                        Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
             }
             startActivity(homeIntent)
-            android.util.Log.d("GiaFcmService", "Sent to home screen to close $packageName")
+            android.util.Log.d("GiaFcmService", "Sent to home screen - app closed")
         }
+        
+        android.util.Log.d("GiaFcmService", "=== APP BLOCK UPDATE COMPLETE ===")
     }
 
     private fun unpairDevice() {

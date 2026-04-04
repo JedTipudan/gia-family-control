@@ -18,6 +18,8 @@ class GiaAccessibilityService : AccessibilityService() {
     private val handler = Handler(Looper.getMainLooper())
     private var isLocking = false
     private var blockedPackages = mutableSetOf<String>()
+    private var lastBlockedApp: String? = null
+    private var lastBlockTime = 0L
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         // Check lock state and blocked apps whenever any event happens
@@ -55,22 +57,33 @@ class GiaAccessibilityService : AccessibilityService() {
     
     private fun checkBlockedApps() {
         val foregroundApp = getForegroundApp()
+        val now = System.currentTimeMillis()
         
         if (blockedPackages.isEmpty()) return
         
         if (foregroundApp != null && foregroundApp in blockedPackages && foregroundApp != packageName) {
-            Log.d("GiaAccessibility", "⛔️ BLOCKED: $foregroundApp - Closing IMMEDIATELY")
-            
-            // Send to home screen immediately
-            val homeIntent = Intent(Intent.ACTION_MAIN).apply {
-                addCategory(Intent.CATEGORY_HOME)
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            // Block immediately every time, with minimal debounce
+            if (foregroundApp != lastBlockedApp || now - lastBlockTime > 500) {
+                Log.d("GiaAccessibility", "⛔️ BLOCKED: $foregroundApp - FORCE CLOSING")
+                
+                // Send to home screen immediately
+                val homeIntent = Intent(Intent.ACTION_MAIN).apply {
+                    addCategory(Intent.CATEGORY_HOME)
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                }
+                try {
+                    startActivity(homeIntent)
+                    lastBlockedApp = foregroundApp
+                    lastBlockTime = now
+                    Log.d("GiaAccessibility", "✅ Blocked and sent to home")
+                } catch (e: Exception) {
+                    Log.e("GiaAccessibility", "Failed to close app", e)
+                }
             }
-            try {
-                startActivity(homeIntent)
-                Log.d("GiaAccessibility", "✅ Sent to home")
-            } catch (e: Exception) {
-                Log.e("GiaAccessibility", "Failed to close app", e)
+        } else if (foregroundApp != null && foregroundApp !in blockedPackages) {
+            // Reset tracking when user switches to allowed app
+            if (lastBlockedApp != null && foregroundApp != lastBlockedApp) {
+                lastBlockedApp = null
             }
         }
     }
