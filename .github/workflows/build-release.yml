@@ -28,12 +28,18 @@ jobs:
         echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > android-app/app/google-services.json
         cat android-app/app/google-services.json
       
-    - name: Build Debug APK
+    - name: Decode and setup keystore
+      run: |
+        echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android-app/app/gia-release.keystore
+        
+    - name: Build Release APK
       env:
         MAPS_API_KEY: ${{ secrets.MAPS_API_KEY }}
+        KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
       run: |
         cd android-app
-        ./gradlew assembleDebug --stacktrace
+        ./gradlew assembleRelease --stacktrace
         
     - name: Get commit info
       id: commit
@@ -59,7 +65,7 @@ jobs:
           ${{ github.event.head_commit.message }}
           
           **Download:**
-          - app-debug.apk - Install on both parent and child devices
+          - GiaFamilyControl.apk - Install on both parent and child devices
           
           **Testing:**
           ```bash
@@ -74,13 +80,13 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: android-app/app/build/outputs/apk/debug/app-debug.apk
-        asset_name: app-debug.apk
+        asset_path: android-app/app/build/outputs/apk/release/app-release.apk
+        asset_name: GiaFamilyControl.apk
         asset_content_type: application/vnd.android.package-archive
         
     - name: Upload APK as Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: app-debug-${{ steps.commit.outputs.sha_short }}
-        path: android-app/app/build/outputs/apk/debug/app-debug.apk
+        name: GiaFamilyControl-${{ steps.commit.outputs.sha_short }}
+        path: android-app/app/build/outputs/apk/release/app-release.apk
         retention-days: 30
