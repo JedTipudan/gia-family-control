@@ -126,8 +126,8 @@ class AppMonitorService : LifecycleService() {
             
             while (isActive) {
                 try {
-                    // Refresh from API every 3 seconds (10 cycles * 0.3s)
-                    if (apiRefreshCounter >= 10) {
+                    // Refresh from API every 15 seconds (150 cycles * 0.1s)
+                    if (apiRefreshCounter >= 150) {
                         loadBlockedAppsFromApi()
                         apiRefreshCounter = 0
                     }
@@ -160,7 +160,7 @@ class AppMonitorService : LifecycleService() {
                     Log.e("AppMonitorService", "Error in monitoring loop", e)
                 }
                 
-                delay(200L) // Check every 0.2 seconds for ultra-fast blocking
+                delay(100L) // Check every 0.1 seconds for instant blocking
             }
         }
     }

@@ -20,6 +20,9 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.gia.familycontrol.R
 import com.gia.familycontrol.admin.GiaDeviceAdminReceiver
 import com.gia.familycontrol.auth.LoginActivity
@@ -33,10 +36,12 @@ import com.gia.familycontrol.service.AppMonitorService
 import com.gia.familycontrol.service.DeviceStatusService
 import com.gia.familycontrol.service.LocationTrackingService
 import com.gia.familycontrol.service.LockMonitorService
+import com.gia.familycontrol.worker.ServiceRestartWorker
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
 
 class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
@@ -208,12 +213,6 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
     private fun startMonitoringServices() {
         Log.d("ChildDashboard", "User clicked Start Monitoring")
         
-        // Check battery optimization
-        if (!isBatteryOptimizationDisabled()) {
-            showBatteryOptimizationPrompt()
-            return
-        }
-        
         // Check Usage Stats permission FIRST
         if (!hasUsageStatsPermission()) {
             showUsageStatsPrompt()
@@ -225,6 +224,9 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
             showAccessibilityPrompt()
             return
         }
+        
+        // Request battery optimization exemption (non-blocking)
+        requestBatteryOptimizationExemption()
         
         binding.btnStartMonitoring.isEnabled = false
         binding.btnStartMonitoring.text = "Starting..."
@@ -240,32 +242,19 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
         Toast.makeText(this, "✅ Monitoring started! Services running in background.", Toast.LENGTH_LONG).show()
     }
     
-    private fun isBatteryOptimizationDisabled(): Boolean {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val pm = getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
-            return pm.isIgnoringBatteryOptimizations(packageName)
-        }
-        return true
-    }
-    
-    private fun showBatteryOptimizationPrompt() {
-        AlertDialog.Builder(this)
-            .setTitle("⚠️ Battery Optimization")
-            .setMessage("To ensure app blocking and lock features work reliably, you must disable battery optimization for this app.\n\nThis is CRITICAL for the app to work in release builds.\n\nGo to Settings → Battery → Battery optimization → All apps → Gia Family Control → Don't optimize")
-            .setPositiveButton("Open Settings") { _, _ ->
-                try {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        val intent = Intent(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
-                        intent.data = android.net.Uri.parse("package:$packageName")
-                        startActivity(intent)
-                    }
-                } catch (e: Exception) {
-                    Toast.makeText(this, "Please disable battery optimization manually in Settings", Toast.LENGTH_LONG).show()
+    private fun requestBatteryOptimizationExemption() {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                val pm = getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+                if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+                    val intent = Intent(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                    intent.data = android.net.Uri.parse("package:$packageName")
+                    startActivity(intent)
                 }
             }
-            .setNegativeButton("Cancel", null)
-            .setCancelable(false)
-            .show()
+        } catch (e: Exception) {
+            Log.e("ChildDashboard", "Failed to request battery optimization", e)
+        }
     }
     
     private fun hasUsageStatsPermission(): Boolean {
@@ -409,6 +398,23 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
         } catch (e: Exception) {
             Log.e("ChildDashboard", "Failed to start device status service", e)
         }
+        
+        // Schedule WorkManager to restart services every 15 minutes
+        scheduleServiceRestartWorker()
+    }
+    
+    private fun scheduleServiceRestartWorker() {
+        val workRequest = PeriodicWorkRequestBuilder<ServiceRestartWorker>(
+            15, TimeUnit.MINUTES
+        ).build()
+        
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "service_restart_worker",
+            ExistingPeriodicWorkPolicy.KEEP,
+            workRequest
+        )
+        
+        Log.d("ChildDashboard", "WorkManager scheduled for service restart")
     }
 
     private fun pairWithParent() {
