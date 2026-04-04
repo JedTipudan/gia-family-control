@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
 import { commandApi, locationApi } from '../services/api';
 import { subscribeToDeviceLocation, subscribeToDeviceStatus } from '../services/firebase';
@@ -7,8 +7,25 @@ import AppManagerPanel from '../components/AppManagerPanel';
 import DeviceStatusBar from '../components/DeviceStatusBar';
 import ActivityLog from '../components/ActivityLog';
 
-const MAP_CONTAINER = { width: '100%', height: '400px' };
+const MAP_CONTAINER = { width: '100%', height: '100%' };
 const DEFAULT_CENTER = { lat: 14.5995, lng: 120.9842 };
+
+const MAP_DARK_STYLE = [
+  { elementType: 'geometry', stylers: [{ color: '#0f1011' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#0f1011' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#62666d' }] },
+  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#191a1b' }] },
+  { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#23252a' }] },
+  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#08090a' }] },
+  { featureType: 'poi', stylers: [{ visibility: 'off' }] },
+  { featureType: 'transit', stylers: [{ visibility: 'off' }] },
+];
+
+const TABS = [
+  { id: 'map',  label: 'Live Map',    icon: '📍' },
+  { id: 'apps', label: 'App Controls', icon: '📱' },
+  { id: 'logs', label: 'Activity Log', icon: '📋' },
+];
 
 export default function DashboardPage() {
   const { user, logout } = useAuth();
@@ -16,6 +33,7 @@ export default function DashboardPage() {
   const [location, setLocation] = useState(null);
   const [deviceStatus, setDeviceStatus] = useState({});
   const [activeTab, setActiveTab] = useState('map');
+  const [cmdLoading, setCmdLoading] = useState(null);
 
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_KEY || '',
@@ -27,221 +45,240 @@ export default function DashboardPage() {
     return () => { unsubLoc(); unsubStatus(); };
   }, [childDeviceId]);
 
-  // Fallback: poll REST API if Firebase not available
   useEffect(() => {
     const fetchLocation = async () => {
       try {
         const { data } = await locationApi.getLatest(childDeviceId);
-        console.log('Location data:', data);
-        if (data && data.latitude && data.longitude) {
+        if (data?.latitude && data?.longitude)
           setLocation({ lat: data.latitude, lng: data.longitude });
-        }
-      } catch (err) {
-        console.error('Failed to fetch location:', err);
-      }
+      } catch {}
     };
-    
-    fetchLocation(); // Fetch immediately
-    const interval = setInterval(fetchLocation, 5000); // Poll every 5 seconds
-    return () => clearInterval(interval);
+    fetchLocation();
+    const id = setInterval(fetchLocation, 5000);
+    return () => clearInterval(id);
   }, [childDeviceId]);
 
   const sendCommand = async (type, packageName = null) => {
+    setCmdLoading(type);
     try {
       await commandApi.send(childDeviceId, type, packageName);
-      alert(`${type} command sent successfully`);
     } catch {
       alert('Failed to send command');
+    } finally {
+      setCmdLoading(null);
     }
   };
 
   return (
-    <div style={styles.container}>
-      <header style={styles.header}>
-        <div style={styles.headerLeft}>
-          <img src="/logo.jpg" alt="Gia" style={styles.logo} />
-          <span style={styles.title}>Gia Family Control</span>
+    <div style={s.shell}>
+      {/* Sidebar */}
+      <aside style={s.sidebar}>
+        <div style={s.sideTop}>
+          <div style={s.brand}>
+            <img src="/logo.jpg" alt="Gia" style={s.brandLogo} />
+            <span style={s.brandName}>Gia</span>
+          </div>
+          <nav style={s.nav}>
+            {TABS.map(tab => (
+              <button
+                key={tab.id}
+                style={{ ...s.navItem, ...(activeTab === tab.id ? s.navActive : {}) }}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                <span style={s.navIcon}>{tab.icon}</span>
+                <span>{tab.label}</span>
+              </button>
+            ))}
+          </nav>
         </div>
-        <div style={styles.headerRight}>
-          <span style={styles.userName}>{user?.fullName}</span>
-          <button style={styles.logoutBtn} onClick={logout}>Logout</button>
+        <div style={s.sideBottom}>
+          <div style={s.userRow}>
+            <div style={s.avatar}>{user?.fullName?.[0]?.toUpperCase() || 'P'}</div>
+            <div style={s.userInfo}>
+              <span style={s.userName}>{user?.fullName || 'Parent'}</span>
+              <span style={s.userRole}>Parent</span>
+            </div>
+          </div>
+          <button style={s.logoutBtn} onClick={logout}>Sign out</button>
         </div>
-      </header>
+      </aside>
 
-      <DeviceStatusBar deviceId={childDeviceId} status={deviceStatus} />
+      {/* Main */}
+      <main style={s.main}>
+        {/* Top bar */}
+        <div style={s.topbar}>
+          <div>
+            <h1 style={s.pageTitle}>{TABS.find(t => t.id === activeTab)?.label}</h1>
+          </div>
+          <div style={s.cmdRow}>
+            <CmdButton label="Lock" icon="🔒" color="#ef4444" loading={cmdLoading === 'LOCK'}
+              onClick={() => sendCommand('LOCK')} />
+            <CmdButton label="Unlock" icon="🔓" color="#10b981" loading={cmdLoading === 'UNLOCK'}
+              onClick={() => sendCommand('UNLOCK')} />
+          </div>
+        </div>
 
-      <div style={styles.controls}>
-        <button style={{...styles.ctrlBtn, background: '#ef4444'}} onClick={() => sendCommand('LOCK')}>
-          🔒 Lock Device
-        </button>
-        <button style={{...styles.ctrlBtn, background: '#22c55e'}} onClick={() => sendCommand('UNLOCK')}>
-          🔓 Unlock Device
-        </button>
-        <button style={{...styles.ctrlBtn, background: '#f59e0b'}} onClick={() => setActiveTab('apps')}>
-          📱 Manage Apps
-        </button>
-        <button style={{...styles.ctrlBtn, background: '#8b5cf6'}} onClick={() => setActiveTab('logs')}>
-          📋 Activity Logs
-        </button>
-      </div>
+        <DeviceStatusBar deviceId={childDeviceId} status={deviceStatus} />
 
-      <div style={styles.tabs}>
-        {['map', 'apps', 'logs'].map(tab => (
-          <button key={tab} style={{...styles.tab, ...(activeTab === tab ? styles.activeTab : {})}}
-            onClick={() => setActiveTab(tab)}>
-            {tab.charAt(0).toUpperCase() + tab.slice(1)}
-          </button>
-        ))}
-      </div>
-
-      {activeTab === 'map' && (
-        <div style={styles.mapContainer}>
-          {!location && <p style={styles.noLocation}>⏳ Waiting for location data from child device...</p>}
-          {isLoaded ? (
-            <GoogleMap mapContainerStyle={MAP_CONTAINER}
-              center={location ? { lat: location.lat, lng: location.lng } : DEFAULT_CENTER}
-              zoom={16}>
-              {location && (
-                <Marker position={{ lat: location.lat, lng: location.lng }}
-                  title="Child's Location" />
+        {/* Content */}
+        <div style={s.content}>
+          {activeTab === 'map' && (
+            <div style={s.mapWrap}>
+              {!location && (
+                <div style={s.mapOverlay}>
+                  <span style={s.mapOverlayText}>⏳ Waiting for location data…</span>
+                </div>
               )}
-            </GoogleMap>
-          ) : <div style={styles.mapPlaceholder}>Loading map...</div>}
-          {location && (
-            <p style={styles.coords}>
-              📍 Lat: {location.lat?.toFixed(6)}, Lng: {location.lng?.toFixed(6)}
-            </p>
+              {isLoaded ? (
+                <GoogleMap
+                  mapContainerStyle={MAP_CONTAINER}
+                  center={location ? { lat: location.lat, lng: location.lng } : DEFAULT_CENTER}
+                  zoom={16}
+                  options={{ styles: MAP_DARK_STYLE, disableDefaultUI: false, zoomControl: true }}
+                >
+                  {location && (
+                    <Marker
+                      position={{ lat: location.lat, lng: location.lng }}
+                      title="Child's Location"
+                    />
+                  )}
+                </GoogleMap>
+              ) : (
+                <div style={s.mapLoading}>Loading map…</div>
+              )}
+              {location && (
+                <div style={s.coordsBar}>
+                  <span style={s.coordsLabel}>📍 Live Location</span>
+                  <span style={s.coords}>
+                    {location.lat?.toFixed(6)}, {location.lng?.toFixed(6)}
+                  </span>
+                </div>
+              )}
+            </div>
           )}
+          {activeTab === 'apps' && (
+            <AppManagerPanel deviceId={childDeviceId} onBlockApp={(pkg) => sendCommand('BLOCK_APP', pkg)} />
+          )}
+          {activeTab === 'logs' && <ActivityLog deviceId={childDeviceId} />}
         </div>
-      )}
-
-      {activeTab === 'apps' && (
-        <AppManagerPanel deviceId={childDeviceId} onBlockApp={(pkg) => sendCommand('BLOCK_APP', pkg)} />
-      )}
-
-      {activeTab === 'logs' && <ActivityLog deviceId={childDeviceId} />}
+      </main>
     </div>
   );
 }
 
-const styles = {
-  container: { 
-    minHeight: '100vh', 
-    background: 'var(--bg-primary)' 
+function CmdButton({ label, icon, color, loading, onClick }) {
+  return (
+    <button
+      style={{
+        ...s.cmdBtn,
+        background: `${color}18`,
+        color,
+        borderColor: `${color}33`,
+        opacity: loading ? 0.6 : 1,
+      }}
+      onClick={onClick}
+      disabled={loading}
+    >
+      {icon} {loading ? '…' : label}
+    </button>
+  );
+}
+
+const s = {
+  shell: {
+    display: 'flex', minHeight: '100vh',
+    background: '#08090a',
+    fontFamily: "'Inter Variable', Inter, -apple-system, system-ui, sans-serif",
+    fontFeatureSettings: '"cv01","ss03"',
+    color: '#f7f8f8',
   },
-  header: { 
-    display: 'flex', 
-    justifyContent: 'space-between', 
-    alignItems: 'center',
-    background: 'var(--bg-elevated)', 
-    color: 'var(--text-primary)', 
+  sidebar: {
+    width: 220, flexShrink: 0,
+    background: '#0f1011',
+    borderRight: '1px solid rgba(255,255,255,0.05)',
+    display: 'flex', flexDirection: 'column',
+    justifyContent: 'space-between',
+    padding: '20px 0',
+    position: 'sticky', top: 0, height: '100vh',
+  },
+  sideTop: { display: 'flex', flexDirection: 'column', gap: 28 },
+  brand: { display: 'flex', alignItems: 'center', gap: 10, padding: '0 16px' },
+  brandLogo: { width: 28, height: 28, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.08)' },
+  brandName: { fontSize: 15, fontWeight: 590, color: '#f7f8f8', letterSpacing: '-0.165px' },
+  nav: { display: 'flex', flexDirection: 'column', gap: 2, padding: '0 8px' },
+  navItem: {
+    display: 'flex', alignItems: 'center', gap: 10,
+    padding: '8px 10px', borderRadius: 6,
+    background: 'none', border: 'none', cursor: 'pointer',
+    fontSize: 13, fontWeight: 510, color: '#8a8f98',
+    textAlign: 'left', width: '100%',
+    transition: 'background 0.12s, color 0.12s',
+    fontFamily: 'inherit',
+  },
+  navActive: {
+    background: 'rgba(255,255,255,0.05)',
+    color: '#f7f8f8',
+  },
+  navIcon: { fontSize: 14, width: 18, textAlign: 'center' },
+  sideBottom: { padding: '0 12px', display: 'flex', flexDirection: 'column', gap: 10 },
+  userRow: { display: 'flex', alignItems: 'center', gap: 10, padding: '8px 4px' },
+  avatar: {
+    width: 28, height: 28, borderRadius: '50%',
+    background: '#5e6ad2', color: '#fff',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    fontSize: 12, fontWeight: 590, flexShrink: 0,
+  },
+  userInfo: { display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 },
+  userName: { fontSize: 13, fontWeight: 510, color: '#d0d6e0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+  userRole: { fontSize: 11, color: '#62666d' },
+  logoutBtn: {
+    padding: '7px 12px',
+    background: 'rgba(255,255,255,0.02)',
+    border: '1px solid rgba(255,255,255,0.08)',
+    borderRadius: 6, fontSize: 12, fontWeight: 510,
+    color: '#8a8f98', cursor: 'pointer', fontFamily: 'inherit',
+    textAlign: 'center',
+  },
+  main: { flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 },
+  topbar: {
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
     padding: '16px 24px',
-    borderBottom: '1px solid var(--border-primary)'
+    borderBottom: '1px solid rgba(255,255,255,0.05)',
+    background: '#0f1011',
   },
-  headerLeft: { 
-    display: 'flex', 
-    alignItems: 'center', 
-    gap: 12 
+  pageTitle: { margin: 0, fontSize: 18, fontWeight: 590, color: '#f7f8f8', letterSpacing: '-0.24px' },
+  cmdRow: { display: 'flex', gap: 8 },
+  cmdBtn: {
+    padding: '7px 14px', borderRadius: 6,
+    border: '1px solid', fontSize: 13, fontWeight: 510,
+    cursor: 'pointer', fontFamily: 'inherit',
+    transition: 'opacity 0.15s',
   },
-  logo: { 
-    width: 32, 
-    height: 32, 
-    borderRadius: 'var(--radius-md)' 
+  content: { flex: 1, overflow: 'auto' },
+  mapWrap: {
+    position: 'relative',
+    height: 'calc(100vh - 120px)',
+    background: '#0f1011',
   },
-  title: { 
-    fontSize: 16, 
-    fontWeight: 600,
-    letterSpacing: 'var(--letter-spacing-tight)'
+  mapOverlay: {
+    position: 'absolute', inset: 0, zIndex: 10,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    background: 'rgba(8,9,10,0.6)', pointerEvents: 'none',
   },
-  headerRight: { 
-    display: 'flex', 
-    alignItems: 'center', 
-    gap: 16 
+  mapOverlayText: { fontSize: 14, color: '#8a8f98' },
+  mapLoading: {
+    height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+    color: '#62666d', fontSize: 14,
   },
-  userName: { 
-    fontSize: 13,
-    color: 'var(--text-secondary)'
+  coordsBar: {
+    position: 'absolute', bottom: 16, left: '50%', transform: 'translateX(-50%)',
+    display: 'flex', alignItems: 'center', gap: 10,
+    padding: '8px 16px',
+    background: 'rgba(15,16,17,0.9)',
+    border: '1px solid rgba(255,255,255,0.08)',
+    borderRadius: 8, backdropFilter: 'blur(8px)',
+    zIndex: 5,
   },
-  logoutBtn: { 
-    padding: '6px 12px', 
-    background: 'var(--bg-secondary)', 
-    color: 'var(--text-primary)',
-    border: '1px solid var(--border-primary)', 
-    borderRadius: 'var(--radius-sm)',
-    fontSize: 13,
-    fontWeight: 500
-  },
-  controls: { 
-    display: 'flex', 
-    gap: 8, 
-    padding: '16px 24px', 
-    flexWrap: 'wrap',
-    background: 'var(--bg-secondary)',
-    borderBottom: '1px solid var(--border-primary)'
-  },
-  ctrlBtn: { 
-    padding: '8px 16px', 
-    color: 'var(--text-primary)', 
-    border: 'none', 
-    borderRadius: 'var(--radius-md)',
-    fontSize: 13, 
-    fontWeight: 500,
-    display: 'flex',
-    alignItems: 'center',
-    gap: 6
-  },
-  tabs: { 
-    display: 'flex', 
-    gap: 0, 
-    padding: '0 24px', 
-    background: 'var(--bg-secondary)',
-    borderBottom: '1px solid var(--border-primary)'
-  },
-  tab: { 
-    padding: '12px 20px', 
-    background: 'none', 
-    border: 'none',
-    borderBottom: '2px solid transparent',
-    fontSize: 13,
-    fontWeight: 500,
-    color: 'var(--text-tertiary)',
-    letterSpacing: 'var(--letter-spacing-normal)'
-  },
-  activeTab: { 
-    borderBottom: '2px solid var(--accent-primary)', 
-    color: 'var(--text-primary)'
-  },
-  mapContainer: { 
-    padding: 24,
-    background: 'var(--bg-secondary)'
-  },
-  mapPlaceholder: { 
-    height: 400, 
-    display: 'flex', 
-    alignItems: 'center', 
-    justifyContent: 'center',
-    background: 'var(--bg-tertiary)', 
-    borderRadius: 'var(--radius-lg)',
-    border: '1px solid var(--border-primary)',
-    color: 'var(--text-secondary)'
-  },
-  noLocation: { 
-    padding: 16, 
-    textAlign: 'center', 
-    color: 'var(--text-tertiary)', 
-    fontSize: 13,
-    background: 'var(--bg-tertiary)',
-    borderRadius: 'var(--radius-md)',
-    marginBottom: 16
-  },
-  coords: { 
-    marginTop: 12, 
-    color: 'var(--text-secondary)', 
-    fontSize: 12,
-    fontFamily: 'monospace',
-    background: 'var(--bg-tertiary)',
-    padding: 'var(--space-2)',
-    borderRadius: 'var(--radius-sm)',
-    display: 'inline-block'
-  },
+  coordsLabel: { fontSize: 12, fontWeight: 510, color: '#d0d6e0' },
+  coords: { fontSize: 12, color: '#8a8f98', fontFamily: 'ui-monospace, "SF Mono", Menlo, monospace' },
 };

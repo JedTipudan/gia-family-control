@@ -13,49 +13,65 @@ export default function DeviceStatusBar({ deviceId, status }) {
   const battery = status?.batteryLevel ?? deviceInfo?.batteryLevel ?? '--';
   const isOnline = status?.isOnline ?? deviceInfo?.isOnline ?? false;
   const isLocked = status?.isLocked ?? deviceInfo?.isLocked ?? false;
+  const connType = status?.connectionType ?? deviceInfo?.connectionType ?? null;
+  const deviceName = deviceInfo?.deviceName || 'Child Device';
+
+  const batteryColor = battery === '--' ? '#62666d'
+    : battery < 20 ? '#ef4444'
+    : battery < 50 ? '#f59e0b'
+    : '#10b981';
 
   return (
-    <div style={styles.bar}>
-      <div style={styles.item}>
-        <span style={{...styles.dot, background: isOnline ? '#22c55e' : '#ef4444'}}/>
-        {isOnline ? 'Online' : 'Offline'}
+    <div style={s.bar}>
+      <div style={s.left}>
+        <span style={s.deviceName}>{deviceName}</span>
+        <span style={s.divider} />
+        <span style={{ ...s.pill, background: isOnline ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.1)', color: isOnline ? '#10b981' : '#f87171', borderColor: isOnline ? 'rgba(16,185,129,0.25)' : 'rgba(239,68,68,0.2)' }}>
+          <span style={{ ...s.dot, background: isOnline ? '#10b981' : '#ef4444' }} />
+          {isOnline ? 'Online' : 'Offline'}
+        </span>
+        {connType && connType !== 'OFFLINE' && (
+          <span style={s.tag}>{connType}</span>
+        )}
       </div>
-      <div style={styles.item}>
-        🔋 {battery}%
+      <div style={s.right}>
+        <span style={{ ...s.stat, color: batteryColor }}>
+          {battery === '--' ? '🔋 --' : `🔋 ${battery}%`}
+        </span>
+        <span style={s.divider} />
+        <span style={{ ...s.stat, color: isLocked ? '#f87171' : '#8a8f98' }}>
+          {isLocked ? '🔒 Locked' : '🔓 Unlocked'}
+        </span>
       </div>
-      <div style={styles.item}>
-        {isLocked ? '🔒 Locked' : '🔓 Unlocked'}
-      </div>
-      {deviceInfo && (
-        <div style={styles.item}>
-          📱 {deviceInfo.deviceName || 'Child Device'}
-        </div>
-      )}
     </div>
   );
 }
 
-const styles = {
-  bar: { 
-    display: 'flex', 
-    gap: 24, 
-    padding: '12px 24px', 
-    background: 'var(--bg-elevated)',
-    color: 'var(--text-secondary)', 
-    fontSize: 12,
-    borderBottom: '1px solid var(--border-primary)',
-    letterSpacing: 'var(--letter-spacing-normal)'
+const s = {
+  bar: {
+    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+    padding: '8px 24px',
+    background: '#0f1011',
+    borderBottom: '1px solid rgba(255,255,255,0.05)',
+    fontFamily: "'Inter Variable', Inter, -apple-system, sans-serif",
+    fontFeatureSettings: '"cv01","ss03"',
   },
-  item: { 
-    display: 'flex', 
-    alignItems: 'center', 
-    gap: 6 
+  left: { display: 'flex', alignItems: 'center', gap: 10 },
+  right: { display: 'flex', alignItems: 'center', gap: 10 },
+  deviceName: { fontSize: 13, fontWeight: 510, color: '#d0d6e0', letterSpacing: '-0.13px' },
+  divider: { width: 1, height: 14, background: 'rgba(255,255,255,0.08)' },
+  pill: {
+    display: 'inline-flex', alignItems: 'center', gap: 5,
+    padding: '2px 8px', borderRadius: 9999,
+    border: '1px solid', fontSize: 12, fontWeight: 510,
   },
-  dot: { 
-    width: 6, 
-    height: 6, 
-    borderRadius: '50%', 
-    display: 'inline-block',
-    boxShadow: '0 0 8px currentColor'
+  dot: { width: 6, height: 6, borderRadius: '50%' },
+  tag: {
+    padding: '2px 8px', borderRadius: 9999,
+    background: 'rgba(255,255,255,0.05)',
+    border: '1px solid rgba(255,255,255,0.08)',
+    fontSize: 11, fontWeight: 510, color: '#62666d',
+    textTransform: 'uppercase', letterSpacing: '0.04em',
   },
+  stat: { fontSize: 13, fontWeight: 400, color: '#8a8f98' },
 };

@@ -4,6 +4,8 @@ import { appApi } from '../services/api';
 export default function AppManagerPanel({ deviceId, onBlockApp }) {
   const [controls, setControls] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [newPkg, setNewPkg] = useState('');
+  const [adding, setAdding] = useState(false);
 
   useEffect(() => {
     appApi.getControls(deviceId)
@@ -18,9 +20,7 @@ export default function AppManagerPanel({ deviceId, onBlockApp }) {
         await appApi.removeControl(deviceId, packageName);
         setControls(prev => prev.filter(c => c.packageName !== packageName));
       } else {
-        const { data } = await appApi.setControl({
-          deviceId, packageName, controlType: 'BLOCKED'
-        });
+        const { data } = await appApi.setControl({ deviceId, packageName, controlType: 'BLOCKED' });
         setControls(prev => [...prev.filter(c => c.packageName !== packageName), data]);
       }
     } catch {
@@ -28,99 +28,138 @@ export default function AppManagerPanel({ deviceId, onBlockApp }) {
     }
   };
 
-  if (loading) return <div style={styles.loading}>Loading app controls...</div>;
+  const handleAdd = async (e) => {
+    e.preventDefault();
+    if (!newPkg.trim()) return;
+    setAdding(true);
+    try {
+      const { data } = await appApi.setControl({ deviceId, packageName: newPkg.trim(), controlType: 'BLOCKED' });
+      setControls(prev => [...prev.filter(c => c.packageName !== newPkg.trim()), data]);
+      if (onBlockApp) onBlockApp(newPkg.trim());
+      setNewPkg('');
+    } catch {
+      alert('Failed to block app');
+    } finally {
+      setAdding(false);
+    }
+  };
+
+  if (loading) return <div style={s.empty}>Loading app controls…</div>;
 
   return (
-    <div style={styles.container}>
-      <h3 style={styles.heading}>App Controls</h3>
+    <div style={s.container}>
+      <div style={s.header}>
+        <span style={s.heading}>App Controls</span>
+        <span style={s.count}>{controls.length} rules</span>
+      </div>
+
+      <form onSubmit={handleAdd} style={s.addRow}>
+        <input
+          style={s.input}
+          placeholder="com.example.app"
+          value={newPkg}
+          onChange={e => setNewPkg(e.target.value)}
+        />
+        <button style={{ ...s.addBtn, opacity: adding ? 0.6 : 1 }} type="submit" disabled={adding}>
+          Block App
+        </button>
+      </form>
+
       {controls.length === 0 ? (
-        <p style={styles.empty}>No app controls set. Apps are currently unrestricted.</p>
+        <div style={s.empty}>No app rules set. All apps are currently allowed.</div>
       ) : (
-        <div style={styles.list}>
-          {controls.map(ctrl => (
-            <div key={ctrl.id} style={styles.item}>
-              <div>
-                <div style={styles.pkgName}>{ctrl.packageName}</div>
-                <span style={{...styles.badge,
-                  background: ctrl.controlType === 'BLOCKED' ? '#fee2e2' : '#dcfce7',
-                  color: ctrl.controlType === 'BLOCKED' ? '#ef4444' : '#22c55e'}}>
-                  {ctrl.controlType}
-                </span>
+        <div style={s.list}>
+          {controls.map((ctrl, i) => {
+            const blocked = ctrl.controlType === 'BLOCKED';
+            return (
+              <div key={ctrl.id} style={{ ...s.row, borderTop: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.05)' }}>
+                <div style={s.rowLeft}>
+                  <span style={s.pkg}>{ctrl.packageName}</span>
+                  <span style={{ ...s.badge, ...(blocked ? s.badgeBlocked : s.badgeAllowed) }}>
+                    {ctrl.controlType}
+                  </span>
+                </div>
+                <button
+                  style={{ ...s.toggleBtn, ...(blocked ? s.toggleUnblock : s.toggleBlock) }}
+                  onClick={() => toggleBlock(ctrl.packageName, blocked)}
+                >
+                  {blocked ? 'Unblock' : 'Block'}
+                </button>
               </div>
-              <button style={styles.unblockBtn}
-                onClick={() => toggleBlock(ctrl.packageName, ctrl.controlType === 'BLOCKED')}>
-                {ctrl.controlType === 'BLOCKED' ? 'Unblock' : 'Block'}
-              </button>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
   );
 }
 
-const styles = {
-  container: { 
+const s = {
+  container: {
     padding: 24,
-    background: 'var(--bg-secondary)'
+    fontFamily: "'Inter Variable', Inter, -apple-system, sans-serif",
+    fontFeatureSettings: '"cv01","ss03"',
   },
-  heading: { 
-    marginBottom: 16, 
-    color: 'var(--text-primary)',
-    fontSize: 18,
-    fontWeight: 600,
-    letterSpacing: 'var(--letter-spacing-tight)'
+  header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
+  heading: { fontSize: 15, fontWeight: 590, color: '#f7f8f8', letterSpacing: '-0.165px' },
+  count: {
+    padding: '2px 8px', borderRadius: 9999,
+    background: 'rgba(255,255,255,0.05)',
+    border: '1px solid rgba(255,255,255,0.08)',
+    fontSize: 12, fontWeight: 510, color: '#62666d',
   },
-  loading: { 
-    padding: 24, 
-    color: 'var(--text-tertiary)',
-    fontSize: 13
+  addRow: { display: 'flex', gap: 8, marginBottom: 16 },
+  input: {
+    flex: 1, padding: '9px 14px',
+    background: 'rgba(255,255,255,0.02)',
+    border: '1px solid rgba(255,255,255,0.08)',
+    borderRadius: 6, fontSize: 13, color: '#f7f8f8',
+    fontFamily: 'ui-monospace, "SF Mono", Menlo, monospace',
+    outline: 'none',
   },
-  empty: { 
-    color: 'var(--text-tertiary)',
-    fontSize: 13,
-    padding: 'var(--space-4)',
-    background: 'var(--bg-tertiary)',
-    borderRadius: 'var(--radius-md)',
-    border: '1px solid var(--border-primary)'
+  addBtn: {
+    padding: '9px 16px',
+    background: '#5e6ad2', color: '#fff',
+    border: 'none', borderRadius: 6,
+    fontSize: 13, fontWeight: 510, cursor: 'pointer',
+    fontFamily: 'inherit', whiteSpace: 'nowrap',
   },
-  list: { 
-    display: 'flex', 
-    flexDirection: 'column', 
-    gap: 8 
+  list: {
+    background: 'rgba(255,255,255,0.02)',
+    border: '1px solid rgba(255,255,255,0.08)',
+    borderRadius: 8, overflow: 'hidden',
   },
-  item: { 
-    display: 'flex', 
-    justifyContent: 'space-between', 
-    alignItems: 'center',
-    padding: '12px 16px', 
-    background: 'var(--bg-elevated)', 
-    borderRadius: 'var(--radius-md)',
-    border: '1px solid var(--border-primary)',
-    transition: 'all 0.15s ease'
+  row: {
+    display: 'flex', alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '11px 16px',
   },
-  pkgName: { 
-    fontWeight: 500, 
-    marginBottom: 4,
-    color: 'var(--text-primary)',
-    fontSize: 13,
-    fontFamily: 'monospace'
+  rowLeft: { display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 },
+  pkg: {
+    fontSize: 13, color: '#d0d6e0',
+    fontFamily: 'ui-monospace, "SF Mono", Menlo, monospace',
+    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
   },
-  badge: { 
-    padding: '2px 8px', 
-    borderRadius: 'var(--radius-sm)', 
-    fontSize: 11,
-    fontWeight: 500,
-    letterSpacing: '0.02em',
-    textTransform: 'uppercase'
+  badge: {
+    padding: '2px 7px', borderRadius: 4,
+    fontSize: 11, fontWeight: 590, flexShrink: 0,
+    textTransform: 'uppercase', letterSpacing: '0.02em',
+    border: '1px solid',
   },
-  unblockBtn: { 
-    padding: '6px 12px', 
-    background: 'var(--accent-primary)', 
-    color: 'var(--text-primary)',
-    border: 'none', 
-    borderRadius: 'var(--radius-sm)',
-    fontSize: 12,
-    fontWeight: 500
+  badgeBlocked: { background: 'rgba(239,68,68,0.1)', color: '#f87171', borderColor: 'rgba(239,68,68,0.2)' },
+  badgeAllowed: { background: 'rgba(16,185,129,0.1)', color: '#34d399', borderColor: 'rgba(16,185,129,0.2)' },
+  toggleBtn: {
+    padding: '5px 14px', borderRadius: 6,
+    fontSize: 12, fontWeight: 510, cursor: 'pointer',
+    border: '1px solid', fontFamily: 'inherit', flexShrink: 0,
   },
+  toggleUnblock: {
+    background: 'rgba(255,255,255,0.04)', color: '#d0d6e0',
+    borderColor: 'rgba(255,255,255,0.08)',
+  },
+  toggleBlock: {
+    background: 'rgba(239,68,68,0.1)', color: '#f87171',
+    borderColor: 'rgba(239,68,68,0.2)',
+  },
+  empty: { padding: '32px 24px', color: '#62666d', fontSize: 14, textAlign: 'center' },
 };

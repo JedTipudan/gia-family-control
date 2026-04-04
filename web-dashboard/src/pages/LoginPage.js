@@ -7,113 +7,113 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
     try {
       const { data } = await authApi.login(email, password);
       login(data);
       navigate('/dashboard');
     } catch {
       setError('Invalid email or password');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <div style={styles.logoContainer}>
-          <img src="/logo.jpg" alt="Gia" style={styles.logo} />
+    <div style={s.page}>
+      <div style={s.card}>
+        <div style={s.logoWrap}>
+          <img src="/logo.jpg" alt="Gia" style={s.logo} />
         </div>
-        <h1 style={styles.title}>Gia Family Control</h1>
-        <p style={styles.subtitle}>Secure parental monitoring</p>
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <input style={styles.input} type="email" placeholder="Email"
-            value={email} onChange={e => setEmail(e.target.value)} required />
-          <input style={styles.input} type="password" placeholder="Password"
-            value={password} onChange={e => setPassword(e.target.value)} required />
-          {error && <div style={styles.error}>{error}</div>}
-          <button style={styles.btn} type="submit">Sign in</button>
+        <h1 style={s.title}>Gia Family Control</h1>
+        <p style={s.sub}>Sign in to your parent dashboard</p>
+        <form onSubmit={handleSubmit} style={s.form}>
+          <div style={s.field}>
+            <label style={s.label}>Email</label>
+            <input style={s.input} type="email" placeholder="you@example.com"
+              value={email} onChange={e => setEmail(e.target.value)} required />
+          </div>
+          <div style={s.field}>
+            <label style={s.label}>Password</label>
+            <input style={s.input} type="password" placeholder="••••••••"
+              value={password} onChange={e => setPassword(e.target.value)} required />
+          </div>
+          {error && (
+            <div style={s.errorBox}>
+              <span style={s.errorDot} />
+              {error}
+            </div>
+          )}
+          <button style={{ ...s.btn, opacity: loading ? 0.6 : 1 }} type="submit" disabled={loading}>
+            {loading ? 'Signing in…' : 'Sign in'}
+          </button>
         </form>
       </div>
     </div>
   );
 }
 
-const styles = {
-  container: { 
-    display: 'flex', 
-    justifyContent: 'center', 
-    alignItems: 'center',
-    minHeight: '100vh', 
-    background: 'var(--bg-primary)' 
+const s = {
+  page: {
+    display: 'flex', justifyContent: 'center', alignItems: 'center',
+    minHeight: '100vh', background: '#08090a',
+    fontFamily: "'Inter Variable', Inter, -apple-system, system-ui, sans-serif",
+    fontFeatureSettings: '"cv01","ss03"',
   },
-  card: { 
-    background: 'var(--bg-elevated)', 
-    padding: '48px', 
-    borderRadius: 'var(--radius-xl)', 
-    border: '1px solid var(--border-primary)',
-    boxShadow: 'var(--shadow-lg)',
-    width: '400px',
-    textAlign: 'center' 
+  card: {
+    width: 380, padding: '40px 36px',
+    background: 'rgba(255,255,255,0.02)',
+    border: '1px solid rgba(255,255,255,0.08)',
+    borderRadius: 12,
+    boxShadow: 'rgba(0,0,0,0.4) 0px 2px 4px',
   },
-  logoContainer: {
-    display: 'flex',
-    justifyContent: 'center',
-    marginBottom: 'var(--space-6)'
+  logoWrap: { display: 'flex', justifyContent: 'center', marginBottom: 20 },
+  logo: { width: 56, height: 56, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.08)' },
+  title: {
+    margin: '0 0 6px', textAlign: 'center',
+    fontSize: 22, fontWeight: 510, letterSpacing: '-0.3px',
+    color: '#f7f8f8',
   },
-  logo: { 
-    width: 64, 
-    height: 64, 
-    borderRadius: 'var(--radius-lg)',
-    border: '1px solid var(--border-secondary)'
+  sub: {
+    margin: '0 0 28px', textAlign: 'center',
+    fontSize: 14, fontWeight: 400, color: '#8a8f98',
   },
-  title: { 
-    marginBottom: 'var(--space-2)', 
-    color: 'var(--text-primary)',
-    fontSize: 28,
-    fontWeight: 600,
-    letterSpacing: 'var(--letter-spacing-tight)'
+  form: { display: 'flex', flexDirection: 'column', gap: 16 },
+  field: { display: 'flex', flexDirection: 'column', gap: 6 },
+  label: { fontSize: 13, fontWeight: 510, color: '#d0d6e0', letterSpacing: '-0.13px' },
+  input: {
+    padding: '10px 14px',
+    background: 'rgba(255,255,255,0.02)',
+    border: '1px solid rgba(255,255,255,0.08)',
+    borderRadius: 6, fontSize: 14, color: '#f7f8f8',
+    outline: 'none', boxSizing: 'border-box', width: '100%',
+    fontFamily: 'inherit',
+    transition: 'border-color 0.15s',
   },
-  subtitle: {
-    color: 'var(--text-secondary)',
-    fontSize: 14,
-    marginBottom: 'var(--space-8)',
-    letterSpacing: 'var(--letter-spacing-normal)'
+  errorBox: {
+    display: 'flex', alignItems: 'center', gap: 8,
+    padding: '10px 14px',
+    background: 'rgba(239,68,68,0.08)',
+    border: '1px solid rgba(239,68,68,0.2)',
+    borderRadius: 6, fontSize: 13, color: '#f87171',
   },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 'var(--space-3)'
+  errorDot: {
+    width: 6, height: 6, borderRadius: '50%',
+    background: '#ef4444', flexShrink: 0,
   },
-  input: { 
-    width: '100%', 
-    padding: '12px 16px', 
-    border: '1px solid var(--border-primary)',
-    borderRadius: 'var(--radius-md)', 
-    fontSize: 14, 
-    background: 'var(--bg-secondary)',
-    color: 'var(--text-primary)'
-  },
-  btn: { 
-    width: '100%', 
-    padding: '12px', 
-    background: 'var(--accent-primary)', 
-    color: 'var(--text-primary)',
-    border: 'none', 
-    borderRadius: 'var(--radius-md)', 
-    fontSize: 14,
-    fontWeight: 500,
-    marginTop: 'var(--space-2)'
-  },
-  error: { 
-    color: 'var(--danger)', 
-    background: 'var(--danger-subtle)',
-    padding: 'var(--space-3)',
-    borderRadius: 'var(--radius-sm)',
-    fontSize: 13
+  btn: {
+    marginTop: 4, padding: '10px 16px',
+    background: '#5e6ad2', color: '#fff',
+    border: 'none', borderRadius: 6,
+    fontSize: 14, fontWeight: 510, cursor: 'pointer',
+    fontFamily: 'inherit', letterSpacing: '-0.13px',
+    transition: 'background 0.15s',
   },
 };

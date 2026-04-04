@@ -82,12 +82,12 @@ class LoginActivity : AppCompatActivity() {
 
     private fun showError(msg: String) {
         binding.tvError.text = msg
-        binding.tvError.visibility = View.VISIBLE
+        binding.errorBox.visibility = View.VISIBLE
     }
 
     private fun setLoading(loading: Boolean) {
         binding.btnLogin.isEnabled = !loading
-        binding.btnLogin.text = if (loading) "Signing in..." else "Sign In"
-        binding.tvError.visibility = View.GONE
+        binding.btnLogin.text = if (loading) "Signing in…" else "Sign in"
+        binding.errorBox.visibility = View.GONE
     }
 }

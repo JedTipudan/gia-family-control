@@ -1,48 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Linear Dark Mode Color System -->
+    <!-- MD Try Design System - Dark Theme -->
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
     
     <!-- Background Colors -->
-    <color name="bg_primary">#0D0D0D</color>
-    <color name="bg_secondary">#161616</color>
-    <color name="bg_tertiary">#1A1A1A</color>
-    <color name="bg_elevated">#1F1F1F</color>
-    <color name="bg_overlay">#252525</color>
+    <color name="bg_primary">#08090A</color>
+    <color name="bg_secondary">#0F1011</color>
+    <color name="bg_elevated">#16171A</color>
+    <color name="bg_card">@color/bg_elevated</color>
     
     <!-- Border Colors -->
-    <color name="border_primary">#2A2A2A</color>
-    <color name="border_secondary">#333333</color>
-    <color name="border_focus">#5E5CE6</color>
+    <color name="border_primary">#1F2023</color>
+    <color name="border_secondary">#2A2B2E</color>
+    <color name="border_subtle">#14FFFFFF</color>
     
     <!-- Text Colors -->
-    <color name="text_primary">#FFFFFF</color>
-    <color name="text_secondary">#9CA3AF</color>
-    <color name="text_tertiary">#6B7280</color>
-    <color name="text_disabled">#4B5563</color>
+    <color name="text_primary">#F7F8F8</color>
+    <color name="text_secondary">#D0D6E0</color>
+    <color name="text_tertiary">#8A8F98</color>
+    <color name="text_quaternary">#62666D</color>
     
-    <!-- Accent Colors - Indigo Violet -->
-    <color name="accent_primary">#5E5CE6</color>
-    <color name="accent_hover">#7371EF</color>
-    <color name="accent_pressed">#4845D2</color>
-    <color name="accent_subtle">#1E1D3D</color>
+    <!-- Accent Colors -->
+    <color name="accent_primary">#5E6AD2</color>
+    <color name="accent_hover">#6B76DB</color>
+    <color name="accent_pressed">#5159C4</color>
+    <color name="accent_subtle">#14FFFFFF</color>
     
     <!-- Status Colors -->
     <color name="success">#10B981</color>
-    <color name="success_subtle">#1A2E26</color>
+    <color name="success_bg">#1F10B981</color>
+    <color name="success_border">#4010B981</color>
+    
     <color name="danger">#EF4444</color>
-    <color name="danger_subtle">#2E1A1A</color>
+    <color name="danger_bg">#1FEF4444</color>
+    <color name="danger_border">#33EF4444</color>
+    
     <color name="warning">#F59E0B</color>
-    <color name="warning_subtle">#2E2519</color>
+    <color name="warning_bg">#1FF59E0B</color>
+    <color name="warning_border">#33F59E0B</color>
+    
+    <color name="info">#3B82F6</color>
+    <color name="info_bg">#1F3B82F6</color>
+    <color name="info_border">#333B82F6</color>
     
     <!-- Legacy Support -->
-    <color name="purple_200">#7371EF</color>
-    <color name="purple_500">#5E5CE6</color>
-    <color name="purple_700">#4845D2</color>
+    <color name="purple_200">#6B76DB</color>
+    <color name="purple_500">#5E6AD2</color>
+    <color name="purple_700">#5159C4</color>
     <color name="teal_200">#10B981</color>
     <color name="teal_700">#059669</color>
-    <color name="primary">#5E5CE6</color>
-    <color name="primary_dark">#4845D2</color>
-    <color name="accent">#5E5CE6</color>
+    <color name="primary">@color/accent_primary</color>
+    <color name="primary_dark">@color/accent_pressed</color>
+    <color name="accent">@color/accent_primary</color>
 </resources>
