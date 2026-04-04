@@ -29,6 +29,8 @@ jobs:
         cat android-app/app/google-services.json
       
     - name: Build Debug APK
+      env:
+        MAPS_API_KEY: ${{ secrets.MAPS_API_KEY }}
       run: |
         cd android-app
         ./gradlew assembleDebug --stacktrace
