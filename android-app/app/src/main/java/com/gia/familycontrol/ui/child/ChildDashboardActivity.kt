@@ -405,58 +405,102 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
 
     private fun sendSos() {
         Log.d("ChildDashboard", "=== SOS BUTTON CLICKED ===")
+        
+        val prefs = getSharedPreferences("gia_prefs", MODE_PRIVATE)
+        val deviceId = prefs.getLong("device_id", -1L)
+        
+        Log.d("ChildDashboard", "Device ID: $deviceId")
+        
+        if (deviceId == -1L) {
+            Log.e("ChildDashboard", "No device ID - not paired")
+            AlertDialog.Builder(this)
+                .setTitle("⚠️ Not Paired")
+                .setMessage("You must pair with your parent before you can send SOS alerts.\n\nPlease enter your parent's pair code and click 'Pair with Parent'.")
+                .setPositiveButton("OK") { _, _ ->
+                    binding.etPairCode.requestFocus()
+                }
+                .show()
+            return
+        }
+        
+        // Show loading
+        val progressDialog = AlertDialog.Builder(this)
+            .setTitle("🆘 Sending SOS...")
+            .setMessage("Alerting your parent...")
+            .setCancelable(false)
+            .create()
+        progressDialog.show()
+        
         lifecycleScope.launch {
             try {
-                val deviceId = getSharedPreferences("gia_prefs", MODE_PRIVATE).getLong("device_id", -1L)
-                Log.d("ChildDashboard", "Device ID: $deviceId")
+                // Get current location if available
+                var locationStr = "Location unavailable"
+                try {
+                    val locationManager = getSystemService(android.location.LocationManager::class.java)
+                    val location = locationManager.getLastKnownLocation(android.location.LocationManager.GPS_PROVIDER)
+                        ?: locationManager.getLastKnownLocation(android.location.LocationManager.NETWORK_PROVIDER)
+                    
+                    if (location != null) {
+                        locationStr = "Lat: ${location.latitude}, Lng: ${location.longitude}"
+                    }
+                    Log.d("ChildDashboard", "Location: $locationStr")
+                } catch (e: Exception) {
+                    Log.e("ChildDashboard", "Failed to get location for SOS", e)
+                }
                 
-                if (deviceId != -1L) {
-                    // Get current location if available
-                    var locationStr = "Location unavailable"
-                    try {
-                        val locationManager = getSystemService(android.location.LocationManager::class.java)
-                        val location = locationManager.getLastKnownLocation(android.location.LocationManager.GPS_PROVIDER)
-                            ?: locationManager.getLastKnownLocation(android.location.LocationManager.NETWORK_PROVIDER)
-                        
-                        if (location != null) {
-                            locationStr = "Lat: ${location.latitude}, Lng: ${location.longitude}"
-                        }
-                        Log.d("ChildDashboard", "Location: $locationStr")
-                    } catch (e: Exception) {
-                        Log.e("ChildDashboard", "Failed to get location for SOS", e)
-                    }
+                Log.d("ChildDashboard", "Sending SOS command to backend...")
+                val response = api.sendCommand(SendCommandRequest(
+                    targetDeviceId = deviceId,
+                    commandType = "SOS",
+                    metadata = locationStr
+                ))
+                
+                progressDialog.dismiss()
+                
+                Log.d("ChildDashboard", "SOS response: ${response.code()} - ${response.message()}")
+                
+                if (response.isSuccessful) {
+                    Log.d("ChildDashboard", "✅ SOS sent successfully!")
                     
-                    Log.d("ChildDashboard", "Sending SOS command to backend...")
-                    val response = api.sendCommand(SendCommandRequest(
-                        targetDeviceId = deviceId,
-                        commandType = "SOS",
-                        metadata = locationStr
-                    ))
+                    // Show success dialog
+                    AlertDialog.Builder(this@ChildDashboardActivity)
+                        .setTitle("🆘 SOS Alert Sent!")
+                        .setMessage("✅ Your parent has been notified with an emergency alert!\n\nYour location: $locationStr\n\nHelp is on the way!")
+                        .setPositiveButton("OK", null)
+                        .show()
                     
-                    Log.d("ChildDashboard", "SOS response: ${response.code()} - ${response.message()}")
-                    
-                    if (response.isSuccessful) {
-                        Log.d("ChildDashboard", "SOS sent successfully!")
-                        Toast.makeText(this@ChildDashboardActivity, "🆘 SOS ALERT SENT TO PARENT!", Toast.LENGTH_LONG).show()
-                        
-                        // Show confirmation dialog
-                        AlertDialog.Builder(this@ChildDashboardActivity)
-                            .setTitle("🆘 SOS Alert Sent")
-                            .setMessage("Your parent has been notified with an emergency alert and your location.\n\nHelp is on the way!")
-                            .setPositiveButton("OK", null)
-                            .show()
-                    } else {
-                        val error = response.errorBody()?.string()
-                        Log.e("ChildDashboard", "SOS failed: $error")
-                        Toast.makeText(this@ChildDashboardActivity, "Failed to send SOS: ${response.message()}", Toast.LENGTH_LONG).show()
-                    }
+                    Toast.makeText(this@ChildDashboardActivity, "🆘 SOS ALERT SENT TO PARENT!", Toast.LENGTH_LONG).show()
                 } else {
-                    Log.e("ChildDashboard", "No device ID - not paired")
-                    Toast.makeText(this@ChildDashboardActivity, "Pair with parent first", Toast.LENGTH_SHORT).show()
+                    val errorBody = response.errorBody()?.string()
+                    Log.e("ChildDashboard", "SOS failed: ${response.code()} - $errorBody")
+                    
+                    val errorMessage = when {
+                        errorBody?.contains("not paired", ignoreCase = true) == true -> 
+                            "You are not paired with a parent yet.\n\nPlease pair with your parent first."
+                        errorBody?.contains("not registered", ignoreCase = true) == true -> 
+                            "Your parent's device is not registered.\n\nPlease ask your parent to open the app and login."
+                        errorBody?.contains("not found", ignoreCase = true) == true -> 
+                            "Parent device not found.\n\nPlease ask your parent to login to their app."
+                        else -> 
+                            "Failed to send SOS: ${response.message()}\n\nError code: ${response.code()}"
+                    }
+                    
+                    AlertDialog.Builder(this@ChildDashboardActivity)
+                        .setTitle("❌ SOS Failed")
+                        .setMessage(errorMessage)
+                        .setPositiveButton("OK", null)
+                        .show()
                 }
             } catch (e: Exception) {
+                progressDialog.dismiss()
                 Log.e("ChildDashboard", "Failed to send SOS", e)
-                Toast.makeText(this@ChildDashboardActivity, "Failed to send SOS: ${e.message}", Toast.LENGTH_LONG).show()
+                
+                AlertDialog.Builder(this@ChildDashboardActivity)
+                    .setTitle("❌ Connection Error")
+                    .setMessage("Failed to send SOS alert:\n\n${e.message}\n\nPlease check your internet connection and try again.")
+                    .setPositiveButton("Retry") { _, _ -> sendSos() }
+                    .setNegativeButton("Cancel", null)
+                    .show()
             }
         }
     }

@@ -27,10 +27,11 @@ class AppMonitorService : LifecycleService() {
     private val notifiedGames = mutableSetOf<String>()
     private val gameKeywords = listOf("game", "play", "arcade", "puzzle", "racing", "action", "adventure")
     private var lastForegroundApp: String? = null
+    private var consecutiveBlockCount = 0
     
     private val refreshReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            Log.d("AppMonitorService", "Received refresh broadcast")
+            Log.d("AppMonitorService", "📡 Received refresh broadcast")
             loadBlockedAppsFromPrefs()
         }
     }
@@ -98,49 +99,44 @@ class AppMonitorService : LifecycleService() {
 
     private fun startMonitoring() {
         monitorJob = lifecycleScope.launch {
-            var refreshCounter = 0
-            var lastBlockedApp: String? = null
-            var lastBlockTime = 0L
+            var apiRefreshCounter = 0
             
             while (isActive) {
-                // Refresh from API every 5 seconds
-                if (refreshCounter % 17 == 0) { // 17 * 0.3s = ~5s
-                    loadBlockedAppsFromApi()
-                }
-                refreshCounter++
-                
-                val foregroundApp = getForegroundApp()
-                val now = System.currentTimeMillis()
-                
-                // Only log when app changes
-                if (foregroundApp != lastForegroundApp && foregroundApp != null && foregroundApp != packageName) {
-                    Log.d("AppMonitorService", "📱 Current app: $foregroundApp")
-                    lastForegroundApp = foregroundApp
-                }
-                
-                if (foregroundApp != null && foregroundApp != packageName) {
-                    // Check if it's a blocked app - ALWAYS block, no debouncing
-                    if (foregroundApp in blockedPackages) {
-                        // Block immediately every time, even if same app
-                        if (foregroundApp != lastBlockedApp || now - lastBlockTime > 500) {
-                            Log.d("AppMonitorService", "⛔ BLOCKED APP DETECTED: $foregroundApp - FORCE CLOSING")
-                            forceCloseApp(foregroundApp)
-                            lastBlockedApp = foregroundApp
-                            lastBlockTime = now
-                        }
-                    } else {
-                        // Reset tracking when user switches to allowed app
-                        if (lastBlockedApp != null && foregroundApp != lastBlockedApp) {
-                            lastBlockedApp = null
-                        }
+                try {
+                    // Refresh from API every 3 seconds (10 cycles * 0.3s)
+                    if (apiRefreshCounter >= 10) {
+                        loadBlockedAppsFromApi()
+                        apiRefreshCounter = 0
+                    }
+                    apiRefreshCounter++
+                    
+                    val foregroundApp = getForegroundApp()
+                    
+                    // Log app changes
+                    if (foregroundApp != lastForegroundApp && foregroundApp != null && foregroundApp != packageName) {
+                        Log.d("AppMonitorService", "📱 App changed: $foregroundApp")
+                        lastForegroundApp = foregroundApp
+                        consecutiveBlockCount = 0 // Reset counter on app change
                     }
                     
-                    // Check if it's a game and notify parent (only once)
-                    if (isGameApp(foregroundApp) && foregroundApp !in notifiedGames) {
-                        notifiedGames.add(foregroundApp)
-                        notifyParentAboutGame(foregroundApp)
+                    if (foregroundApp != null && foregroundApp != packageName) {
+                        // Check if blocked - ALWAYS block, no exceptions
+                        if (foregroundApp in blockedPackages) {
+                            consecutiveBlockCount++
+                            Log.d("AppMonitorService", "⛔ BLOCKED APP DETECTED: $foregroundApp (attempt #$consecutiveBlockCount)")
+                            forceCloseApp(foregroundApp)
+                        }
+                        
+                        // Check if it's a game and notify parent (only once)
+                        if (isGameApp(foregroundApp) && foregroundApp !in notifiedGames) {
+                            notifiedGames.add(foregroundApp)
+                            notifyParentAboutGame(foregroundApp)
+                        }
                     }
+                } catch (e: Exception) {
+                    Log.e("AppMonitorService", "Error in monitoring loop", e)
                 }
+                
                 delay(300L) // Check every 0.3 seconds
             }
         }
@@ -148,20 +144,21 @@ class AppMonitorService : LifecycleService() {
     
     private fun forceCloseApp(packageName: String) {
         try {
-            Log.d("AppMonitorService", "🚫 Force closing: $packageName")
+            Log.d("AppMonitorService", "🚫 FORCE CLOSING: $packageName")
             
-            // IMMEDIATELY send to home screen - no delay
+            // Method 1: Send to home screen
             val homeIntent = Intent(Intent.ACTION_MAIN).apply {
                 addCategory(Intent.CATEGORY_HOME)
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or 
                         Intent.FLAG_ACTIVITY_CLEAR_TASK or
-                        Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
+                        Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS or
+                        Intent.FLAG_ACTIVITY_NO_ANIMATION
             }
             startActivity(homeIntent)
             
-            Log.d("AppMonitorService", "✅ Sent to home, blocked app closed: $packageName")
+            Log.d("AppMonitorService", "✅ App blocked: $packageName")
         } catch (e: Exception) {
-            Log.e("AppMonitorService", "❌ Failed to close blocked app", e)
+            Log.e("AppMonitorService", "❌ Failed to block app", e)
         }
     }
 

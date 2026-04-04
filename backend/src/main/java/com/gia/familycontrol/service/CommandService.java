@@ -32,41 +32,60 @@ public class CommandService {
         log.info("Child email: {}", childEmail);
         log.info("Request: {}", request);
         
+        // Get child user
         User child = userRepository.findByEmail(childEmail)
-                .orElseThrow(() -> new RuntimeException("Child not found"));
+                .orElseThrow(() -> {
+                    log.error("Child user not found: {}", childEmail);
+                    return new RuntimeException("Child user not found");
+                });
         
         log.info("Child found: {} (ID: {})", child.getFullName(), child.getId());
         log.info("Child parent_id: {}", child.getParentId());
         
+        // Check if child is paired with parent
         if (child.getParentId() == null) {
-            log.error("Child has no parent_id! Child must be paired with parent first.");
-            throw new RuntimeException("Child is not paired with a parent. Please pair first.");
+            log.error("CRITICAL: Child has no parent_id! Child must be paired first.");
+            log.error("Child ID: {}, Email: {}, Role: {}", child.getId(), child.getEmail(), child.getRole());
+            throw new RuntimeException("This device is not paired with a parent. Please pair with parent first to use SOS.");
         }
         
         // Get child's device
         Device childDevice = deviceRepository.findByUserId(child.getId())
-                .orElseThrow(() -> new RuntimeException("Device not found"));
+                .orElseThrow(() -> {
+                    log.error("Child device not found for user ID: {}", child.getId());
+                    return new RuntimeException("Child device not found");
+                });
         
-        log.info("Child device found: ID {}", childDevice.getId());
+        log.info("Child device found: ID {}, Name: {}", childDevice.getId(), childDevice.getDeviceName());
         
-        // Get parent
+        // Get parent user
         User parent = userRepository.findById(child.getParentId())
-                .orElseThrow(() -> new RuntimeException("Parent not found"));
+                .orElseThrow(() -> {
+                    log.error("Parent user not found with ID: {}", child.getParentId());
+                    return new RuntimeException("Parent user not found");
+                });
         
         log.info("Parent found: {} (ID: {})", parent.getFullName(), parent.getId());
         
         // Get parent's device
         Device parentDevice = deviceRepository.findByUserId(parent.getId())
-                .orElseThrow(() -> new RuntimeException("Parent device not found"));
+                .orElseThrow(() -> {
+                    log.error("Parent device not found for user ID: {}", parent.getId());
+                    return new RuntimeException("Parent device not found. Parent must login to their device first.");
+                });
         
-        log.info("Parent device found: ID {}, FCM: {}", parentDevice.getId(), parentDevice.getFcmToken());
+        log.info("Parent device found: ID {}, FCM token: {}", 
+                parentDevice.getId(), 
+                parentDevice.getFcmToken() != null ? "SET (" + parentDevice.getFcmToken().substring(0, 20) + "...)" : "NULL");
         
-        if (parentDevice.getFcmToken() == null || parentDevice.getFcmToken().isEmpty()) {
-            log.error("Parent device has no FCM token!");
-            throw new RuntimeException("Parent device is not registered for notifications");
+        // Validate parent FCM token
+        if (parentDevice.getFcmToken() == null || parentDevice.getFcmToken().trim().isEmpty()) {
+            log.error("CRITICAL: Parent device has no FCM token!");
+            log.error("Parent must open the app and login to receive SOS alerts.");
+            throw new RuntimeException("Parent device is not registered for notifications. Parent must login to their app first.");
         }
         
-        // Save SOS command
+        // Save SOS command to database
         Command command = new Command();
         command.setSenderId(child.getId());
         command.setTargetDeviceId(parentDevice.getId());
@@ -74,13 +93,27 @@ public class CommandService {
         command.setStatus(Command.Status.DELIVERED);
         commandRepository.save(command);
         
-        log.info("SOS command saved: ID {}", command.getId());
+        log.info("SOS command saved to database: ID {}", command.getId());
         
-        // Send urgent notification to parent with sound/vibration
-        log.info("Sending FCM SOS alert to parent...");
-        fcmService.sendSosAlert(parentDevice.getFcmToken(), child.getFullName(), request.getMetadata());
+        // Send urgent FCM notification to parent
+        log.info("Sending FCM SOS alert to parent device...");
+        log.info("FCM Token: {}...", parentDevice.getFcmToken().substring(0, 30));
+        log.info("Child Name: {}", child.getFullName());
+        log.info("Location: {}", request.getMetadata());
         
-        log.info("=== SOS COMMAND COMPLETED ===");
+        try {
+            fcmService.sendSosAlert(
+                parentDevice.getFcmToken(), 
+                child.getFullName(), 
+                request.getMetadata()
+            );
+            log.info("✅ SOS alert sent successfully via FCM");
+        } catch (Exception e) {
+            log.error("❌ Failed to send FCM SOS alert", e);
+            throw new RuntimeException("Failed to send SOS alert to parent: " + e.getMessage());
+        }
+        
+        log.info("=== SOS COMMAND COMPLETED SUCCESSFULLY ===");
         return command;
     }
     

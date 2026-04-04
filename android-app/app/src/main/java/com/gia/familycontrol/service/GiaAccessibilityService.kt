@@ -18,8 +18,8 @@ class GiaAccessibilityService : AccessibilityService() {
     private val handler = Handler(Looper.getMainLooper())
     private var isLocking = false
     private var blockedPackages = mutableSetOf<String>()
-    private var lastBlockedApp: String? = null
-    private var lastBlockTime = 0L
+    private var lastForegroundApp: String? = null
+    private var consecutiveBlockCount = 0
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         // Check lock state and blocked apps whenever any event happens
@@ -33,7 +33,7 @@ class GiaAccessibilityService : AccessibilityService() {
 
     override fun onServiceConnected() {
         super.onServiceConnected()
-        Log.d("GiaAccessibility", "Accessibility service connected")
+        Log.d("GiaAccessibility", "=== Accessibility service connected ===")
         loadBlockedApps()
         startMonitoring()
     }
@@ -41,49 +41,53 @@ class GiaAccessibilityService : AccessibilityService() {
     private fun loadBlockedApps() {
         val prefs = getSharedPreferences("gia_blocked_apps", Context.MODE_PRIVATE)
         blockedPackages = prefs.getStringSet("blocked", mutableSetOf())?.toMutableSet() ?: mutableSetOf()
-        Log.d("GiaAccessibility", "Loaded ${blockedPackages.size} blocked apps")
+        Log.d("GiaAccessibility", "📋 Loaded ${blockedPackages.size} blocked apps")
     }
 
     private fun startMonitoring() {
         handler.post(object : Runnable {
             override fun run() {
-                loadBlockedApps() // Refresh blocked apps
-                checkAndLock()
-                checkBlockedApps()
-                handler.postDelayed(this, 300) // Check every 0.3 seconds for instant blocking
+                try {
+                    loadBlockedApps() // Refresh blocked apps list
+                    checkAndLock()
+                    checkBlockedApps()
+                } catch (e: Exception) {
+                    Log.e("GiaAccessibility", "Error in monitoring", e)
+                }
+                handler.postDelayed(this, 300) // Check every 0.3 seconds
             }
         })
     }
     
     private fun checkBlockedApps() {
         val foregroundApp = getForegroundApp()
-        val now = System.currentTimeMillis()
         
         if (blockedPackages.isEmpty()) return
         
+        // Log app changes
+        if (foregroundApp != lastForegroundApp && foregroundApp != null) {
+            Log.d("GiaAccessibility", "📱 App: $foregroundApp")
+            lastForegroundApp = foregroundApp
+            consecutiveBlockCount = 0
+        }
+        
         if (foregroundApp != null && foregroundApp in blockedPackages && foregroundApp != packageName) {
-            // Block immediately every time, with minimal debounce
-            if (foregroundApp != lastBlockedApp || now - lastBlockTime > 500) {
-                Log.d("GiaAccessibility", "⛔️ BLOCKED: $foregroundApp - FORCE CLOSING")
-                
-                // Send to home screen immediately
-                val homeIntent = Intent(Intent.ACTION_MAIN).apply {
-                    addCategory(Intent.CATEGORY_HOME)
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                }
-                try {
-                    startActivity(homeIntent)
-                    lastBlockedApp = foregroundApp
-                    lastBlockTime = now
-                    Log.d("GiaAccessibility", "✅ Blocked and sent to home")
-                } catch (e: Exception) {
-                    Log.e("GiaAccessibility", "Failed to close app", e)
-                }
+            consecutiveBlockCount++
+            Log.d("GiaAccessibility", "⛔️ BLOCKED: $foregroundApp (attempt #$consecutiveBlockCount) - CLOSING")
+            
+            // Send to home screen immediately - NO DEBOUNCE
+            val homeIntent = Intent(Intent.ACTION_MAIN).apply {
+                addCategory(Intent.CATEGORY_HOME)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or 
+                        Intent.FLAG_ACTIVITY_CLEAR_TASK or
+                        Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS or
+                        Intent.FLAG_ACTIVITY_NO_ANIMATION
             }
-        } else if (foregroundApp != null && foregroundApp !in blockedPackages) {
-            // Reset tracking when user switches to allowed app
-            if (lastBlockedApp != null && foregroundApp != lastBlockedApp) {
-                lastBlockedApp = null
+            try {
+                startActivity(homeIntent)
+                Log.d("GiaAccessibility", "✅ Blocked")
+            } catch (e: Exception) {
+                Log.e("GiaAccessibility", "Failed to block", e)
             }
         }
     }
