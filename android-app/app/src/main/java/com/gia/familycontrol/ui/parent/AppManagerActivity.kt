@@ -89,27 +89,43 @@ class AppManagerActivity : AppCompatActivity() {
     }
 
     private fun toggleAppBlock(app: InstalledApp, block: Boolean) {
+        android.util.Log.d("AppManager", "=== TOGGLE APP BLOCK ===")
+        android.util.Log.d("AppManager", "App: ${app.appName} (${app.packageName})")
+        android.util.Log.d("AppManager", "Block: $block")
+        android.util.Log.d("AppManager", "Device ID: $childDeviceId")
+        
         lifecycleScope.launch {
             try {
-                val response = api.setAppControl(AppControlRequest(
+                val request = AppControlRequest(
                     deviceId = childDeviceId,
                     packageName = app.packageName,
                     controlType = if (block) "BLOCKED" else "ALLOWED"
-                ))
+                )
+                
+                android.util.Log.d("AppManager", "Sending request: $request")
+                
+                val response = api.setAppControl(request)
+                
+                android.util.Log.d("AppManager", "Response code: ${response.code()}")
+                android.util.Log.d("AppManager", "Response message: ${response.message()}")
                 
                 if (response.isSuccessful) {
+                    android.util.Log.d("AppManager", "SUCCESS! App ${if (block) "blocked" else "allowed"}")
                     app.isBlocked = block
                     binding.rvApps.adapter?.notifyDataSetChanged()
                     Toast.makeText(this@AppManagerActivity, 
-                        if (block) "${app.appName} blocked" else "${app.appName} allowed", 
+                        if (block) "✅ ${app.appName} blocked" else "✅ ${app.appName} allowed", 
                         Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(this@AppManagerActivity, "Failed to update", Toast.LENGTH_SHORT).show()
+                    val error = response.errorBody()?.string()
+                    android.util.Log.e("AppManager", "FAILED: $error")
+                    Toast.makeText(this@AppManagerActivity, "Failed: ${response.message()}", Toast.LENGTH_LONG).show()
                     // Revert switch
                     binding.rvApps.adapter?.notifyDataSetChanged()
                 }
             } catch (e: Exception) {
-                Toast.makeText(this@AppManagerActivity, "Failed to update: ${e.message}", Toast.LENGTH_SHORT).show()
+                android.util.Log.e("AppManager", "EXCEPTION", e)
+                Toast.makeText(this@AppManagerActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
                 // Revert switch
                 binding.rvApps.adapter?.notifyDataSetChanged()
             }

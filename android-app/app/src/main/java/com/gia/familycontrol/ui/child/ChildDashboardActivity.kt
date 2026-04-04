@@ -472,6 +472,9 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
             R.id.nav_sos -> {
                 sendSos()
             }
+            R.id.nav_debug -> {
+                startActivity(Intent(this, DebugActivity::class.java))
+            }
             R.id.nav_dark_mode -> {
                 toggleDarkMode(item)
             }

@@ -59,6 +59,7 @@
         <activity android:name=".ui.child.ChildDashboardActivity" android:exported="false"/>
         <activity android:name=".ui.child.QRScannerActivity" android:exported="false"
             android:screenOrientation="portrait"/>
+        <activity android:name=".ui.child.DebugActivity" android:exported="false"/>
         <activity
             android:name=".ui.child.LockScreenActivity"
             android:exported="false"

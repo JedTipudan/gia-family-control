@@ -26,6 +26,7 @@ class AppMonitorService : LifecycleService() {
     private var monitorJob: Job? = null
     private val notifiedGames = mutableSetOf<String>()
     private val gameKeywords = listOf("game", "play", "arcade", "puzzle", "racing", "action", "adventure")
+    private var lastForegroundApp: String? = null
     
     private val refreshReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -58,14 +59,14 @@ class AppMonitorService : LifecycleService() {
         val prefs = getSharedPreferences("gia_blocked_apps", MODE_PRIVATE)
         val blocked = prefs.getStringSet("blocked", mutableSetOf()) ?: mutableSetOf()
         blockedPackages = blocked.toMutableSet()
-        Log.d("AppMonitorService", "Loaded ${blockedPackages.size} blocked apps from prefs: $blockedPackages")
+        Log.d("AppMonitorService", "📋 Loaded ${blockedPackages.size} blocked apps from prefs: $blockedPackages")
     }
     
     private fun loadBlockedAppsFromApi() {
         lifecycleScope.launch {
             try {
                 val deviceId = fetchDeviceId() ?: return@launch
-                Log.d("AppMonitorService", "Loading blocked apps from API for device: $deviceId")
+                Log.d("AppMonitorService", "🔄 Loading blocked apps from API for device: $deviceId")
                 
                 val response = api.getAppControls(deviceId)
                 if (response.isSuccessful) {
@@ -74,7 +75,7 @@ class AppMonitorService : LifecycleService() {
                         ?.map { it.packageName }
                         ?.toSet() ?: emptySet()
                     
-                    Log.d("AppMonitorService", "API returned ${apiBlocked.size} blocked apps: $apiBlocked")
+                    Log.d("AppMonitorService", "📡 API returned ${apiBlocked.size} blocked apps: $apiBlocked")
                     
                     // Replace with API data (API is source of truth)
                     blockedPackages = apiBlocked.toMutableSet()
@@ -85,12 +86,12 @@ class AppMonitorService : LifecycleService() {
                         .putStringSet("blocked", blockedPackages)
                         .apply()
                     
-                    Log.d("AppMonitorService", "Updated blocked apps: $blockedPackages")
+                    Log.d("AppMonitorService", "✅ Updated blocked apps: $blockedPackages")
                 } else {
-                    Log.e("AppMonitorService", "API call failed: ${response.code()}")
+                    Log.e("AppMonitorService", "❌ API call failed: ${response.code()}")
                 }
             } catch (e: Exception) { 
-                Log.e("AppMonitorService", "Failed to load from API", e)
+                Log.e("AppMonitorService", "❌ Failed to load from API", e)
             }
         }
     }
@@ -99,23 +100,24 @@ class AppMonitorService : LifecycleService() {
         monitorJob = lifecycleScope.launch {
             var refreshCounter = 0
             while (isActive) {
-                // Refresh from API every 10 seconds (faster refresh)
-                if (refreshCounter % 20 == 0) {
+                // Refresh from API every 5 seconds for faster updates
+                if (refreshCounter % 10 == 0) {
                     loadBlockedAppsFromApi()
                 }
                 refreshCounter++
                 
                 val foregroundApp = getForegroundApp()
                 
-                // Log every 20 seconds for debugging
-                if (refreshCounter % 40 == 0) {
-                    Log.d("AppMonitorService", "Current app: $foregroundApp, Blocked: $blockedPackages")
+                // Only log when app changes
+                if (foregroundApp != lastForegroundApp && foregroundApp != null && foregroundApp != packageName) {
+                    Log.d("AppMonitorService", "📱 Current app: $foregroundApp")
+                    lastForegroundApp = foregroundApp
                 }
                 
                 if (foregroundApp != null && foregroundApp != packageName) {
                     // Check if it's a blocked app - check EVERY time
                     if (foregroundApp in blockedPackages) {
-                        Log.d("AppMonitorService", "⛔ BLOCKED APP: $foregroundApp - Force closing NOW")
+                        Log.d("AppMonitorService", "⛔ BLOCKED APP DETECTED: $foregroundApp - CLOSING NOW")
                         forceCloseApp(foregroundApp)
                     }
                     
@@ -125,46 +127,43 @@ class AppMonitorService : LifecycleService() {
                         notifyParentAboutGame(foregroundApp)
                     }
                 }
-                delay(500L) // Check every 0.5 seconds for faster blocking
+                delay(300L) // Check every 0.3 seconds for instant blocking
             }
         }
     }
     
     private fun forceCloseApp(packageName: String) {
         try {
-            // Show block overlay
-            val intent = Intent(this, AppBlockOverlayActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                putExtra("blocked_package", packageName)
-            }
-            startActivity(intent)
+            Log.d("AppMonitorService", "🚫 Force closing: $packageName")
             
-            // Send to home screen to close the blocked app
+            // Send to home screen immediately
             val homeIntent = Intent(Intent.ACTION_MAIN).apply {
                 addCategory(Intent.CATEGORY_HOME)
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             }
             startActivity(homeIntent)
             
-            Log.d("AppMonitorService", "Blocked app closed: $packageName")
+            // Show block message after a short delay
+            lifecycleScope.launch {
+                delay(200)
+                val intent = Intent(this@AppMonitorService, AppBlockOverlayActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    putExtra("blocked_package", packageName)
+                }
+                startActivity(intent)
+            }
+            
+            Log.d("AppMonitorService", "✅ Blocked app closed: $packageName")
         } catch (e: Exception) {
-            Log.e("AppMonitorService", "Failed to close blocked app", e)
+            Log.e("AppMonitorService", "❌ Failed to close blocked app", e)
         }
     }
 
     private fun getForegroundApp(): String? {
         val usm = getSystemService(UsageStatsManager::class.java) ?: return null
         val now = System.currentTimeMillis()
-        val stats = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, now - 5000, now)
+        val stats = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, now - 3000, now)
         return stats?.maxByOrNull { it.lastTimeUsed }?.packageName
-    }
-
-    private fun showBlockOverlay(packageName: String) {
-        val intent = Intent(this, AppBlockOverlayActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            putExtra("blocked_package", packageName)
-        }
-        startActivity(intent)
     }
 
     private fun isGameApp(packageName: String): Boolean {
@@ -205,10 +204,6 @@ class AppMonitorService : LifecycleService() {
         }
     }
 
-    fun updateBlockedApps(packages: Set<String>) {
-        blockedPackages = packages.toMutableSet()
-    }
-
     private fun fetchDeviceId(): Long? {
         val prefs = getSharedPreferences("gia_prefs", MODE_PRIVATE)
         val id = prefs.getLong("device_id", -1L)
@@ -218,7 +213,7 @@ class AppMonitorService : LifecycleService() {
     private fun buildNotification(): Notification =
         NotificationCompat.Builder(this, GiaApplication.CHANNEL_LOCATION)
             .setContentTitle("Gia Family Control")
-            .setContentText("App monitoring active")
+            .setContentText("App monitoring active - ${blockedPackages.size} apps blocked")
             .setSmallIcon(R.mipmap.ic_launcher)
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -235,7 +230,7 @@ class AppMonitorService : LifecycleService() {
     
     override fun onTaskRemoved(rootIntent: Intent?) {
         super.onTaskRemoved(rootIntent)
-        android.util.Log.d("AppMonitorService", "Task removed, restarting service")
+        Log.d("AppMonitorService", "Task removed, restarting service")
         
         val restartIntent = Intent(applicationContext, AppMonitorService::class.java)
         val pendingIntent = PendingIntent.getService(
