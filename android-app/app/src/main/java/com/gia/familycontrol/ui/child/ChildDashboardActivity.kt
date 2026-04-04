@@ -208,6 +208,12 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
     private fun startMonitoringServices() {
         Log.d("ChildDashboard", "User clicked Start Monitoring")
         
+        // Check battery optimization
+        if (!isBatteryOptimizationDisabled()) {
+            showBatteryOptimizationPrompt()
+            return
+        }
+        
         // Check Usage Stats permission FIRST
         if (!hasUsageStatsPermission()) {
             showUsageStatsPrompt()
@@ -232,6 +238,34 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
         binding.tvStatus.text = "✅ Monitoring active! Your parent can now track and lock your device."
         
         Toast.makeText(this, "✅ Monitoring started! Services running in background.", Toast.LENGTH_LONG).show()
+    }
+    
+    private fun isBatteryOptimizationDisabled(): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val pm = getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+            return pm.isIgnoringBatteryOptimizations(packageName)
+        }
+        return true
+    }
+    
+    private fun showBatteryOptimizationPrompt() {
+        AlertDialog.Builder(this)
+            .setTitle("⚠️ Battery Optimization")
+            .setMessage("To ensure app blocking and lock features work reliably, you must disable battery optimization for this app.\n\nThis is CRITICAL for the app to work in release builds.\n\nGo to Settings → Battery → Battery optimization → All apps → Gia Family Control → Don't optimize")
+            .setPositiveButton("Open Settings") { _, _ ->
+                try {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        val intent = Intent(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                        intent.data = android.net.Uri.parse("package:$packageName")
+                        startActivity(intent)
+                    }
+                } catch (e: Exception) {
+                    Toast.makeText(this, "Please disable battery optimization manually in Settings", Toast.LENGTH_LONG).show()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .setCancelable(false)
+            .show()
     }
     
     private fun hasUsageStatsPermission(): Boolean {

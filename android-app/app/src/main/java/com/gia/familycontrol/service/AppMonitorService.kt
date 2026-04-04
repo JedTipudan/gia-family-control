@@ -73,6 +73,11 @@ class AppMonitorService : LifecycleService() {
             stopSelf()
         }
     }
+    
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        super.onStartCommand(intent, flags, startId)
+        return START_STICKY
+    }
 
     private fun loadBlockedAppsFromPrefs() {
         val prefs = getSharedPreferences("gia_blocked_apps", MODE_PRIVATE)
@@ -263,10 +268,25 @@ class AppMonitorService : LifecycleService() {
             .build()
 
     override fun onDestroy() {
+        Log.d("AppMonitorService", "Service destroyed, scheduling restart")
         try {
             unregisterReceiver(refreshReceiver)
         } catch (e: Exception) {}
         monitorJob?.cancel()
+        
+        // Restart service
+        val restartIntent = Intent(applicationContext, AppMonitorService::class.java)
+        val pendingIntent = PendingIntent.getService(
+            applicationContext, 2, restartIntent,
+            PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
+        )
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
+        alarmManager.set(
+            android.app.AlarmManager.ELAPSED_REALTIME_WAKEUP,
+            android.os.SystemClock.elapsedRealtime() + 1000,
+            pendingIntent
+        )
+        
         super.onDestroy()
     }
     
