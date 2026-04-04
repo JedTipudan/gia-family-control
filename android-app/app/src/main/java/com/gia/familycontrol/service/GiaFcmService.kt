@@ -149,7 +149,6 @@ class GiaFcmService : FirebaseMessagingService() {
         } catch (e: Exception) {
             android.util.Log.e("GiaFcmService", "Failed to vibrate", e)
         }
-        }
     }
 
     private fun lockDevice() {
