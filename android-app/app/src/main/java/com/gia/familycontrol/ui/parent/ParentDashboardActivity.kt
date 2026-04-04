@@ -337,7 +337,7 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback, Navigat
                     binding.tvConnectionStatus.text = "Offline"
                     binding.tvLastSeen.text = "Connection error"
                 }
-                delay(5000L)
+                delay(3000L)
             }
         }
     }

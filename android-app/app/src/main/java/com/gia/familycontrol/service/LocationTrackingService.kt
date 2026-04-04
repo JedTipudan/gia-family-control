@@ -65,6 +65,15 @@ class LocationTrackingService : LifecycleService() {
                         return
                     }
                     
+                    // Check if we have internet connection
+                    val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
+                    val hasInternet = cm.activeNetwork != null
+                    
+                    if (!hasInternet) {
+                        Log.w("LocationService", "No internet connection, skipping update")
+                        return
+                    }
+                    
                     lifecycleScope.launch {
                         try {
                             val response = api.updateLocation(LocationUpdateRequest(
@@ -87,6 +96,7 @@ class LocationTrackingService : LifecycleService() {
                                 fcmToken = null,
                                 connectionType = getConnectionType()
                             ))
+                            Log.d("LocationService", "Device status updated: Battery=${getBatteryLevel()}%, Connection=${getConnectionType()}")
                         } catch (e: Exception) {
                             Log.e("LocationService", "Failed to send location", e)
                         }

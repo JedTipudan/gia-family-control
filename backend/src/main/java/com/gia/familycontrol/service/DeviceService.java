@@ -158,10 +158,10 @@ public class DeviceService {
                 .filter(opt -> opt.isPresent())
                 .map(opt -> {
                     Device device = opt.get();
-                    // Calculate if device is truly online (last seen within 30 seconds)
+                    // Calculate if device is truly online (last seen within 15 seconds)
                     if (device.getLastSeen() != null) {
                         long secondsSinceLastSeen = java.time.Duration.between(device.getLastSeen(), LocalDateTime.now()).getSeconds();
-                        boolean isActuallyOnline = secondsSinceLastSeen < 30;
+                        boolean isActuallyOnline = secondsSinceLastSeen < 15;
                         device.setIsOnline(isActuallyOnline);
                         
                         // If offline, clear connection type
@@ -169,10 +169,11 @@ public class DeviceService {
                             device.setConnectionType("OFFLINE");
                         }
                         
-                        System.out.println("Device ID: " + device.getId() + ", Last seen: " + secondsSinceLastSeen + "s ago, Online: " + isActuallyOnline);
+                        System.out.println("Device ID: " + device.getId() + ", Last seen: " + secondsSinceLastSeen + "s ago, Online: " + isActuallyOnline + ", ConnectionType: " + device.getConnectionType());
                     } else {
                         device.setIsOnline(false);
                         device.setConnectionType("OFFLINE");
+                        System.out.println("Device ID: " + device.getId() + ", Last seen: NULL, Online: false");
                     }
                     return device;
                 })
