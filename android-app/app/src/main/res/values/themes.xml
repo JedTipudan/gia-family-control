@@ -2,19 +2,19 @@
 <resources>
 
     <style name="Theme.GiaFamilyControl" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- MD Try Dark Mode Theme -->
+        <!-- Stripe Design System - Auto Dark/Light -->
         <item name="colorPrimary">@color/accent_primary</item>
         <item name="colorPrimaryVariant">@color/accent_pressed</item>
-        <item name="colorOnPrimary">@color/text_primary</item>
+        <item name="colorOnPrimary">@color/white</item>
         <item name="colorSecondary">@color/success</item>
         <item name="colorSecondaryVariant">@color/success</item>
-        <item name="colorOnSecondary">@color/text_primary</item>
+        <item name="colorOnSecondary">@color/white</item>
         
         <item name="android:windowBackground">@color/bg_primary</item>
         <item name="android:statusBarColor">@color/bg_primary</item>
         <item name="android:navigationBarColor">@color/bg_primary</item>
-        <item name="android:windowLightStatusBar">false</item>
-        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
         
         <item name="android:windowActivityTransitions">true</item>
         <item name="android:windowEnterTransition">@android:transition/fade</item>

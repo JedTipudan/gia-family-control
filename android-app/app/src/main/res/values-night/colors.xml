@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Stripe Dark Mode - Night Theme -->
+    
+    <!-- Background Colors -->
+    <color name="bg_primary">#0A0D1A</color>
+    <color name="bg_secondary">#0F1219</color>
+    <color name="bg_elevated">#1A1D2E</color>
+    <color name="bg_card">#1A1D2E</color>
+    
+    <!-- Border Colors -->
+    <color name="border_primary">#252938</color>
+    <color name="border_secondary">#2E3244</color>
+    <color name="border_subtle">#1F2332</color>
+    
+    <!-- Text Colors -->
+    <color name="text_primary">#F7F8FA</color>
+    <color name="text_secondary">#C5CAD8</color>
+    <color name="text_tertiary">#8891A8</color>
+    <color name="text_quaternary">#5E6678</color>
+    
+    <!-- Accent Colors - Stripe Purple -->
+    <color name="accent_primary">#6772E5</color>
+    <color name="accent_hover">#7A84F3</color>
+    <color name="accent_pressed">#5469D4</color>
+    <color name="accent_subtle">#1E2140</color>
+    
+    <!-- Status Colors -->
+    <color name="success">#24B47E</color>
+    <color name="success_bg">#1A2E26</color>
+    <color name="success_border">#2E4A3D</color>
+    
+    <color name="danger">#F05252</color>
+    <color name="danger_bg">#2E1A1A</color>
+    <color name="danger_border">#4A2E2E</color>
+    
+    <color name="warning">#F5A623</color>
+    <color name="warning_bg">#2E2519</color>
+    <color name="warning_border">#4A3D2E</color>
+    
+    <color name="info">#5469D4</color>
+    <color name="info_bg">#1E2140</color>
+    <color name="info_border">#2E3558</color>
+</resources>
