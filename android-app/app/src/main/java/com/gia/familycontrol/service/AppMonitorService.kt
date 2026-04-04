@@ -100,10 +100,16 @@ class AppMonitorService : LifecycleService() {
                 refreshCounter++
                 
                 val foregroundApp = getForegroundApp()
+                
+                // Log every 10 seconds for debugging
+                if (refreshCounter % 10 == 0) {
+                    Log.d("AppMonitorService", "Current app: $foregroundApp, Blocked: $blockedPackages")
+                }
+                
                 if (foregroundApp != null && foregroundApp != packageName) {
                     // Check if it's a blocked app - check EVERY time
                     if (foregroundApp in blockedPackages) {
-                        Log.d("AppMonitorService", "Blocked app detected: $foregroundApp - Force closing")
+                        Log.d("AppMonitorService", "⛔ BLOCKED APP: $foregroundApp - Force closing NOW")
                         forceCloseApp(foregroundApp)
                     }
                     

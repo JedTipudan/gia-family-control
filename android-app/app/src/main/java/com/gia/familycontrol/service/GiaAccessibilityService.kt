@@ -54,18 +54,34 @@ class GiaAccessibilityService : AccessibilityService() {
     }
     
     private fun checkBlockedApps() {
-        if (blockedPackages.isEmpty()) return
-        
         val foregroundApp = getForegroundApp()
+        
+        // Log current app for debugging
+        if (foregroundApp != null && foregroundApp != packageName) {
+            Log.d("GiaAccessibility", "Current foreground app: $foregroundApp")
+        }
+        
+        if (blockedPackages.isEmpty()) {
+            Log.d("GiaAccessibility", "No blocked apps in list")
+            return
+        }
+        
+        Log.d("GiaAccessibility", "Blocked apps: $blockedPackages")
+        
         if (foregroundApp != null && foregroundApp in blockedPackages && foregroundApp != packageName) {
-            Log.d("GiaAccessibility", "Blocked app detected: $foregroundApp - Closing")
+            Log.d("GiaAccessibility", "⛔ BLOCKED APP DETECTED: $foregroundApp - Closing NOW")
             
-            // Send to home screen
+            // Send to home screen immediately
             val homeIntent = Intent(Intent.ACTION_MAIN).apply {
                 addCategory(Intent.CATEGORY_HOME)
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             }
-            startActivity(homeIntent)
+            try {
+                startActivity(homeIntent)
+                Log.d("GiaAccessibility", "✅ Sent to home screen")
+            } catch (e: Exception) {
+                Log.e("GiaAccessibility", "Failed to close app", e)
+            }
         }
     }
     

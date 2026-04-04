@@ -404,9 +404,12 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
     }
 
     private fun sendSos() {
+        Log.d("ChildDashboard", "=== SOS BUTTON CLICKED ===")
         lifecycleScope.launch {
             try {
                 val deviceId = getSharedPreferences("gia_prefs", MODE_PRIVATE).getLong("device_id", -1L)
+                Log.d("ChildDashboard", "Device ID: $deviceId")
+                
                 if (deviceId != -1L) {
                     // Get current location if available
                     var locationStr = "Location unavailable"
@@ -418,25 +421,37 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
                         if (location != null) {
                             locationStr = "Lat: ${location.latitude}, Lng: ${location.longitude}"
                         }
+                        Log.d("ChildDashboard", "Location: $locationStr")
                     } catch (e: Exception) {
                         Log.e("ChildDashboard", "Failed to get location for SOS", e)
                     }
                     
-                    api.sendCommand(SendCommandRequest(
+                    Log.d("ChildDashboard", "Sending SOS command to backend...")
+                    val response = api.sendCommand(SendCommandRequest(
                         targetDeviceId = deviceId,
                         commandType = "SOS",
                         metadata = locationStr
                     ))
                     
-                    Toast.makeText(this@ChildDashboardActivity, "🆘 SOS ALERT SENT TO PARENT!", Toast.LENGTH_LONG).show()
+                    Log.d("ChildDashboard", "SOS response: ${response.code()} - ${response.message()}")
                     
-                    // Show confirmation dialog
-                    AlertDialog.Builder(this@ChildDashboardActivity)
-                        .setTitle("🆘 SOS Alert Sent")
-                        .setMessage("Your parent has been notified with an emergency alert and your location.\n\nHelp is on the way!")
-                        .setPositiveButton("OK", null)
-                        .show()
+                    if (response.isSuccessful) {
+                        Log.d("ChildDashboard", "SOS sent successfully!")
+                        Toast.makeText(this@ChildDashboardActivity, "🆘 SOS ALERT SENT TO PARENT!", Toast.LENGTH_LONG).show()
+                        
+                        // Show confirmation dialog
+                        AlertDialog.Builder(this@ChildDashboardActivity)
+                            .setTitle("🆘 SOS Alert Sent")
+                            .setMessage("Your parent has been notified with an emergency alert and your location.\n\nHelp is on the way!")
+                            .setPositiveButton("OK", null)
+                            .show()
+                    } else {
+                        val error = response.errorBody()?.string()
+                        Log.e("ChildDashboard", "SOS failed: $error")
+                        Toast.makeText(this@ChildDashboardActivity, "Failed to send SOS: ${response.message()}", Toast.LENGTH_LONG).show()
+                    }
                 } else {
+                    Log.e("ChildDashboard", "No device ID - not paired")
                     Toast.makeText(this@ChildDashboardActivity, "Pair with parent first", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {

@@ -59,8 +59,13 @@ class GiaFcmService : FirebaseMessagingService() {
     }
     
     private fun handleSosAlert(data: Map<String, String>) {
+        android.util.Log.d("GiaFcmService", "=== SOS ALERT RECEIVED ===")
+        android.util.Log.d("GiaFcmService", "Data: $data")
+        
         val childName = data["childName"] ?: "Your child"
         val location = data["location"] ?: "Unknown location"
+        
+        android.util.Log.d("GiaFcmService", "Child: $childName, Location: $location")
         
         val notificationManager = getSystemService(NotificationManager::class.java)
         
