@@ -13,6 +13,7 @@ public class CommandDto {
         @NotBlank
         private String commandType;
         private String packageName; // for app block/unblock
+        private String metadata; // for SOS location or other command data
     }
 
     @Data
