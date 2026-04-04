@@ -11,21 +11,10 @@ import ActivityLog from '../components/ActivityLog';
 const MAP_CONTAINER = { width: '100%', height: '100%' };
 const DEFAULT_CENTER = { lat: 14.5995, lng: 120.9842 };
 
-const MAP_DARK_STYLE = [
-  { elementType: 'geometry', stylers: [{ color: '#0f1011' }] },
-  { elementType: 'labels.text.stroke', stylers: [{ color: '#0f1011' }] },
-  { elementType: 'labels.text.fill', stylers: [{ color: '#62666d' }] },
-  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#191a1b' }] },
-  { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#23252a' }] },
-  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#08090a' }] },
-  { featureType: 'poi', stylers: [{ visibility: 'off' }] },
-  { featureType: 'transit', stylers: [{ visibility: 'off' }] },
-];
-
 const TABS = [
-  { id: 'map',  label: 'Live Map',    icon: '📍' },
+  { id: 'map', label: 'Live Map', icon: '📍' },
   { id: 'apps', label: 'App Controls', icon: '📱' },
-  { id: 'logs', label: 'Activity Log', icon: '📋' },
+  { id: 'logs', label: 'Activity', icon: '📋' },
 ];
 
 export default function DashboardPage() {
@@ -73,112 +62,132 @@ export default function DashboardPage() {
 
   return (
     <div style={s.shell}>
-      {/* Sidebar */}
-      <aside style={s.sidebar}>
-        <div style={s.sideTop}>
-          <div style={s.brand}>
-            <img src="/logo.jpg" alt="Gia" style={s.brandLogo} />
-            <span style={s.brandName}>Gia</span>
+      {/* Navigation */}
+      <nav style={s.nav}>
+        <div style={s.navContent}>
+          <div style={s.navLeft}>
+            <img src="/logo.jpg" alt="Gia" style={s.navLogo} />
+            <span style={s.navBrand}>Gia</span>
           </div>
-          <nav style={s.nav}>
+          <div style={s.navCenter}>
             {TABS.map(tab => (
               <button
                 key={tab.id}
-                style={{ ...s.navItem, ...(activeTab === tab.id ? s.navActive : {}) }}
+                style={{ ...s.navLink, ...(activeTab === tab.id ? s.navLinkActive : {}) }}
                 onClick={() => setActiveTab(tab.id)}
               >
-                <span style={s.navIcon}>{tab.icon}</span>
-                <span>{tab.label}</span>
+                {tab.label}
               </button>
             ))}
-          </nav>
+          </div>
+          <div style={s.navRight}>
+            <button style={s.themeToggle} onClick={toggleTheme}>
+              {isDark ? '☀️' : '🌙'}
+            </button>
+            <button style={s.logoutBtn} onClick={logout}>Sign out</button>
+          </div>
         </div>
-        <div style={s.sideBottom}>
-          <button style={s.themeBtn} onClick={toggleTheme}>
-            {isDark ? '☀️' : '🌙'} {isDark ? 'Light' : 'Dark'} Mode
-          </button>
-          <div style={s.userRow}>
-            <div style={s.avatar}>{user?.fullName?.[0]?.toUpperCase() || 'P'}</div>
-            <div style={s.userInfo}>
-              <span style={s.userName}>{user?.fullName || 'Parent'}</span>
-              <span style={s.userRole}>Parent</span>
+      </nav>
+
+      <DeviceStatusBar deviceId={childDeviceId} status={deviceStatus} />
+
+      {/* Hero Section */}
+      <section style={s.hero}>
+        <div style={s.heroContent}>
+          <h1 style={s.heroTitle}>Family Safety.<br/>Simplified.</h1>
+          <p style={s.heroSub}>Monitor, protect, and stay connected with your family.</p>
+          <div style={s.heroActions}>
+            <CmdButton 
+              label="Lock Device" 
+              icon="🔒" 
+              variant="danger"
+              loading={cmdLoading === 'LOCK'}
+              onClick={() => sendCommand('LOCK')} 
+            />
+            <CmdButton 
+              label="Unlock Device" 
+              icon="🔓" 
+              variant="success"
+              loading={cmdLoading === 'UNLOCK'}
+              onClick={() => sendCommand('UNLOCK')} 
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Content */}
+      <div style={s.content}>
+        {activeTab === 'map' && (
+          <section style={s.section}>
+            <div style={s.sectionContent}>
+              <h2 style={s.sectionTitle}>Live Location</h2>
+              <p style={s.sectionDesc}>Real-time tracking of your child's device.</p>
+              <div style={s.mapCard}>
+                {!location && (
+                  <div style={s.mapOverlay}>
+                    <span style={s.mapOverlayText}>⏳ Waiting for location data…</span>
+                  </div>
+                )}
+                {isLoaded ? (
+                  <GoogleMap
+                    mapContainerStyle={MAP_CONTAINER}
+                    center={location ? { lat: location.lat, lng: location.lng } : DEFAULT_CENTER}
+                    zoom={16}
+                    options={{ disableDefaultUI: false, zoomControl: true }}
+                  >
+                    {location && (
+                      <Marker
+                        position={{ lat: location.lat, lng: location.lng }}
+                        title="Child's Location"
+                      />
+                    )}
+                  </GoogleMap>
+                ) : (
+                  <div style={s.mapLoading}>Loading map…</div>
+                )}
+                {location && (
+                  <div style={s.coordsBar}>
+                    <span style={s.coordsLabel}>📍 Current Location</span>
+                    <span style={s.coords}>
+                      {location.lat?.toFixed(6)}, {location.lng?.toFixed(6)}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-          <button style={s.logoutBtn} onClick={logout}>Sign out</button>
-        </div>
-      </aside>
-
-      {/* Main */}
-      <main style={s.main}>
-        {/* Top bar */}
-        <div style={s.topbar}>
-          <div>
-            <h1 style={s.pageTitle}>{TABS.find(t => t.id === activeTab)?.label}</h1>
-          </div>
-          <div style={s.cmdRow}>
-            <CmdButton label="Lock" icon="🔒" color="#ef4444" loading={cmdLoading === 'LOCK'}
-              onClick={() => sendCommand('LOCK')} />
-            <CmdButton label="Unlock" icon="🔓" color="#10b981" loading={cmdLoading === 'UNLOCK'}
-              onClick={() => sendCommand('UNLOCK')} />
-          </div>
-        </div>
-
-        <DeviceStatusBar deviceId={childDeviceId} status={deviceStatus} />
-
-        {/* Content */}
-        <div style={s.content}>
-          {activeTab === 'map' && (
-            <div style={s.mapWrap}>
-              {!location && (
-                <div style={s.mapOverlay}>
-                  <span style={s.mapOverlayText}>⏳ Waiting for location data…</span>
-                </div>
-              )}
-              {isLoaded ? (
-                <GoogleMap
-                  mapContainerStyle={MAP_CONTAINER}
-                  center={location ? { lat: location.lat, lng: location.lng } : DEFAULT_CENTER}
-                  zoom={16}
-                  options={{ styles: MAP_DARK_STYLE, disableDefaultUI: false, zoomControl: true }}
-                >
-                  {location && (
-                    <Marker
-                      position={{ lat: location.lat, lng: location.lng }}
-                      title="Child's Location"
-                    />
-                  )}
-                </GoogleMap>
-              ) : (
-                <div style={s.mapLoading}>Loading map…</div>
-              )}
-              {location && (
-                <div style={s.coordsBar}>
-                  <span style={s.coordsLabel}>📍 Live Location</span>
-                  <span style={s.coords}>
-                    {location.lat?.toFixed(6)}, {location.lng?.toFixed(6)}
-                  </span>
-                </div>
-              )}
+          </section>
+        )}
+        {activeTab === 'apps' && (
+          <section style={s.section}>
+            <div style={s.sectionContent}>
+              <AppManagerPanel deviceId={childDeviceId} onBlockApp={(pkg) => sendCommand('BLOCK_APP', pkg)} />
             </div>
-          )}
-          {activeTab === 'apps' && (
-            <AppManagerPanel deviceId={childDeviceId} onBlockApp={(pkg) => sendCommand('BLOCK_APP', pkg)} />
-          )}
-          {activeTab === 'logs' && <ActivityLog deviceId={childDeviceId} />}
-        </div>
-      </main>
+          </section>
+        )}
+        {activeTab === 'logs' && (
+          <section style={s.section}>
+            <div style={s.sectionContent}>
+              <ActivityLog deviceId={childDeviceId} />
+            </div>
+          </section>
+        )}
+      </div>
     </div>
   );
 }
 
-function CmdButton({ label, icon, color, loading, onClick }) {
+function CmdButton({ label, icon, variant, loading, onClick }) {
+  const colors = {
+    danger: { bg: 'var(--danger)', hover: 'var(--danger)' },
+    success: { bg: 'var(--success)', hover: 'var(--success)' },
+  };
+  const color = colors[variant] || colors.success;
+  
   return (
     <button
       style={{
-        ...s.cmdBtn,
-        background: `${color}18`,
-        color,
-        borderColor: `${color}33`,
+        ...s.pillBtn,
+        background: color.bg,
         opacity: loading ? 0.6 : 1,
       }}
       onClick={onClick}
@@ -191,106 +200,110 @@ function CmdButton({ label, icon, color, loading, onClick }) {
 
 const s = {
   shell: {
-    display: 'flex', minHeight: '100vh',
+    minHeight: '100vh',
     background: 'var(--bg-primary)',
-    fontFamily: "'Inter', -apple-system, system-ui, sans-serif",
     color: 'var(--text-primary)',
   },
-  sidebar: {
-    width: 220, flexShrink: 0,
+  nav: {
+    position: 'sticky', top: 0, zIndex: 100,
     background: 'var(--bg-secondary)',
-    borderRight: '1px solid var(--border-subtle)',
-    display: 'flex', flexDirection: 'column',
-    justifyContent: 'space-between',
-    padding: '20px 0',
-    position: 'sticky', top: 0, height: '100vh',
+    borderBottom: '1px solid var(--border-primary)',
+    backdropFilter: 'blur(20px)',
   },
-  sideTop: { display: 'flex', flexDirection: 'column', gap: 28 },
-  brand: { display: 'flex', alignItems: 'center', gap: 10, padding: '0 16px' },
-  brandLogo: { width: 28, height: 28, borderRadius: '50%', border: '1px solid var(--border-subtle)' },
-  brandName: { fontSize: 15, fontWeight: 590, color: 'var(--text-primary)', letterSpacing: '-0.165px' },
-  nav: { display: 'flex', flexDirection: 'column', gap: 2, padding: '0 8px' },
-  navItem: {
-    display: 'flex', alignItems: 'center', gap: 10,
-    padding: '8px 10px', borderRadius: 6,
+  navContent: {
+    maxWidth: 980, margin: '0 auto',
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    padding: '12px 24px', height: 48,
+  },
+  navLeft: { display: 'flex', alignItems: 'center', gap: 10 },
+  navLogo: { width: 24, height: 24, borderRadius: 6 },
+  navBrand: { fontSize: 17, fontWeight: 600, color: 'var(--text-primary)' },
+  navCenter: { display: 'flex', gap: 24 },
+  navLink: {
     background: 'none', border: 'none', cursor: 'pointer',
-    fontSize: 13, fontWeight: 510, color: 'var(--text-tertiary)',
-    textAlign: 'left', width: '100%',
-    transition: 'background 0.12s, color 0.12s',
-    fontFamily: 'inherit',
+    fontSize: 14, fontWeight: 400, color: 'var(--text-tertiary)',
+    padding: '4px 0', transition: 'color 0.2s',
   },
-  navActive: {
-    background: 'var(--border-subtle)',
+  navLinkActive: { color: 'var(--text-primary)', fontWeight: 600 },
+  navRight: { display: 'flex', gap: 12, alignItems: 'center' },
+  themeToggle: {
+    background: 'none', border: 'none', cursor: 'pointer',
+    fontSize: 20, padding: 4,
+  },
+  logoutBtn: {
+    padding: '6px 14px',
+    background: 'var(--bg-primary)',
+    border: '1px solid var(--border-primary)',
+    borderRadius: 980, fontSize: 14, fontWeight: 600,
+    color: 'var(--text-primary)', cursor: 'pointer',
+    transition: 'all 0.2s',
+  },
+  hero: {
+    padding: '80px 24px',
+    textAlign: 'center',
+    background: 'var(--bg-secondary)',
+    borderBottom: '1px solid var(--border-primary)',
+  },
+  heroContent: { maxWidth: 980, margin: '0 auto' },
+  heroTitle: {
+    fontSize: 56, fontWeight: 600, lineHeight: 1.07,
+    letterSpacing: '-0.28px', margin: '0 0 16px',
     color: 'var(--text-primary)',
   },
-  navIcon: { fontSize: 14, width: 18, textAlign: 'center' },
-  sideBottom: { padding: '0 12px', display: 'flex', flexDirection: 'column', gap: 10 },
-  themeBtn: {
-    padding: '7px 12px',
-    background: 'var(--bg-elevated)',
-    border: '1px solid var(--border-subtle)',
-    borderRadius: 6, fontSize: 12, fontWeight: 510,
-    color: 'var(--text-tertiary)', cursor: 'pointer', fontFamily: 'inherit',
-    textAlign: 'center', transition: 'all 0.15s',
+  heroSub: {
+    fontSize: 21, fontWeight: 400, lineHeight: 1.19,
+    color: 'var(--text-secondary)', margin: '0 0 32px',
   },
-  userRow: { display: 'flex', alignItems: 'center', gap: 10, padding: '8px 4px' },
-  avatar: {
-    width: 28, height: 28, borderRadius: '50%',
-    background: 'var(--accent-primary)', color: '#fff',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    fontSize: 12, fontWeight: 590, flexShrink: 0,
+  heroActions: { display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' },
+  pillBtn: {
+    padding: '12px 24px', borderRadius: 980,
+    border: 'none', fontSize: 17, fontWeight: 600,
+    color: '#fff', cursor: 'pointer',
+    transition: 'opacity 0.2s, transform 0.1s',
+    display: 'inline-flex', alignItems: 'center', gap: 8,
   },
-  userInfo: { display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 },
-  userName: { fontSize: 13, fontWeight: 510, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
-  userRole: { fontSize: 11, color: 'var(--text-quaternary)' },
-  logoutBtn: {
-    padding: '7px 12px',
-    background: 'var(--bg-elevated)',
-    border: '1px solid var(--border-subtle)',
-    borderRadius: 6, fontSize: 12, fontWeight: 510,
-    color: 'var(--text-tertiary)', cursor: 'pointer', fontFamily: 'inherit',
+  content: { minHeight: '60vh' },
+  section: {
+    padding: '60px 24px',
+    borderBottom: '1px solid var(--border-primary)',
+  },
+  sectionContent: { maxWidth: 980, margin: '0 auto' },
+  sectionTitle: {
+    fontSize: 40, fontWeight: 600, lineHeight: 1.1,
+    margin: '0 0 12px', textAlign: 'center',
+  },
+  sectionDesc: {
+    fontSize: 21, fontWeight: 400, lineHeight: 1.19,
+    color: 'var(--text-secondary)', margin: '0 0 40px',
     textAlign: 'center',
   },
-  main: { flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 },
-  topbar: {
-    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    padding: '16px 24px',
-    borderBottom: '1px solid var(--border-subtle)',
-    background: 'var(--bg-secondary)',
-  },
-  pageTitle: { margin: 0, fontSize: 18, fontWeight: 590, color: 'var(--text-primary)', letterSpacing: '-0.24px' },
-  cmdRow: { display: 'flex', gap: 8 },
-  cmdBtn: {
-    padding: '7px 14px', borderRadius: 6,
-    border: '1px solid', fontSize: 13, fontWeight: 510,
-    cursor: 'pointer', fontFamily: 'inherit',
-    transition: 'opacity 0.15s',
-  },
-  content: { flex: 1, overflow: 'auto' },
-  mapWrap: {
+  mapCard: {
     position: 'relative',
-    height: 'calc(100vh - 120px)',
-    background: 'var(--bg-secondary)',
+    height: 500,
+    background: 'var(--bg-elevated)',
+    borderRadius: 18,
+    overflow: 'hidden',
+    boxShadow: 'var(--shadow) 3px 5px 30px 0px',
   },
   mapOverlay: {
     position: 'absolute', inset: 0, zIndex: 10,
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    background: 'rgba(8,9,10,0.6)', pointerEvents: 'none',
+    background: 'rgba(0,0,0,0.3)',
   },
-  mapOverlayText: { fontSize: 14, color: 'var(--text-tertiary)' },
+  mapOverlayText: { fontSize: 17, color: 'var(--text-secondary)' },
   mapLoading: {
     height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-    color: 'var(--text-quaternary)', fontSize: 14,
+    color: 'var(--text-tertiary)', fontSize: 17,
   },
   coordsBar: {
-    position: 'absolute', bottom: 16, left: '50%', transform: 'translateX(-50%)',
-    display: 'flex', alignItems: 'center', gap: 10,
-    padding: '8px 16px',
-    background: 'var(--bg-elevated)',
-    border: '1px solid var(--border-subtle)',
-    borderRadius: 8, backdropFilter: 'blur(8px)',
+    position: 'absolute', bottom: 20, left: '50%', transform: 'translateX(-50%)',
+    display: 'flex', alignItems: 'center', gap: 12,
+    padding: '10px 20px',
+    background: 'var(--bg-secondary)',
+    borderRadius: 980,
+    boxShadow: 'var(--shadow) 0px 4px 12px 0px',
     zIndex: 5,
   },
-  coordsLabel: { fontSize: 12, fontWeight: 510, color: 'var(--text-secondary)' },
-  coords: { fontSize: 12, color: 'var(--text-tertiary)', fontFamily: 'ui-monospace, "SF Mono", Menlo, monospace' },
+  coordsLabel: { fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' },
+  coords: { fontSize: 14, color: 'var(--text-tertiary)', fontFamily: 'ui-monospace, monospace' },
 };

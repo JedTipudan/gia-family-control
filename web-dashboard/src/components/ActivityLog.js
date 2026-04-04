@@ -28,8 +28,8 @@ export default function ActivityLog({ deviceId }) {
   return (
     <div style={s.container}>
       <div style={s.header}>
-        <span style={s.heading}>Activity Log</span>
-        <span style={s.count}>{logs.length} events</span>
+        <h2 style={s.heading}>Activity Log</h2>
+        <span style={s.count}>{logs.length}</span>
       </div>
       {logs.length === 0 ? (
         <div style={s.empty}>No activity recorded yet.</div>
@@ -59,35 +59,32 @@ export default function ActivityLog({ deviceId }) {
 }
 
 const s = {
-  container: {
-    padding: 24,
-    fontFamily: "'Inter', -apple-system, sans-serif",
-  },
-  header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
-  heading: { fontSize: 15, fontWeight: 590, color: 'var(--text-primary)', letterSpacing: '-0.165px' },
+  container: { padding: 0 },
+  header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 },
+  heading: { fontSize: 28, fontWeight: 600, color: 'var(--text-primary)', margin: 0 },
   count: {
-    padding: '2px 8px', borderRadius: 9999,
-    background: 'var(--border-subtle)',
-    border: '1px solid var(--border-subtle)',
-    fontSize: 12, fontWeight: 510, color: 'var(--text-quaternary)',
+    padding: '4px 12px', borderRadius: 980,
+    background: 'var(--bg-primary)',
+    fontSize: 15, fontWeight: 600, color: 'var(--text-tertiary)',
   },
   list: {
-    background: 'var(--bg-elevated)',
-    border: '1px solid var(--border-subtle)',
-    borderRadius: 8,
+    background: 'var(--bg-secondary)',
+    borderRadius: 12,
     overflow: 'hidden',
+    boxShadow: 'var(--shadow) 0px 2px 8px 0px',
   },
   row: {
-    display: 'flex', alignItems: 'center', gap: 12,
-    padding: '11px 16px',
+    display: 'flex', alignItems: 'center', gap: 16,
+    padding: '16px 20px',
+    borderBottom: '1px solid var(--border-primary)',
   },
   badge: {
-    padding: '2px 8px', borderRadius: 4,
-    border: '1px solid', fontSize: 11, fontWeight: 590,
-    letterSpacing: '0.02em', textTransform: 'uppercase', flexShrink: 0,
+    padding: '4px 10px', borderRadius: 980,
+    fontSize: 12, fontWeight: 600,
+    textTransform: 'uppercase', flexShrink: 0,
   },
-  pkg: { fontSize: 13, color: 'var(--text-tertiary)', fontFamily: 'ui-monospace, "SF Mono", Menlo, monospace', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
-  status: { fontSize: 12, fontWeight: 510, flexShrink: 0 },
-  time: { marginLeft: 'auto', fontSize: 12, color: 'var(--text-quaternary)', flexShrink: 0 },
-  empty: { padding: '32px 24px', color: 'var(--text-quaternary)', fontSize: 14, textAlign: 'center' },
+  pkg: { fontSize: 15, color: 'var(--text-tertiary)', fontFamily: 'ui-monospace, monospace', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+  status: { fontSize: 14, fontWeight: 600, flexShrink: 0 },
+  time: { marginLeft: 'auto', fontSize: 14, color: 'var(--text-quaternary)', flexShrink: 0 },
+  empty: { padding: '40px 24px', color: 'var(--text-tertiary)', fontSize: 17, textAlign: 'center' },
 };

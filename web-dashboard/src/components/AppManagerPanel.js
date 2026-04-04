@@ -49,8 +49,8 @@ export default function AppManagerPanel({ deviceId, onBlockApp }) {
   return (
     <div style={s.container}>
       <div style={s.header}>
-        <span style={s.heading}>App Controls</span>
-        <span style={s.count}>{controls.length} rules</span>
+        <h2 style={s.heading}>App Controls</h2>
+        <span style={s.count}>{controls.length}</span>
       </div>
 
       <form onSubmit={handleAdd} style={s.addRow}>
@@ -95,70 +95,63 @@ export default function AppManagerPanel({ deviceId, onBlockApp }) {
 }
 
 const s = {
-  container: {
-    padding: 24,
-    fontFamily: "'Inter', -apple-system, sans-serif",
-  },
-  header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
-  heading: { fontSize: 15, fontWeight: 590, color: 'var(--text-primary)', letterSpacing: '-0.165px' },
+  container: { padding: 0 },
+  header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 },
+  heading: { fontSize: 28, fontWeight: 600, color: 'var(--text-primary)', margin: 0 },
   count: {
-    padding: '2px 8px', borderRadius: 9999,
-    background: 'var(--border-subtle)',
-    border: '1px solid var(--border-subtle)',
-    fontSize: 12, fontWeight: 510, color: 'var(--text-quaternary)',
+    padding: '4px 12px', borderRadius: 980,
+    background: 'var(--bg-primary)',
+    fontSize: 15, fontWeight: 600, color: 'var(--text-tertiary)',
   },
-  addRow: { display: 'flex', gap: 8, marginBottom: 16 },
+  addRow: { display: 'flex', gap: 8, marginBottom: 20 },
   input: {
-    flex: 1, padding: '9px 14px',
-    background: 'var(--bg-elevated)',
-    border: '1px solid var(--border-subtle)',
-    borderRadius: 6, fontSize: 13, color: 'var(--text-primary)',
-    fontFamily: 'ui-monospace, "SF Mono", Menlo, monospace',
-    outline: 'none',
+    flex: 1, padding: '12px 16px',
+    background: 'var(--bg-primary)',
+    border: '1px solid var(--border-primary)',
+    borderRadius: 8, fontSize: 17, color: 'var(--text-primary)',
+    fontFamily: 'ui-monospace, monospace',
   },
   addBtn: {
-    padding: '9px 16px',
+    padding: '12px 20px',
     background: 'var(--accent-primary)', color: '#fff',
-    border: 'none', borderRadius: 6,
-    fontSize: 13, fontWeight: 510, cursor: 'pointer',
-    fontFamily: 'inherit', whiteSpace: 'nowrap',
+    border: 'none', borderRadius: 980,
+    fontSize: 17, fontWeight: 600, cursor: 'pointer',
+    whiteSpace: 'nowrap',
   },
   list: {
-    background: 'var(--bg-elevated)',
-    border: '1px solid var(--border-subtle)',
-    borderRadius: 8, overflow: 'hidden',
+    background: 'var(--bg-secondary)',
+    borderRadius: 12, overflow: 'hidden',
+    boxShadow: 'var(--shadow) 0px 2px 8px 0px',
   },
   row: {
     display: 'flex', alignItems: 'center',
     justifyContent: 'space-between',
-    padding: '11px 16px',
+    padding: '16px 20px',
+    borderBottom: '1px solid var(--border-primary)',
   },
-  rowLeft: { display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 },
+  rowLeft: { display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: 1 },
   pkg: {
-    fontSize: 13, color: 'var(--text-secondary)',
-    fontFamily: 'ui-monospace, "SF Mono", Menlo, monospace',
+    fontSize: 15, color: 'var(--text-primary)',
+    fontFamily: 'ui-monospace, monospace',
     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
   },
   badge: {
-    padding: '2px 7px', borderRadius: 4,
-    fontSize: 11, fontWeight: 590, flexShrink: 0,
-    textTransform: 'uppercase', letterSpacing: '0.02em',
-    border: '1px solid',
+    padding: '4px 10px', borderRadius: 980,
+    fontSize: 12, fontWeight: 600, flexShrink: 0,
+    textTransform: 'uppercase',
   },
-  badgeBlocked: { background: 'var(--danger-bg)', color: 'var(--danger)', borderColor: 'var(--danger-border)' },
-  badgeAllowed: { background: 'var(--success-bg)', color: 'var(--success)', borderColor: 'var(--success-border)' },
+  badgeBlocked: { background: 'var(--danger-bg)', color: 'var(--danger)' },
+  badgeAllowed: { background: 'var(--success-bg)', color: 'var(--success)' },
   toggleBtn: {
-    padding: '5px 14px', borderRadius: 6,
-    fontSize: 12, fontWeight: 510, cursor: 'pointer',
-    border: '1px solid', fontFamily: 'inherit', flexShrink: 0,
+    padding: '8px 16px', borderRadius: 980,
+    fontSize: 14, fontWeight: 600, cursor: 'pointer',
+    border: 'none', flexShrink: 0,
   },
   toggleUnblock: {
-    background: 'var(--bg-elevated)', color: 'var(--text-secondary)',
-    borderColor: 'var(--border-subtle)',
+    background: 'var(--bg-primary)', color: 'var(--text-primary)',
   },
   toggleBlock: {
-    background: 'var(--danger-bg)', color: 'var(--danger)',
-    borderColor: 'var(--danger-border)',
+    background: 'var(--danger)', color: '#fff',
   },
-  empty: { padding: '32px 24px', color: 'var(--text-quaternary)', fontSize: 14, textAlign: 'center' },
+  empty: { padding: '40px 24px', color: 'var(--text-tertiary)', fontSize: 17, textAlign: 'center' },
 };

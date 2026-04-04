@@ -1,44 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Stripe Dark Mode - Night Theme -->
+    <!-- Apple Design System - Dark Mode -->
     
     <!-- Background Colors -->
-    <color name="bg_primary">#0A0D1A</color>
-    <color name="bg_secondary">#0F1219</color>
-    <color name="bg_elevated">#1A1D2E</color>
-    <color name="bg_card">#1A1D2E</color>
+    <color name="bg_primary">#000000</color>
+    <color name="bg_secondary">#1C1C1E</color>
+    <color name="bg_elevated">#2C2C2E</color>
+    <color name="bg_card">#2C2C2E</color>
     
     <!-- Border Colors -->
-    <color name="border_primary">#252938</color>
-    <color name="border_secondary">#2E3244</color>
-    <color name="border_subtle">#1F2332</color>
+    <color name="border_primary">#1AFFFFFF</color>
+    <color name="border_secondary">#14FFFFFF</color>
+    <color name="border_subtle">#14FFFFFF</color>
     
     <!-- Text Colors -->
-    <color name="text_primary">#F7F8FA</color>
-    <color name="text_secondary">#C5CAD8</color>
-    <color name="text_tertiary">#8891A8</color>
-    <color name="text_quaternary">#5E6678</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#CCFFFFFF</color>
+    <color name="text_tertiary">#99FFFFFF</color>
+    <color name="text_quaternary">#7AFFFFFF</color>
     
-    <!-- Accent Colors - Stripe Purple -->
-    <color name="accent_primary">#6772E5</color>
-    <color name="accent_hover">#7A84F3</color>
-    <color name="accent_pressed">#5469D4</color>
-    <color name="accent_subtle">#1E2140</color>
+    <!-- Accent Colors - Apple Blue -->
+    <color name="accent_primary">#0A84FF</color>
+    <color name="accent_hover">#409CFF</color>
+    <color name="accent_pressed">#0077ED</color>
+    <color name="accent_subtle">#260A84FF</color>
     
     <!-- Status Colors -->
-    <color name="success">#24B47E</color>
-    <color name="success_bg">#1A2E26</color>
-    <color name="success_border">#2E4A3D</color>
+    <color name="success">#30D158</color>
+    <color name="success_bg">#2630D158</color>
+    <color name="success_border">#4D30D158</color>
     
-    <color name="danger">#F05252</color>
-    <color name="danger_bg">#2E1A1A</color>
-    <color name="danger_border">#4A2E2E</color>
+    <color name="danger">#FF453A</color>
+    <color name="danger_bg">#26FF453A</color>
+    <color name="danger_border">#4DFF453A</color>
     
-    <color name="warning">#F5A623</color>
-    <color name="warning_bg">#2E2519</color>
-    <color name="warning_border">#4A3D2E</color>
+    <color name="warning">#FF9F0A</color>
+    <color name="warning_bg">#26FF9F0A</color>
+    <color name="warning_border">#4DFF9F0A</color>
     
-    <color name="info">#5469D4</color>
-    <color name="info_bg">#1E2140</color>
-    <color name="info_border">#2E3558</color>
+    <color name="info">#0A84FF</color>
+    <color name="info_bg">#260A84FF</color>
+    <color name="info_border">#4D0A84FF</color>
 </resources>
