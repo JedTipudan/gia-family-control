@@ -126,13 +126,15 @@ public class DeviceService {
                 });
 
         if (update.getBatteryLevel() != null) device.setBatteryLevel(update.getBatteryLevel());
-        if (update.getIsOnline() != null) device.setIsOnline(update.getIsOnline());
+        // Always set isOnline to true when receiving an update (device is clearly online if it's sending data)
+        device.setIsOnline(true);
         if (update.getFcmToken() != null) device.setFcmToken(update.getFcmToken());
         if (update.getConnectionType() != null) device.setConnectionType(update.getConnectionType());
+        // CRITICAL: Always update lastSeen to current time
         device.setLastSeen(LocalDateTime.now());
         deviceRepository.save(device);
         
-        System.out.println("Device status updated: User=" + user.getEmail() + ", Device ID=" + device.getId() + ", Battery=" + device.getBatteryLevel() + "%, Connection=" + device.getConnectionType());
+        System.out.println("✅ Device status updated: User=" + user.getEmail() + ", Device ID=" + device.getId() + ", Battery=" + device.getBatteryLevel() + "%, Connection=" + device.getConnectionType() + ", LastSeen=" + device.getLastSeen());
     }
 
     public Device getDeviceByUserId(Long userId) {

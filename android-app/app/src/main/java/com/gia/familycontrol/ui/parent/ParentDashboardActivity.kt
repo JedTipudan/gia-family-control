@@ -255,17 +255,24 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback, Navigat
         pollingJob = lifecycleScope.launch {
             while (isActive) {
                 try {
+                    android.util.Log.d("ParentDashboard", "=== POLLING DEVICE STATUS ===")
                     // Get device info
                     val deviceResponse = api.getChildDevices()
+                    android.util.Log.d("ParentDashboard", "API Response: ${deviceResponse.code()}")
+                    
                     if (deviceResponse.isSuccessful) {
                         deviceResponse.body()?.firstOrNull()?.let { device ->
+                            android.util.Log.d("ParentDashboard", "Device data: isOnline=${device.isOnline}, connectionType=${device.connectionType}, lastSeen=${device.lastSeen}, battery=${device.batteryLevel}")
+                            
                             // Update battery
                             binding.tvBattery.text = "${device.batteryLevel}%"
                             
                             // Update connection status
                             val isOnline = device.isOnline ?: false
+                            android.util.Log.d("ParentDashboard", "Calculated isOnline: $isOnline")
                             
                             if (isOnline) {
+                                android.util.Log.d("ParentDashboard", "🟢 Device is ONLINE")
                                 binding.statusIndicator.setBackgroundResource(R.drawable.status_online)
                                 when (device.connectionType) {
                                     "WIFI" -> {
@@ -283,6 +290,7 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback, Navigat
                                 }
                                 binding.tvLastSeen.text = "Active now"
                             } else {
+                                android.util.Log.d("ParentDashboard", "🔴 Device is OFFLINE")
                                 binding.statusIndicator.setBackgroundResource(R.drawable.status_offline)
                                 binding.tvConnectionIcon.text = "❌"
                                 binding.tvConnectionStatus.text = "Offline"
@@ -318,7 +326,9 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback, Navigat
                                 binding.tvLockStatus.text = "Unlocked"
                                 binding.tvLockIcon.text = "🔓"
                             }
-                        }
+                        } ?: android.util.Log.w("ParentDashboard", "No device in response body")
+                    } else {
+                        android.util.Log.e("ParentDashboard", "API call failed: ${deviceResponse.code()}")
                     }
                     
                     // Get location
@@ -332,6 +342,7 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback, Navigat
                         }
                     }
                 } catch (e: Exception) {
+                    android.util.Log.e("ParentDashboard", "Polling error", e)
                     binding.statusIndicator.setBackgroundResource(R.drawable.status_offline)
                     binding.tvConnectionIcon.text = "❌"
                     binding.tvConnectionStatus.text = "Offline"
