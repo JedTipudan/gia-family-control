@@ -45,6 +45,8 @@ public class CommandDto {
         private Integer batteryLevel;
         private Boolean isOnline;
         private String fcmToken;
+        private Boolean isCharging;
+        private Boolean isWifiConnected;
     }
     
     @Data

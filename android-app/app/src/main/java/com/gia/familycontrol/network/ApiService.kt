@@ -17,6 +17,9 @@ interface ApiService {
 
     @PUT("api/device/status")
     suspend fun updateDeviceStatus(@Body update: DeviceStatusUpdate): Response<Unit>
+    
+    @PUT("api/device/status")
+    suspend fun updateDeviceStatus(@Body request: DeviceStatusRequest): Response<Unit>
 
     @POST("api/location/update")
     suspend fun updateLocation(@Body request: LocationUpdateRequest): Response<Unit>

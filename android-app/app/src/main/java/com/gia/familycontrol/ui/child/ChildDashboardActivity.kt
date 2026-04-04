@@ -30,6 +30,7 @@ import com.gia.familycontrol.network.JWT_TOKEN_KEY
 import com.gia.familycontrol.network.RetrofitClient
 import com.gia.familycontrol.network.dataStore
 import com.gia.familycontrol.service.AppMonitorService
+import com.gia.familycontrol.service.DeviceStatusService
 import com.gia.familycontrol.service.LocationTrackingService
 import com.gia.familycontrol.service.LockMonitorService
 import com.google.android.material.navigation.NavigationView
@@ -361,6 +362,18 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
             Log.d("ChildDashboard", "Lock monitor service started")
         } catch (e: Exception) {
             Log.e("ChildDashboard", "Failed to start lock monitor service", e)
+        }
+        
+        try {
+            val statusIntent = Intent(this, DeviceStatusService::class.java)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(statusIntent)
+            } else {
+                startService(statusIntent)
+            }
+            Log.d("ChildDashboard", "Device status service started")
+        } catch (e: Exception) {
+            Log.e("ChildDashboard", "Failed to start device status service", e)
         }
     }
 

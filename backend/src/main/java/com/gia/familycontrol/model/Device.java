@@ -30,6 +30,12 @@ public class Device {
 
     @Column(name = "battery_level")
     private Integer batteryLevel = 0;
+    
+    @Column(name = "is_charging")
+    private Boolean isCharging = false;
+    
+    @Column(name = "is_wifi_connected")
+    private Boolean isWifiConnected = false;
 
     @Column(name = "is_online")
     private Boolean isOnline = false;
