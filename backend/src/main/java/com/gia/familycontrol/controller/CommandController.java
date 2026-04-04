@@ -5,6 +5,7 @@ import com.gia.familycontrol.model.Command;
 import com.gia.familycontrol.service.CommandService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
+@Slf4j
 public class CommandController {
 
     private final CommandService commandService;
@@ -22,6 +24,14 @@ public class CommandController {
     @PostMapping("/send-command")
     public ResponseEntity<Command> sendCommand(Principal principal,
                                                 @Valid @RequestBody CommandDto.SendCommandRequest request) {
+        // Check if principal is null
+        if (principal == null) {
+            log.error("Principal is null - user not authenticated");
+            return ResponseEntity.status(403).build();
+        }
+        
+        log.info("Send command request from: {}, type: {}", principal.getName(), request.getCommandType());
+        
         // Check if it's an SOS command from child
         if ("SOS".equals(request.getCommandType())) {
             return ResponseEntity.ok(commandService.sendSosCommand(principal.getName(), request));

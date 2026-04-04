@@ -3,6 +3,7 @@ package com.gia.familycontrol.ui.child
 import android.Manifest
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -203,6 +204,12 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
     private fun startMonitoringServices() {
         Log.d("ChildDashboard", "User clicked Start Monitoring")
         
+        // Check Usage Stats permission FIRST
+        if (!hasUsageStatsPermission()) {
+            showUsageStatsPrompt()
+            return
+        }
+        
         // Check if accessibility service is enabled
         if (!isAccessibilityServiceEnabled()) {
             showAccessibilityPrompt()
@@ -221,6 +228,41 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
         binding.tvStatus.text = "✅ Monitoring active! Your parent can now track and lock your device."
         
         Toast.makeText(this, "✅ Monitoring started! Services running in background.", Toast.LENGTH_LONG).show()
+    }
+    
+    private fun hasUsageStatsPermission(): Boolean {
+        val appOps = getSystemService(Context.APP_OPS_SERVICE) as android.app.AppOpsManager
+        val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            appOps.unsafeCheckOpNoThrow(
+                android.app.AppOpsManager.OPSTR_GET_USAGE_STATS,
+                android.os.Process.myUid(),
+                packageName
+            )
+        } else {
+            @Suppress("DEPRECATION")
+            appOps.checkOpNoThrow(
+                android.app.AppOpsManager.OPSTR_GET_USAGE_STATS,
+                android.os.Process.myUid(),
+                packageName
+            )
+        }
+        return mode == android.app.AppOpsManager.MODE_ALLOWED
+    }
+    
+    private fun showUsageStatsPrompt() {
+        AlertDialog.Builder(this)
+            .setTitle("⚠️ Permission Required")
+            .setMessage("To monitor and block apps, you must grant Usage Access permission.\n\nThis is REQUIRED for app blocking to work.\n\nGo to Settings → Apps → Special app access → Usage access → Gia Family Control → Enable")
+            .setPositiveButton("Open Settings") { _, _ ->
+                try {
+                    startActivity(Intent(android.provider.Settings.ACTION_USAGE_ACCESS_SETTINGS))
+                } catch (e: Exception) {
+                    Toast.makeText(this, "Please enable Usage Access manually in Settings", Toast.LENGTH_LONG).show()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .setCancelable(false)
+            .show()
     }
     
     private fun isAccessibilityServiceEnabled(): Boolean {
