@@ -12,6 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import com.gia.familycontrol.GiaApplication
 import com.gia.familycontrol.R
 import com.gia.familycontrol.model.LocationUpdateRequest
+import com.gia.familycontrol.model.DeviceStatusUpdate
 import com.gia.familycontrol.network.RetrofitClient
 import com.gia.familycontrol.ui.child.ChildDashboardActivity
 import com.google.android.gms.location.*

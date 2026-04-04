@@ -81,7 +81,8 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback, Navigat
                 com.gia.familycontrol.model.DeviceStatusUpdate(
                     batteryLevel = 100,
                     isOnline = true,
-                    fcmToken = fcmToken
+                    fcmToken = fcmToken,
+                    connectionType = null
                 )
             )
             android.util.Log.d("ParentDashboard", "Parent device record created/updated")

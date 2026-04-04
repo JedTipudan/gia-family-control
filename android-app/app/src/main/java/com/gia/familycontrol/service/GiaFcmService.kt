@@ -491,7 +491,8 @@ class GiaFcmService : FirebaseMessagingService() {
                     DeviceStatusUpdate(
                         batteryLevel = null,
                         isOnline = true,
-                        fcmToken = token
+                        fcmToken = token,
+                        connectionType = null
                     )
                 )
             } catch (e: Exception) { /* retry on next launch */ }
