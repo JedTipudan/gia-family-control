@@ -34,6 +34,12 @@ public class CommandService {
                 .orElseThrow(() -> new RuntimeException("Child not found"));
         
         log.info("Child found: {} (ID: {})", child.getFullName(), child.getId());
+        log.info("Child parent_id: {}", child.getParentId());
+        
+        if (child.getParentId() == null) {
+            log.error("Child has no parent_id! Child must be paired with parent first.");
+            throw new RuntimeException("Child is not paired with a parent. Please pair first.");
+        }
         
         // Get child's device
         Device childDevice = deviceRepository.findByUserId(child.getId())
@@ -52,6 +58,11 @@ public class CommandService {
                 .orElseThrow(() -> new RuntimeException("Parent device not found"));
         
         log.info("Parent device found: ID {}, FCM: {}", parentDevice.getId(), parentDevice.getFcmToken());
+        
+        if (parentDevice.getFcmToken() == null || parentDevice.getFcmToken().isEmpty()) {
+            log.error("Parent device has no FCM token!");
+            throw new RuntimeException("Parent device is not registered for notifications");
+        }
         
         // Save SOS command
         Command command = new Command();
