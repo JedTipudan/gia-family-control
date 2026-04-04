@@ -128,10 +128,11 @@ public class DeviceService {
         if (update.getBatteryLevel() != null) device.setBatteryLevel(update.getBatteryLevel());
         if (update.getIsOnline() != null) device.setIsOnline(update.getIsOnline());
         if (update.getFcmToken() != null) device.setFcmToken(update.getFcmToken());
+        if (update.getConnectionType() != null) device.setConnectionType(update.getConnectionType());
         device.setLastSeen(LocalDateTime.now());
         deviceRepository.save(device);
         
-        System.out.println("Device status updated: User=" + user.getEmail() + ", Device ID=" + device.getId() + ", FCM Token=" + (device.getFcmToken() != null ? "SET" : "NULL"));
+        System.out.println("Device status updated: User=" + user.getEmail() + ", Device ID=" + device.getId() + ", Battery=" + device.getBatteryLevel() + "%, Connection=" + device.getConnectionType());
     }
 
     public Device getDeviceByUserId(Long userId) {

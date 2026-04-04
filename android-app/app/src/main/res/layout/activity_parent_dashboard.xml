@@ -177,11 +177,64 @@
                             android:gravity="center">
 
                             <TextView
-                                android:id="@+id/tvLockIcon"
+                                android:id="@+id/tvConnectionIcon"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="🔓"
+                                android:text="📶"
                                 android:textSize="32sp"/>
+
+                            <TextView
+                                android:id="@+id/tvConnectionStatus"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Offline"
+                                android:textSize="18sp"
+                                android:textStyle="bold"
+                                android:textColor="?attr/textColorPrimary"
+                                android:layout_marginTop="8dp"/>
+
+                            <TextView
+                                android:id="@+id/tvLastSeen"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Last seen: --"
+                                android:textSize="10sp"
+                                android:textColor="?attr/textColorSecondary"/>
+
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                </LinearLayout>
+
+                <!-- Lock Status Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="2dp"
+                    app:cardBackgroundColor="?attr/cardBackgroundColor">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:padding="16dp"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:id="@+id/tvLockIcon"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="🔓"
+                            android:textSize="32sp"
+                            android:layout_marginEnd="16dp"/>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
 
                             <TextView
                                 android:id="@+id/tvLockStatus"
@@ -190,8 +243,7 @@
                                 android:text="Unlocked"
                                 android:textSize="18sp"
                                 android:textStyle="bold"
-                                android:textColor="?attr/textColorPrimary"
-                                android:layout_marginTop="8dp"/>
+                                android:textColor="?attr/textColorPrimary"/>
 
                             <TextView
                                 android:layout_width="wrap_content"
@@ -201,9 +253,9 @@
                                 android:textColor="?attr/textColorSecondary"/>
 
                         </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
 
-                </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
                 <!-- Map Card -->
                 <com.google.android.material.card.MaterialCardView

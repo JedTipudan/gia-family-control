@@ -78,6 +78,14 @@ class LocationTrackingService : LifecycleService() {
                             } else {
                                 Log.e("LocationService", "Location send failed: ${response.code()} - ${response.message()}")
                             }
+                            
+                            // Update device status with battery and connection type
+                            api.updateDeviceStatus(DeviceStatusUpdate(
+                                batteryLevel = getBatteryLevel(),
+                                isOnline = true,
+                                fcmToken = null,
+                                connectionType = getConnectionType()
+                            ))
                         } catch (e: Exception) {
                             Log.e("LocationService", "Failed to send location", e)
                         }
@@ -105,6 +113,18 @@ class LocationTrackingService : LifecycleService() {
     private fun getBatteryLevel(): Int {
         val bm = getSystemService(android.os.BatteryManager::class.java)
         return bm.getIntProperty(android.os.BatteryManager.BATTERY_PROPERTY_CAPACITY)
+    }
+
+    private fun getConnectionType(): String {
+        val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
+        val network = cm.activeNetwork ?: return "OFFLINE"
+        val capabilities = cm.getNetworkCapabilities(network) ?: return "OFFLINE"
+        
+        return when {
+            capabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI) -> "WIFI"
+            capabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_CELLULAR) -> "MOBILE_DATA"
+            else -> "OFFLINE"
+        }
     }
 
     private fun buildNotification(): Notification {

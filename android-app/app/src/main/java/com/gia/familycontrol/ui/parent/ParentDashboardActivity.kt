@@ -253,6 +253,53 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback, Navigat
         pollingJob = lifecycleScope.launch {
             while (isActive) {
                 try {
+                    // Get device info
+                    val deviceResponse = api.getChildDevices()
+                    if (deviceResponse.isSuccessful) {
+                        deviceResponse.body()?.firstOrNull()?.let { device ->
+                            // Update battery
+                            binding.tvBattery.text = "${device.batteryLevel}%"
+                            
+                            // Update connection status
+                            val now = System.currentTimeMillis()
+                            val isOnline = device.isOnline && device.lastSeen != null
+                            
+                            if (isOnline) {
+                                binding.statusIndicator.setBackgroundResource(R.drawable.status_online)
+                                when (device.connectionType) {
+                                    "WIFI" -> {
+                                        binding.tvConnectionIcon.text = "📶"
+                                        binding.tvConnectionStatus.text = "WiFi"
+                                    }
+                                    "MOBILE_DATA" -> {
+                                        binding.tvConnectionIcon.text = "📱"
+                                        binding.tvConnectionStatus.text = "Mobile Data"
+                                    }
+                                    else -> {
+                                        binding.tvConnectionIcon.text = "❓"
+                                        binding.tvConnectionStatus.text = "Online"
+                                    }
+                                }
+                                binding.tvLastSeen.text = "Active now"
+                            } else {
+                                binding.statusIndicator.setBackgroundResource(R.drawable.status_offline)
+                                binding.tvConnectionIcon.text = "❌"
+                                binding.tvConnectionStatus.text = "Offline"
+                                binding.tvLastSeen.text = device.lastSeen?.let { "Last: $it" } ?: "Never"
+                            }
+                            
+                            // Update lock status
+                            if (device.isLocked) {
+                                binding.tvLockStatus.text = "Locked"
+                                binding.tvLockIcon.text = "🔒"
+                            } else {
+                                binding.tvLockStatus.text = "Unlocked"
+                                binding.tvLockIcon.text = "🔓"
+                            }
+                        }
+                    }
+                    
+                    // Get location
                     val response = api.getLatestLocation(childDeviceId)
                     if (response.isSuccessful) {
                         response.body()?.let { loc ->
@@ -260,11 +307,12 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback, Navigat
                             map?.clear()
                             map?.addMarker(MarkerOptions().position(pos).title("📍 Child"))
                             map?.animateCamera(CameraUpdateFactory.newLatLngZoom(pos, 16f))
-                            binding.statusIndicator.setBackgroundResource(R.drawable.status_online)
                         }
                     }
                 } catch (e: Exception) {
                     binding.statusIndicator.setBackgroundResource(R.drawable.status_offline)
+                    binding.tvConnectionIcon.text = "❌"
+                    binding.tvConnectionStatus.text = "Offline"
                 }
                 delay(8000L)
             }

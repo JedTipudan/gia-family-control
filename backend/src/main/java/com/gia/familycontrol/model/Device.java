@@ -34,6 +34,9 @@ public class Device {
     @Column(name = "is_online")
     private Boolean isOnline = false;
 
+    @Column(name = "connection_type")
+    private String connectionType; // WIFI, MOBILE_DATA, OFFLINE
+
     @Column(name = "is_locked")
     private Boolean isLocked = false;
 

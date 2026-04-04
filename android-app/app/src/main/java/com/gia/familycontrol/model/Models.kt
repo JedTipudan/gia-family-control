@@ -26,13 +26,17 @@ data class DeviceResponse(
     val id: Long,
     val deviceName: String?,
     val isLocked: Boolean,
-    val batteryLevel: Int
+    val batteryLevel: Int,
+    val isOnline: Boolean,
+    val connectionType: String?,
+    val lastSeen: String?
 )
 
 data class DeviceStatusUpdate(
     val batteryLevel: Int?,
     val isOnline: Boolean?,
-    val fcmToken: String?
+    val fcmToken: String?,
+    val connectionType: String? // WIFI, MOBILE_DATA, OFFLINE
 )
 
 data class LocationUpdateRequest(

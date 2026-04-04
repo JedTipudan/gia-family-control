@@ -30,6 +30,7 @@ CREATE TABLE devices (
     fcm_token       TEXT,
     battery_level   INT DEFAULT 0,
     is_online       BOOLEAN DEFAULT FALSE,
+    connection_type VARCHAR(20) DEFAULT 'OFFLINE' COMMENT 'WIFI, MOBILE_DATA, OFFLINE',
     is_locked       BOOLEAN DEFAULT FALSE,
     last_seen       DATETIME,
     created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
