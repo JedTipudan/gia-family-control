@@ -65,23 +65,29 @@ class AppMonitorService : LifecycleService() {
         lifecycleScope.launch {
             try {
                 val deviceId = fetchDeviceId() ?: return@launch
+                Log.d("AppMonitorService", "Loading blocked apps from API for device: $deviceId")
+                
                 val response = api.getAppControls(deviceId)
                 if (response.isSuccessful) {
                     val apiBlocked = response.body()
                         ?.filter { it.controlType == "BLOCKED" }
                         ?.map { it.packageName }
-                        ?.toMutableSet() ?: mutableSetOf()
+                        ?.toSet() ?: emptySet()
                     
-                    // Merge with SharedPreferences
-                    blockedPackages.addAll(apiBlocked)
+                    Log.d("AppMonitorService", "API returned ${apiBlocked.size} blocked apps: $apiBlocked")
                     
-                    // Update SharedPreferences to sync
+                    // Replace with API data (API is source of truth)
+                    blockedPackages = apiBlocked.toMutableSet()
+                    
+                    // Update SharedPreferences
                     getSharedPreferences("gia_blocked_apps", MODE_PRIVATE)
                         .edit()
                         .putStringSet("blocked", blockedPackages)
                         .apply()
                     
-                    Log.d("AppMonitorService", "Synced with API. Total blocked: ${blockedPackages.size}")
+                    Log.d("AppMonitorService", "Updated blocked apps: $blockedPackages")
+                } else {
+                    Log.e("AppMonitorService", "API call failed: ${response.code()}")
                 }
             } catch (e: Exception) { 
                 Log.e("AppMonitorService", "Failed to load from API", e)
@@ -93,16 +99,16 @@ class AppMonitorService : LifecycleService() {
         monitorJob = lifecycleScope.launch {
             var refreshCounter = 0
             while (isActive) {
-                // Refresh from API every 30 seconds
-                if (refreshCounter % 30 == 0) {
+                // Refresh from API every 10 seconds (faster refresh)
+                if (refreshCounter % 20 == 0) {
                     loadBlockedAppsFromApi()
                 }
                 refreshCounter++
                 
                 val foregroundApp = getForegroundApp()
                 
-                // Log every 10 seconds for debugging
-                if (refreshCounter % 10 == 0) {
+                // Log every 20 seconds for debugging
+                if (refreshCounter % 40 == 0) {
                     Log.d("AppMonitorService", "Current app: $foregroundApp, Blocked: $blockedPackages")
                 }
                 
