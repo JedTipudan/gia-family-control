@@ -26,20 +26,32 @@ public class CommandService {
 
     @Transactional
     public Command sendSosCommand(String childEmail, CommandDto.SendCommandRequest request) {
+        log.info("=== SOS COMMAND RECEIVED ===");
+        log.info("Child email: {}", childEmail);
+        log.info("Request: {}", request);
+        
         User child = userRepository.findByEmail(childEmail)
                 .orElseThrow(() -> new RuntimeException("Child not found"));
+        
+        log.info("Child found: {} (ID: {})", child.getFullName(), child.getId());
         
         // Get child's device
         Device childDevice = deviceRepository.findByUserId(child.getId())
                 .orElseThrow(() -> new RuntimeException("Device not found"));
         
+        log.info("Child device found: ID {}", childDevice.getId());
+        
         // Get parent
         User parent = userRepository.findById(child.getParentId())
                 .orElseThrow(() -> new RuntimeException("Parent not found"));
         
+        log.info("Parent found: {} (ID: {})", parent.getFullName(), parent.getId());
+        
         // Get parent's device
         Device parentDevice = deviceRepository.findByUserId(parent.getId())
                 .orElseThrow(() -> new RuntimeException("Parent device not found"));
+        
+        log.info("Parent device found: ID {}, FCM: {}", parentDevice.getId(), parentDevice.getFcmToken());
         
         // Save SOS command
         Command command = new Command();
@@ -49,9 +61,13 @@ public class CommandService {
         command.setStatus(Command.Status.DELIVERED);
         commandRepository.save(command);
         
+        log.info("SOS command saved: ID {}", command.getId());
+        
         // Send urgent notification to parent with sound/vibration
+        log.info("Sending FCM SOS alert to parent...");
         fcmService.sendSosAlert(parentDevice.getFcmToken(), child.getFullName(), request.getMetadata());
         
+        log.info("=== SOS COMMAND COMPLETED ===");
         return command;
     }
     
