@@ -2,6 +2,7 @@ package com.gia.familycontrol.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -45,7 +46,17 @@ public class JwtUtil {
         try {
             Jwts.parser().verifyWith(key()).build().parseSignedClaims(token);
             return true;
+        } catch (ExpiredJwtException e) {
+            System.err.println("JWT Token expired: " + e.getMessage());
+            return false;
+        } catch (MalformedJwtException e) {
+            System.err.println("JWT Token malformed: " + e.getMessage());
+            return false;
+        } catch (SignatureException e) {
+            System.err.println("JWT Signature invalid: " + e.getMessage());
+            return false;
         } catch (JwtException | IllegalArgumentException e) {
+            System.err.println("JWT validation failed: " + e.getMessage());
             return false;
         }
     }

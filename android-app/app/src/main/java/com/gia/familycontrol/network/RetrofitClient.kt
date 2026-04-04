@@ -24,12 +24,29 @@ object RetrofitClient {
             val token = runBlocking {
                 context.dataStore.data.first()[JWT_TOKEN_KEY]
             }
+            
+            android.util.Log.d("RetrofitClient", "=== API REQUEST ===")
+            android.util.Log.d("RetrofitClient", "URL: ${chain.request().url}")
+            android.util.Log.d("RetrofitClient", "Method: ${chain.request().method}")
+            android.util.Log.d("RetrofitClient", "Token: ${if (token != null) "${token.substring(0, minOf(30, token.length))}..." else "NULL"}")
+            
             val request = if (token != null) {
                 chain.request().newBuilder()
                     .addHeader("Authorization", "Bearer $token")
                     .build()
-            } else chain.request()
-            chain.proceed(request)
+            } else {
+                android.util.Log.e("RetrofitClient", "NO TOKEN FOUND - Request will fail!")
+                chain.request()
+            }
+            
+            val response = chain.proceed(request)
+            android.util.Log.d("RetrofitClient", "Response Code: ${response.code}")
+            
+            if (response.code == 403) {
+                android.util.Log.e("RetrofitClient", "403 FORBIDDEN - Token invalid or expired!")
+            }
+            
+            response
         }
 
         val client = OkHttpClient.Builder()

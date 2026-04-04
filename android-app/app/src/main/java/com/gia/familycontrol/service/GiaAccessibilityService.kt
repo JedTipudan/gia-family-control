@@ -54,7 +54,7 @@ class GiaAccessibilityService : AccessibilityService() {
                 } catch (e: Exception) {
                     Log.e("GiaAccessibility", "Error in monitoring", e)
                 }
-                handler.postDelayed(this, 300) // Check every 0.3 seconds
+                handler.postDelayed(this, 200) // Check every 0.2 seconds
             }
         })
     }
@@ -94,13 +94,30 @@ class GiaAccessibilityService : AccessibilityService() {
     
     private fun getForegroundApp(): String? {
         try {
-            val usm = getSystemService(UsageStatsManager::class.java) ?: return null
-            val now = System.currentTimeMillis()
-            val stats = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, now - 5000, now)
-            return stats?.maxByOrNull { it.lastTimeUsed }?.packageName
+            // Method 1: UsageStatsManager
+            val usm = getSystemService(UsageStatsManager::class.java)
+            if (usm != null) {
+                val now = System.currentTimeMillis()
+                val stats = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, now - 5000, now)
+                if (stats != null && stats.isNotEmpty()) {
+                    val foregroundApp = stats.maxByOrNull { it.lastTimeUsed }?.packageName
+                    if (foregroundApp != null) {
+                        return foregroundApp
+                    }
+                }
+            }
+            
+            // Method 2: ActivityManager (fallback)
+            @Suppress("DEPRECATION")
+            val am = getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager
+            val tasks = am.getRunningTasks(1)
+            if (tasks.isNotEmpty()) {
+                return tasks[0].topActivity?.packageName
+            }
         } catch (e: Exception) {
-            return null
+            Log.e("GiaAccessibility", "Error getting foreground app", e)
         }
+        return null
     }
 
     private fun checkAndLock() {

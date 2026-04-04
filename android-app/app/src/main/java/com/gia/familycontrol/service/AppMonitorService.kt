@@ -31,8 +31,23 @@ class AppMonitorService : LifecycleService() {
     
     private val refreshReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            Log.d("AppMonitorService", "📡 Received refresh broadcast")
-            loadBlockedAppsFromPrefs()
+            when (intent.action) {
+                "com.gia.familycontrol.REFRESH_BLOCKED_APPS" -> {
+                    Log.d("AppMonitorService", "📡 Received refresh broadcast")
+                    loadBlockedAppsFromPrefs()
+                }
+                "com.gia.familycontrol.CHECK_APPS_NOW" -> {
+                    Log.d("AppMonitorService", "⚡ Immediate check requested")
+                    // Check immediately
+                    lifecycleScope.launch {
+                        val foregroundApp = getForegroundApp()
+                        if (foregroundApp != null && foregroundApp in blockedPackages) {
+                            Log.d("AppMonitorService", "⛔ BLOCKED: $foregroundApp")
+                            forceCloseApp(foregroundApp)
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -43,7 +58,10 @@ class AppMonitorService : LifecycleService() {
             startForeground(NOTIFICATION_ID, buildNotification())
             
             // Register broadcast receiver
-            val filter = IntentFilter("com.gia.familycontrol.REFRESH_BLOCKED_APPS")
+            val filter = IntentFilter().apply {
+                addAction("com.gia.familycontrol.REFRESH_BLOCKED_APPS")
+                addAction("com.gia.familycontrol.CHECK_APPS_NOW")
+            }
             registerReceiver(refreshReceiver, filter)
             
             loadBlockedAppsFromPrefs()
@@ -137,7 +155,7 @@ class AppMonitorService : LifecycleService() {
                     Log.e("AppMonitorService", "Error in monitoring loop", e)
                 }
                 
-                delay(300L) // Check every 0.3 seconds
+                delay(200L) // Check every 0.2 seconds for ultra-fast blocking
             }
         }
     }
@@ -163,10 +181,31 @@ class AppMonitorService : LifecycleService() {
     }
 
     private fun getForegroundApp(): String? {
-        val usm = getSystemService(UsageStatsManager::class.java) ?: return null
-        val now = System.currentTimeMillis()
-        val stats = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, now - 3000, now)
-        return stats?.maxByOrNull { it.lastTimeUsed }?.packageName
+        try {
+            // Method 1: UsageStatsManager (requires Usage Stats permission)
+            val usm = getSystemService(UsageStatsManager::class.java)
+            if (usm != null) {
+                val now = System.currentTimeMillis()
+                val stats = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, now - 5000, now)
+                if (stats != null && stats.isNotEmpty()) {
+                    val foregroundApp = stats.maxByOrNull { it.lastTimeUsed }?.packageName
+                    if (foregroundApp != null) {
+                        return foregroundApp
+                    }
+                }
+            }
+            
+            // Method 2: ActivityManager (fallback, deprecated but works)
+            @Suppress("DEPRECATION")
+            val am = getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager
+            val tasks = am.getRunningTasks(1)
+            if (tasks.isNotEmpty()) {
+                return tasks[0].topActivity?.packageName
+            }
+        } catch (e: Exception) {
+            Log.e("AppMonitorService", "Error getting foreground app", e)
+        }
+        return null
     }
 
     private fun isGameApp(packageName: String): Boolean {

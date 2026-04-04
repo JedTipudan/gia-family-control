@@ -23,10 +23,10 @@ server:
 app:
   jwt:
     secret: ${JWT_SECRET:gia-family-control-super-secret-key-change-in-production-256bit}
-    expiration-ms: 86400000  # 24 hours
+    expiration-ms: 2592000000  # 30 days for persistent child login
   firebase:
     credentials-path: ${FIREBASE_CREDENTIALS:classpath:firebase-service-account.json}
 
 logging:
   level:
-    com.gia.familycontrol: INFO
+    com.gia.familycontrol: DEBUG
