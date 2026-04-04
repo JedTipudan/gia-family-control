@@ -156,7 +156,26 @@ public class DeviceService {
                     return deviceRepository.findByUserId(child.getId());
                 })
                 .filter(opt -> opt.isPresent())
-                .map(opt -> opt.get())
+                .map(opt -> {
+                    Device device = opt.get();
+                    // Calculate if device is truly online (last seen within 30 seconds)
+                    if (device.getLastSeen() != null) {
+                        long secondsSinceLastSeen = java.time.Duration.between(device.getLastSeen(), LocalDateTime.now()).getSeconds();
+                        boolean isActuallyOnline = secondsSinceLastSeen < 30;
+                        device.setIsOnline(isActuallyOnline);
+                        
+                        // If offline, clear connection type
+                        if (!isActuallyOnline) {
+                            device.setConnectionType("OFFLINE");
+                        }
+                        
+                        System.out.println("Device ID: " + device.getId() + ", Last seen: " + secondsSinceLastSeen + "s ago, Online: " + isActuallyOnline);
+                    } else {
+                        device.setIsOnline(false);
+                        device.setConnectionType("OFFLINE");
+                    }
+                    return device;
+                })
                 .toList();
         
         System.out.println("Devices found: " + devices.size());

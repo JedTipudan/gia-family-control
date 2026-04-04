@@ -262,8 +262,7 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback, Navigat
                             binding.tvBattery.text = "${device.batteryLevel}%"
                             
                             // Update connection status
-                            val now = System.currentTimeMillis()
-                            val isOnline = device.isOnline && device.lastSeen != null
+                            val isOnline = device.isOnline ?: false
                             
                             if (isOnline) {
                                 binding.statusIndicator.setBackgroundResource(R.drawable.status_online)
@@ -277,7 +276,7 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback, Navigat
                                         binding.tvConnectionStatus.text = "Mobile Data"
                                     }
                                     else -> {
-                                        binding.tvConnectionIcon.text = "❓"
+                                        binding.tvConnectionIcon.text = "🟢"
                                         binding.tvConnectionStatus.text = "Online"
                                     }
                                 }
@@ -286,7 +285,28 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback, Navigat
                                 binding.statusIndicator.setBackgroundResource(R.drawable.status_offline)
                                 binding.tvConnectionIcon.text = "❌"
                                 binding.tvConnectionStatus.text = "Offline"
-                                binding.tvLastSeen.text = device.lastSeen?.let { "Last: $it" } ?: "Never"
+                                
+                                // Format last seen time
+                                val lastSeenText = device.lastSeen?.let { lastSeenStr ->
+                                    try {
+                                        // Parse ISO datetime from backend
+                                        val formatter = java.time.format.DateTimeFormatter.ISO_DATE_TIME
+                                        val lastSeenTime = java.time.LocalDateTime.parse(lastSeenStr, formatter)
+                                        val now = java.time.LocalDateTime.now()
+                                        val duration = java.time.Duration.between(lastSeenTime, now)
+                                        
+                                        when {
+                                            duration.toMinutes() < 1 -> "Last: just now"
+                                            duration.toMinutes() < 60 -> "Last: ${duration.toMinutes()}m ago"
+                                            duration.toHours() < 24 -> "Last: ${duration.toHours()}h ago"
+                                            else -> "Last: ${duration.toDays()}d ago"
+                                        }
+                                    } catch (e: Exception) {
+                                        "Last: $lastSeenStr"
+                                    }
+                                } ?: "Never connected"
+                                
+                                binding.tvLastSeen.text = lastSeenText
                             }
                             
                             // Update lock status
@@ -314,6 +334,7 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback, Navigat
                     binding.statusIndicator.setBackgroundResource(R.drawable.status_offline)
                     binding.tvConnectionIcon.text = "❌"
                     binding.tvConnectionStatus.text = "Offline"
+                    binding.tvLastSeen.text = "Connection error"
                 }
                 delay(8000L)
             }
