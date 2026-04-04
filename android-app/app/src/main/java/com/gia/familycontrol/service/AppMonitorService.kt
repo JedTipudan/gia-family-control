@@ -73,11 +73,6 @@ class AppMonitorService : LifecycleService() {
             stopSelf()
         }
     }
-    
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        super.onStartCommand(intent, flags, startId)
-        return START_STICKY
-    }
 
     private fun loadBlockedAppsFromPrefs() {
         val prefs = getSharedPreferences("gia_blocked_apps", MODE_PRIVATE)
@@ -126,8 +121,8 @@ class AppMonitorService : LifecycleService() {
             
             while (isActive) {
                 try {
-                    // Refresh from API every 15 seconds (150 cycles * 0.1s)
-                    if (apiRefreshCounter >= 150) {
+                    // Refresh from API every 3 seconds (10 cycles * 0.3s)
+                    if (apiRefreshCounter >= 10) {
                         loadBlockedAppsFromApi()
                         apiRefreshCounter = 0
                     }
@@ -160,7 +155,7 @@ class AppMonitorService : LifecycleService() {
                     Log.e("AppMonitorService", "Error in monitoring loop", e)
                 }
                 
-                delay(100L) // Check every 0.1 seconds for instant blocking
+                delay(200L) // Check every 0.2 seconds for ultra-fast blocking
             }
         }
     }
@@ -268,25 +263,10 @@ class AppMonitorService : LifecycleService() {
             .build()
 
     override fun onDestroy() {
-        Log.d("AppMonitorService", "Service destroyed, scheduling restart")
         try {
             unregisterReceiver(refreshReceiver)
         } catch (e: Exception) {}
         monitorJob?.cancel()
-        
-        // Restart service
-        val restartIntent = Intent(applicationContext, AppMonitorService::class.java)
-        val pendingIntent = PendingIntent.getService(
-            applicationContext, 2, restartIntent,
-            PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
-        )
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
-        alarmManager.set(
-            android.app.AlarmManager.ELAPSED_REALTIME_WAKEUP,
-            android.os.SystemClock.elapsedRealtime() + 1000,
-            pendingIntent
-        )
-        
         super.onDestroy()
     }
     

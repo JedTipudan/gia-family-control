@@ -20,9 +20,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.lifecycle.lifecycleScope
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
 import com.gia.familycontrol.R
 import com.gia.familycontrol.admin.GiaDeviceAdminReceiver
 import com.gia.familycontrol.auth.LoginActivity
@@ -36,12 +33,10 @@ import com.gia.familycontrol.service.AppMonitorService
 import com.gia.familycontrol.service.DeviceStatusService
 import com.gia.familycontrol.service.LocationTrackingService
 import com.gia.familycontrol.service.LockMonitorService
-import com.gia.familycontrol.worker.ServiceRestartWorker
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import java.util.concurrent.TimeUnit
 
 class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
@@ -225,9 +220,6 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
             return
         }
         
-        // Request battery optimization exemption (non-blocking)
-        requestBatteryOptimizationExemption()
-        
         binding.btnStartMonitoring.isEnabled = false
         binding.btnStartMonitoring.text = "Starting..."
         
@@ -240,21 +232,6 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
         binding.tvStatus.text = "✅ Monitoring active! Your parent can now track and lock your device."
         
         Toast.makeText(this, "✅ Monitoring started! Services running in background.", Toast.LENGTH_LONG).show()
-    }
-    
-    private fun requestBatteryOptimizationExemption() {
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                val pm = getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
-                if (!pm.isIgnoringBatteryOptimizations(packageName)) {
-                    val intent = Intent(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
-                    intent.data = android.net.Uri.parse("package:$packageName")
-                    startActivity(intent)
-                }
-            }
-        } catch (e: Exception) {
-            Log.e("ChildDashboard", "Failed to request battery optimization", e)
-        }
     }
     
     private fun hasUsageStatsPermission(): Boolean {
@@ -398,23 +375,6 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
         } catch (e: Exception) {
             Log.e("ChildDashboard", "Failed to start device status service", e)
         }
-        
-        // Schedule WorkManager to restart services every 15 minutes
-        scheduleServiceRestartWorker()
-    }
-    
-    private fun scheduleServiceRestartWorker() {
-        val workRequest = PeriodicWorkRequestBuilder<ServiceRestartWorker>(
-            15, TimeUnit.MINUTES
-        ).build()
-        
-        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-            "service_restart_worker",
-            ExistingPeriodicWorkPolicy.KEEP,
-            workRequest
-        )
-        
-        Log.d("ChildDashboard", "WorkManager scheduled for service restart")
     }
 
     private fun pairWithParent() {

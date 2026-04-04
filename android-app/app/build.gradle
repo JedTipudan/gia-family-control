@@ -89,9 +89,6 @@ dependencies {
 
     // DataStore
     implementation 'androidx.datastore:datastore-preferences:1.0.0'
-    
-    // WorkManager for reliable background tasks
-    implementation 'androidx.work:work-runtime-ktx:2.9.0'
 
     // QR Code
     implementation 'com.google.zxing:core:3.5.2'

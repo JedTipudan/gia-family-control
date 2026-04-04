@@ -83,14 +83,13 @@ class LockMonitorService : Service() {
     private fun startMonitoring() {
         monitorJob = scope.launch {
             while (isActive) {
-                delay(1000) // Check every 1 second
+                delay(3000) // Check every 3 seconds
                 
                 val lockPrefs = getSharedPreferences("gia_lock", MODE_PRIVATE)
                 val isLocked = lockPrefs.getBoolean("is_locked", false)
                 
                 if (isLocked) {
-                    // Continuously show lock screen and lock device
-                    showLockOverlay()
+                    // Lock device if not locked
                     lockDeviceNow()
                 }
             }
@@ -99,7 +98,7 @@ class LockMonitorService : Service() {
     
     private fun lockDeviceNow() {
         val now = System.currentTimeMillis()
-        if (now - lastLockTime < 2000) return // Don't lock more than once per 2 seconds
+        if (now - lastLockTime < 5000) return // Don't lock more than once per 5 seconds
         lastLockTime = now
         
         try {
