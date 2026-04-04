@@ -18,25 +18,33 @@
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            android:elevation="4dp"
+            android:layout_height="56dp"
+            android:background="@color/bg_elevated"
+            android:elevation="0dp"
             app:title="Parent Dashboard"
-            app:titleTextColor="@android:color/white"
+            app:titleTextColor="@color/text_primary"
+            app:titleTextAppearance="@style/TextAppearance.Linear.Toolbar"
             app:navigationIcon="@drawable/ic_menu">
             
             <ImageView
                 android:id="@+id/btnRefresh"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:layout_gravity="end"
-                android:padding="12dp"
+                android:layout_marginEnd="8dp"
+                android:padding="10dp"
                 android:src="@android:drawable/ic_popup_sync"
                 android:contentDescription="Refresh"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                app:tint="@android:color/white"/>
+                app:tint="@color/text_secondary"/>
                 
         </com.google.android.material.appbar.MaterialToolbar>
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/border_primary"/>
 
         <!-- Status Cards -->
         <ScrollView
@@ -54,10 +62,12 @@
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="4dp"
-                    android:layout_marginBottom="16dp"
-                    app:cardBackgroundColor="?attr/cardBackgroundColor">
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp"
+                    android:layout_marginBottom="12dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="@color/border_primary"
+                    app:cardBackgroundColor="@color/bg_elevated">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -135,10 +145,12 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:layout_marginEnd="8dp"
-                        app:cardCornerRadius="12dp"
-                        app:cardElevation="2dp"
-                        app:cardBackgroundColor="?attr/cardBackgroundColor">
+                        android:layout_marginEnd="6dp"
+                        app:cardCornerRadius="10dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="1dp"
+                        app:strokeColor="@color/border_primary"
+                        app:cardBackgroundColor="@color/bg_elevated">
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -177,10 +189,12 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:layout_marginStart="8dp"
-                        app:cardCornerRadius="12dp"
-                        app:cardElevation="2dp"
-                        app:cardBackgroundColor="?attr/cardBackgroundColor">
+                        android:layout_marginStart="6dp"
+                        app:cardCornerRadius="10dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="1dp"
+                        app:strokeColor="@color/border_primary"
+                        app:cardBackgroundColor="@color/bg_elevated">
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -223,10 +237,12 @@
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="2dp"
-                    app:cardBackgroundColor="?attr/cardBackgroundColor">
+                    android:layout_marginBottom="12dp"
+                    app:cardCornerRadius="10dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="@color/border_primary"
+                    app:cardBackgroundColor="@color/bg_elevated">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -274,10 +290,12 @@
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="300dp"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="4dp"
-                    android:layout_marginBottom="16dp"
-                    app:cardBackgroundColor="?attr/cardBackgroundColor">
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="@color/border_primary"
+                    android:layout_marginBottom="12dp"
+                    app:cardBackgroundColor="@color/bg_elevated">
 
                     <fragment
                         android:id="@+id/map"
@@ -301,56 +319,64 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginBottom="16dp">
+                    android:layout_marginBottom="12dp">
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnLock"
                         android:layout_width="0dp"
-                        android:layout_height="56dp"
+                        android:layout_height="48dp"
                         android:layout_weight="1"
                         android:text="🔒 Lock"
-                        android:textSize="15sp"
-                        android:textStyle="bold"
-                        app:backgroundTint="#EF4444"
-                        app:cornerRadius="12dp"
-                        android:layout_marginEnd="8dp"/>
+                        android:textSize="13sp"
+                        android:textAllCaps="false"
+                        android:letterSpacing="-0.01"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        app:backgroundTint="@color/danger"
+                        app:cornerRadius="8dp"
+                        android:layout_marginEnd="6dp"/>
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnUnlock"
                         android:layout_width="0dp"
-                        android:layout_height="56dp"
+                        android:layout_height="48dp"
                         android:layout_weight="1"
                         android:text="🔓 Unlock"
-                        android:textSize="15sp"
-                        android:textStyle="bold"
-                        app:backgroundTint="#10B981"
-                        app:cornerRadius="12dp"
-                        android:layout_marginStart="8dp"/>
+                        android:textSize="13sp"
+                        android:textAllCaps="false"
+                        android:letterSpacing="-0.01"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        app:backgroundTint="@color/success"
+                        app:cornerRadius="8dp"
+                        android:layout_marginStart="6dp"/>
 
                 </LinearLayout>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnApps"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
+                    android:layout_height="48dp"
                     android:text="📱 Manage Apps"
-                    android:textSize="15sp"
-                    android:textStyle="bold"
-                    app:backgroundTint="?attr/colorPrimary"
-                    app:cornerRadius="12dp"
+                    android:textSize="13sp"
+                    android:textAllCaps="false"
+                    android:letterSpacing="-0.01"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    app:backgroundTint="@color/accent_primary"
+                    app:cornerRadius="8dp"
                     app:icon="@android:drawable/ic_menu_manage"
                     app:iconGravity="textStart"
-                    android:layout_marginBottom="12dp"/>
+                    android:layout_marginBottom="8dp"/>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnUnpair"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
+                    android:layout_height="48dp"
                     android:text="🔗 Unpair Device"
-                    android:textSize="15sp"
-                    android:textStyle="bold"
-                    app:backgroundTint="#F59E0B"
-                    app:cornerRadius="12dp"
+                    android:textSize="13sp"
+                    android:textAllCaps="false"
+                    android:letterSpacing="-0.01"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    app:strokeColor="@color/border_secondary"
+                    app:cornerRadius="8dp"
                     app:icon="@android:drawable/ic_menu_close_clear_cancel"
                     app:iconGravity="textStart"/>
 

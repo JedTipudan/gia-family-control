@@ -36,8 +36,26 @@ export default function DeviceStatusBar({ deviceId, status }) {
 }
 
 const styles = {
-  bar: { display: 'flex', gap: 24, padding: '8px 24px', background: '#1e293b',
-    color: '#94a3b8', fontSize: 13 },
-  item: { display: 'flex', alignItems: 'center', gap: 6 },
-  dot: { width: 8, height: 8, borderRadius: '50%', display: 'inline-block' },
+  bar: { 
+    display: 'flex', 
+    gap: 24, 
+    padding: '12px 24px', 
+    background: 'var(--bg-elevated)',
+    color: 'var(--text-secondary)', 
+    fontSize: 12,
+    borderBottom: '1px solid var(--border-primary)',
+    letterSpacing: 'var(--letter-spacing-normal)'
+  },
+  item: { 
+    display: 'flex', 
+    alignItems: 'center', 
+    gap: 6 
+  },
+  dot: { 
+    width: 6, 
+    height: 6, 
+    borderRadius: '50%', 
+    display: 'inline-block',
+    boxShadow: '0 0 8px currentColor'
+  },
 };

@@ -1,13 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Linear Dark Mode Color System -->
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
-    <color name="primary">#1a1a2e</color>
-    <color name="primary_dark">#16213e</color>
-    <color name="accent">#4f46e5</color>
+    
+    <!-- Background Colors -->
+    <color name="bg_primary">#0D0D0D</color>
+    <color name="bg_secondary">#161616</color>
+    <color name="bg_tertiary">#1A1A1A</color>
+    <color name="bg_elevated">#1F1F1F</color>
+    <color name="bg_overlay">#252525</color>
+    
+    <!-- Border Colors -->
+    <color name="border_primary">#2A2A2A</color>
+    <color name="border_secondary">#333333</color>
+    <color name="border_focus">#5E5CE6</color>
+    
+    <!-- Text Colors -->
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#9CA3AF</color>
+    <color name="text_tertiary">#6B7280</color>
+    <color name="text_disabled">#4B5563</color>
+    
+    <!-- Accent Colors - Indigo Violet -->
+    <color name="accent_primary">#5E5CE6</color>
+    <color name="accent_hover">#7371EF</color>
+    <color name="accent_pressed">#4845D2</color>
+    <color name="accent_subtle">#1E1D3D</color>
+    
+    <!-- Status Colors -->
+    <color name="success">#10B981</color>
+    <color name="success_subtle">#1A2E26</color>
+    <color name="danger">#EF4444</color>
+    <color name="danger_subtle">#2E1A1A</color>
+    <color name="warning">#F59E0B</color>
+    <color name="warning_subtle">#2E2519</color>
+    
+    <!-- Legacy Support -->
+    <color name="purple_200">#7371EF</color>
+    <color name="purple_500">#5E5CE6</color>
+    <color name="purple_700">#4845D2</color>
+    <color name="teal_200">#10B981</color>
+    <color name="teal_700">#059669</color>
+    <color name="primary">#5E5CE6</color>
+    <color name="primary_dark">#4845D2</color>
+    <color name="accent">#5E5CE6</color>
 </resources>

@@ -38,13 +38,56 @@ export default function ActivityLog({ deviceId }) {
 }
 
 const styles = {
-  container: { padding: 24 },
-  heading: { marginBottom: 16, color: '#1a1a2e' },
-  empty: { color: '#64748b' },
-  list: { display: 'flex', flexDirection: 'column', gap: 8 },
-  item: { display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px',
-    background: '#fff', borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.08)' },
-  badge: { padding: '3px 10px', borderRadius: 12, color: '#fff', fontSize: 12, fontWeight: 'bold' },
-  status: { color: '#64748b', fontSize: 13 },
-  time: { marginLeft: 'auto', color: '#94a3b8', fontSize: 12 },
+  container: { 
+    padding: 24,
+    background: 'var(--bg-secondary)'
+  },
+  heading: { 
+    marginBottom: 16, 
+    color: 'var(--text-primary)',
+    fontSize: 18,
+    fontWeight: 600,
+    letterSpacing: 'var(--letter-spacing-tight)'
+  },
+  empty: { 
+    color: 'var(--text-tertiary)',
+    fontSize: 13,
+    padding: 'var(--space-4)',
+    background: 'var(--bg-tertiary)',
+    borderRadius: 'var(--radius-md)',
+    border: '1px solid var(--border-primary)'
+  },
+  list: { 
+    display: 'flex', 
+    flexDirection: 'column', 
+    gap: 8 
+  },
+  item: { 
+    display: 'flex', 
+    alignItems: 'center', 
+    gap: 12, 
+    padding: '10px 16px',
+    background: 'var(--bg-elevated)', 
+    borderRadius: 'var(--radius-md)',
+    border: '1px solid var(--border-primary)'
+  },
+  badge: { 
+    padding: '4px 10px', 
+    borderRadius: 'var(--radius-sm)', 
+    color: 'var(--text-primary)', 
+    fontSize: 11,
+    fontWeight: 500,
+    letterSpacing: '0.02em',
+    textTransform: 'uppercase'
+  },
+  status: { 
+    color: 'var(--text-tertiary)', 
+    fontSize: 12 
+  },
+  time: { 
+    marginLeft: 'auto', 
+    color: 'var(--text-tertiary)', 
+    fontSize: 11,
+    fontFamily: 'monospace'
+  },
 };

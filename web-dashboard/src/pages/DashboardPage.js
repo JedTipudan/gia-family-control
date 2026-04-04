@@ -125,26 +125,123 @@ export default function DashboardPage() {
 }
 
 const styles = {
-  container: { minHeight: '100vh', background: '#f8fafc', fontFamily: 'sans-serif' },
-  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-    background: '#1a1a2e', color: '#fff', padding: '12px 24px' },
-  headerLeft: { display: 'flex', alignItems: 'center', gap: 12 },
-  logo: { width: 40, height: 40, borderRadius: '50%' },
-  title: { fontSize: 20, fontWeight: 'bold' },
-  headerRight: { display: 'flex', alignItems: 'center', gap: 16 },
-  userName: { fontSize: 14 },
-  logoutBtn: { padding: '6px 16px', background: '#ef4444', color: '#fff',
-    border: 'none', borderRadius: 6, cursor: 'pointer' },
-  controls: { display: 'flex', gap: 12, padding: '16px 24px', flexWrap: 'wrap' },
-  ctrlBtn: { padding: '10px 20px', color: '#fff', border: 'none', borderRadius: 8,
-    cursor: 'pointer', fontSize: 14, fontWeight: 'bold' },
-  tabs: { display: 'flex', gap: 0, padding: '0 24px', borderBottom: '2px solid #e2e8f0' },
-  tab: { padding: '10px 24px', background: 'none', border: 'none', cursor: 'pointer',
-    fontSize: 14, color: '#64748b' },
-  activeTab: { borderBottom: '2px solid #4f46e5', color: '#4f46e5', fontWeight: 'bold' },
-  mapContainer: { padding: 24 },
-  mapPlaceholder: { height: 400, display: 'flex', alignItems: 'center', justifyContent: 'center',
-    background: '#e2e8f0', borderRadius: 8 },
-  noLocation: { padding: 16, textAlign: 'center', color: '#64748b', fontSize: 14 },
-  coords: { marginTop: 8, color: '#64748b', fontSize: 13 },
+  container: { 
+    minHeight: '100vh', 
+    background: 'var(--bg-primary)' 
+  },
+  header: { 
+    display: 'flex', 
+    justifyContent: 'space-between', 
+    alignItems: 'center',
+    background: 'var(--bg-elevated)', 
+    color: 'var(--text-primary)', 
+    padding: '16px 24px',
+    borderBottom: '1px solid var(--border-primary)'
+  },
+  headerLeft: { 
+    display: 'flex', 
+    alignItems: 'center', 
+    gap: 12 
+  },
+  logo: { 
+    width: 32, 
+    height: 32, 
+    borderRadius: 'var(--radius-md)' 
+  },
+  title: { 
+    fontSize: 16, 
+    fontWeight: 600,
+    letterSpacing: 'var(--letter-spacing-tight)'
+  },
+  headerRight: { 
+    display: 'flex', 
+    alignItems: 'center', 
+    gap: 16 
+  },
+  userName: { 
+    fontSize: 13,
+    color: 'var(--text-secondary)'
+  },
+  logoutBtn: { 
+    padding: '6px 12px', 
+    background: 'var(--bg-secondary)', 
+    color: 'var(--text-primary)',
+    border: '1px solid var(--border-primary)', 
+    borderRadius: 'var(--radius-sm)',
+    fontSize: 13,
+    fontWeight: 500
+  },
+  controls: { 
+    display: 'flex', 
+    gap: 8, 
+    padding: '16px 24px', 
+    flexWrap: 'wrap',
+    background: 'var(--bg-secondary)',
+    borderBottom: '1px solid var(--border-primary)'
+  },
+  ctrlBtn: { 
+    padding: '8px 16px', 
+    color: 'var(--text-primary)', 
+    border: 'none', 
+    borderRadius: 'var(--radius-md)',
+    fontSize: 13, 
+    fontWeight: 500,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6
+  },
+  tabs: { 
+    display: 'flex', 
+    gap: 0, 
+    padding: '0 24px', 
+    background: 'var(--bg-secondary)',
+    borderBottom: '1px solid var(--border-primary)'
+  },
+  tab: { 
+    padding: '12px 20px', 
+    background: 'none', 
+    border: 'none',
+    borderBottom: '2px solid transparent',
+    fontSize: 13,
+    fontWeight: 500,
+    color: 'var(--text-tertiary)',
+    letterSpacing: 'var(--letter-spacing-normal)'
+  },
+  activeTab: { 
+    borderBottom: '2px solid var(--accent-primary)', 
+    color: 'var(--text-primary)'
+  },
+  mapContainer: { 
+    padding: 24,
+    background: 'var(--bg-secondary)'
+  },
+  mapPlaceholder: { 
+    height: 400, 
+    display: 'flex', 
+    alignItems: 'center', 
+    justifyContent: 'center',
+    background: 'var(--bg-tertiary)', 
+    borderRadius: 'var(--radius-lg)',
+    border: '1px solid var(--border-primary)',
+    color: 'var(--text-secondary)'
+  },
+  noLocation: { 
+    padding: 16, 
+    textAlign: 'center', 
+    color: 'var(--text-tertiary)', 
+    fontSize: 13,
+    background: 'var(--bg-tertiary)',
+    borderRadius: 'var(--radius-md)',
+    marginBottom: 16
+  },
+  coords: { 
+    marginTop: 12, 
+    color: 'var(--text-secondary)', 
+    fontSize: 12,
+    fontFamily: 'monospace',
+    background: 'var(--bg-tertiary)',
+    padding: 'var(--space-2)',
+    borderRadius: 'var(--radius-sm)',
+    display: 'inline-block'
+  },
 };

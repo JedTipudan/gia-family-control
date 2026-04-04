@@ -60,16 +60,67 @@ export default function AppManagerPanel({ deviceId, onBlockApp }) {
 }
 
 const styles = {
-  container: { padding: 24 },
-  heading: { marginBottom: 16, color: '#1a1a2e' },
-  loading: { padding: 24, color: '#64748b' },
-  empty: { color: '#64748b' },
-  list: { display: 'flex', flexDirection: 'column', gap: 8 },
-  item: { display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-    padding: '12px 16px', background: '#fff', borderRadius: 8,
-    boxShadow: '0 1px 4px rgba(0,0,0,0.08)' },
-  pkgName: { fontWeight: 'bold', marginBottom: 4 },
-  badge: { padding: '2px 8px', borderRadius: 12, fontSize: 12 },
-  unblockBtn: { padding: '6px 16px', background: '#4f46e5', color: '#fff',
-    border: 'none', borderRadius: 6, cursor: 'pointer' },
+  container: { 
+    padding: 24,
+    background: 'var(--bg-secondary)'
+  },
+  heading: { 
+    marginBottom: 16, 
+    color: 'var(--text-primary)',
+    fontSize: 18,
+    fontWeight: 600,
+    letterSpacing: 'var(--letter-spacing-tight)'
+  },
+  loading: { 
+    padding: 24, 
+    color: 'var(--text-tertiary)',
+    fontSize: 13
+  },
+  empty: { 
+    color: 'var(--text-tertiary)',
+    fontSize: 13,
+    padding: 'var(--space-4)',
+    background: 'var(--bg-tertiary)',
+    borderRadius: 'var(--radius-md)',
+    border: '1px solid var(--border-primary)'
+  },
+  list: { 
+    display: 'flex', 
+    flexDirection: 'column', 
+    gap: 8 
+  },
+  item: { 
+    display: 'flex', 
+    justifyContent: 'space-between', 
+    alignItems: 'center',
+    padding: '12px 16px', 
+    background: 'var(--bg-elevated)', 
+    borderRadius: 'var(--radius-md)',
+    border: '1px solid var(--border-primary)',
+    transition: 'all 0.15s ease'
+  },
+  pkgName: { 
+    fontWeight: 500, 
+    marginBottom: 4,
+    color: 'var(--text-primary)',
+    fontSize: 13,
+    fontFamily: 'monospace'
+  },
+  badge: { 
+    padding: '2px 8px', 
+    borderRadius: 'var(--radius-sm)', 
+    fontSize: 11,
+    fontWeight: 500,
+    letterSpacing: '0.02em',
+    textTransform: 'uppercase'
+  },
+  unblockBtn: { 
+    padding: '6px 12px', 
+    background: 'var(--accent-primary)', 
+    color: 'var(--text-primary)',
+    border: 'none', 
+    borderRadius: 'var(--radius-sm)',
+    fontSize: 12,
+    fontWeight: 500
+  },
 };
