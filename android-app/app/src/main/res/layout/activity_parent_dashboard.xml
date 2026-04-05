@@ -176,19 +176,57 @@
                                 android:gravity="center">
 
                                 <TextView
+                                    android:id="@+id/tvConnectionIcon"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="📶"
+                                    android:textSize="20sp"/>
+
+                                <TextView
                                     android:id="@+id/tvConnectionStatus"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Offline"
-                                    android:textSize="20sp"
+                                    android:textSize="12sp"
                                     android:textStyle="bold"
-                                    android:textColor="@color/text_primary"/>
+                                    android:textColor="@color/text_primary"
+                                    android:layout_marginTop="4dp"/>
 
                                 <TextView
                                     android:id="@+id/tvLastSeen"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Last seen"
+                                    android:textSize="10sp"
+                                    android:textColor="@color/text_secondary"
+                                    android:layout_marginTop="2dp"/>
+
+                            </LinearLayout>
+
+                            <View
+                                android:layout_width="1dp"
+                                android:layout_height="40dp"
+                                android:background="@color/border_secondary"/>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:gravity="center">
+
+                                <TextView
+                                    android:id="@+id/tvLockIcon"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="🔓"
+                                    android:textSize="20sp"/>
+
+                                <TextView
+                                    android:id="@+id/tvLockStatus"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Unlocked"
                                     android:textSize="12sp"
                                     android:textColor="@color/text_secondary"
                                     android:layout_marginTop="4dp"/>
