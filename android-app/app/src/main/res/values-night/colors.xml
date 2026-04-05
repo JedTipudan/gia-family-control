@@ -1,44 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Apple Design System - Dark Mode -->
+    <!-- Google Family Link Dark Mode -->
     
     <!-- Background Colors -->
-    <color name="bg_primary">#000000</color>
-    <color name="bg_secondary">#1C1C1E</color>
-    <color name="bg_elevated">#2C2C2E</color>
-    <color name="bg_card">#2C2C2E</color>
+    <color name="bg_primary">#202124</color>
+    <color name="bg_secondary">#292A2D</color>
+    <color name="bg_elevated">#35363A</color>
+    <color name="bg_card">#35363A</color>
     
     <!-- Border Colors -->
-    <color name="border_primary">#1AFFFFFF</color>
-    <color name="border_secondary">#14FFFFFF</color>
-    <color name="border_subtle">#14FFFFFF</color>
+    <color name="border_primary">#5F6368</color>
+    <color name="border_secondary">#3C4043</color>
+    <color name="border_subtle">#3C4043</color>
     
     <!-- Text Colors -->
-    <color name="text_primary">#FFFFFF</color>
-    <color name="text_secondary">#CCFFFFFF</color>
-    <color name="text_tertiary">#99FFFFFF</color>
-    <color name="text_quaternary">#7AFFFFFF</color>
+    <color name="text_primary">#E8EAED</color>
+    <color name="text_secondary">#9AA0A6</color>
+    <color name="text_tertiary">#80868B</color>
+    <color name="text_quaternary">#5F6368</color>
     
-    <!-- Accent Colors - Apple Blue -->
-    <color name="accent_primary">#0A84FF</color>
-    <color name="accent_hover">#409CFF</color>
-    <color name="accent_pressed">#0077ED</color>
-    <color name="accent_subtle">#260A84FF</color>
+    <!-- Accent Colors -->
+    <color name="accent_primary">#8AB4F8</color>
+    <color name="accent_hover">#A8C7FA</color>
+    <color name="accent_pressed">#669DF6</color>
+    <color name="accent_subtle">#1A73E8</color>
     
     <!-- Status Colors -->
-    <color name="success">#30D158</color>
-    <color name="success_bg">#2630D158</color>
-    <color name="success_border">#4D30D158</color>
+    <color name="success">#81C995</color>
+    <color name="success_bg">#1E3A2E</color>
+    <color name="success_border">#34A853</color>
     
-    <color name="danger">#FF453A</color>
-    <color name="danger_bg">#26FF453A</color>
-    <color name="danger_border">#4DFF453A</color>
+    <color name="danger">#F28B82</color>
+    <color name="danger_bg">#3B1F1E</color>
+    <color name="danger_border">#EA4335</color>
     
-    <color name="warning">#FF9F0A</color>
-    <color name="warning_bg">#26FF9F0A</color>
-    <color name="warning_border">#4DFF9F0A</color>
+    <color name="warning">#FDD663</color>
+    <color name="warning_bg">#3B3424</color>
+    <color name="warning_border">#FBBC04</color>
     
-    <color name="info">#0A84FF</color>
-    <color name="info_bg">#260A84FF</color>
-    <color name="info_border">#4D0A84FF</color>
+    <color name="info">#8AB4F8</color>
+    <color name="info_bg">#1E2A3B</color>
+    <color name="info_border">#4285F4</color>
 </resources>

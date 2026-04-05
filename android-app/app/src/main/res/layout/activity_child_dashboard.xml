@@ -12,17 +12,17 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:background="?attr/backgroundColor">
+        android:background="@color/bg_primary">
 
         <!-- Toolbar -->
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            android:elevation="4dp"
-            app:title="Child Dashboard"
-            app:titleTextColor="@android:color/white"
+            android:layout_height="64dp"
+            android:background="@color/white"
+            android:elevation="2dp"
+            app:title="Family Link"
+            app:titleTextColor="@color/text_primary"
             app:navigationIcon="@drawable/ic_menu"/>
 
         <ScrollView
@@ -33,29 +33,29 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="20dp">
 
                 <!-- Welcome Card -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="4dp"
-                    app:cardBackgroundColor="?attr/cardBackgroundColor"
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="2dp"
+                    app:cardBackgroundColor="@color/white"
                     android:layout_marginBottom="16dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:padding="20dp"
+                        android:padding="24dp"
                         android:gravity="center_vertical">
 
                         <ImageView
-                            android:layout_width="56dp"
-                            android:layout_height="56dp"
+                            android:layout_width="64dp"
+                            android:layout_height="64dp"
                             android:src="@mipmap/ic_launcher"
-                            android:layout_marginEnd="16dp"/>
+                            android:layout_marginEnd="20dp"/>
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -68,16 +68,16 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Welcome!"
-                                android:textSize="20sp"
+                                android:textSize="24sp"
                                 android:textStyle="bold"
-                                android:textColor="?attr/textColorPrimary"/>
+                                android:textColor="@color/text_primary"/>
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Your device is protected"
                                 android:textSize="14sp"
-                                android:textColor="?attr/textColorSecondary"
+                                android:textColor="@color/text_secondary"
                                 android:layout_marginTop="4dp"/>
 
                         </LinearLayout>
@@ -89,25 +89,25 @@
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="4dp"
-                    app:cardBackgroundColor="?attr/cardBackgroundColor"
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="2dp"
+                    app:cardBackgroundColor="@color/white"
                     android:layout_marginBottom="16dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="20dp">
+                        android:padding="24dp">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="📊 Device Status"
-                            android:textSize="16sp"
+                            android:text="Device Status"
+                            android:textSize="18sp"
                             android:textStyle="bold"
-                            android:textColor="?attr/textColorPrimary"
-                            android:layout_marginBottom="12dp"/>
+                            android:textColor="@color/text_primary"
+                            android:layout_marginBottom="16dp"/>
 
                         <TextView
                             android:id="@+id/tvStatus"
@@ -115,9 +115,9 @@
                             android:layout_height="wrap_content"
                             android:text="⚪ Not paired with parent"
                             android:textSize="14sp"
-                            android:textColor="?attr/textColorSecondary"
-                            android:padding="12dp"
-                            android:background="#10000000"/>
+                            android:textColor="@color/text_secondary"
+                            android:padding="16dp"
+                            android:background="@color/bg_primary"/>
 
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -126,50 +126,50 @@
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="4dp"
-                    app:cardBackgroundColor="?attr/cardBackgroundColor"
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="2dp"
+                    app:cardBackgroundColor="@color/white"
                     android:layout_marginBottom="16dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="20dp">
+                        android:padding="24dp">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="🔗 Pair with Parent"
-                            android:textSize="16sp"
+                            android:text="Pair with Parent"
+                            android:textSize="18sp"
                             android:textStyle="bold"
-                            android:textColor="?attr/textColorPrimary"
-                            android:layout_marginBottom="6dp"/>
+                            android:textColor="@color/text_primary"
+                            android:layout_marginBottom="8dp"/>
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Enter the pair code from your parent's app"
-                            android:textSize="13sp"
-                            android:textColor="?attr/textColorSecondary"
-                            android:layout_marginBottom="16dp"/>
+                            android:textSize="14sp"
+                            android:textColor="@color/text_secondary"
+                            android:layout_marginBottom="20dp"/>
 
                         <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:hint="Pair Code (e.g. GIA-ABC123)"
-                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                            app:boxCornerRadiusTopStart="12dp"
-                            app:boxCornerRadiusTopEnd="12dp"
-                            app:boxCornerRadiusBottomStart="12dp"
-                            app:boxCornerRadiusBottomEnd="12dp"
-                            android:layout_marginBottom="12dp">
+                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                            app:boxCornerRadiusTopStart="16dp"
+                            app:boxCornerRadiusTopEnd="16dp"
+                            app:boxCornerRadiusBottomStart="16dp"
+                            app:boxCornerRadiusBottomEnd="16dp"
+                            android:layout_marginBottom="16dp">
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/etPairCode"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="textCapCharacters"
-                                android:textColor="?attr/textColorPrimary"
+                                android:textColor="@color/text_primary"
                                 android:letterSpacing="0.1"/>
                         </com.google.android.material.textfield.TextInputLayout>
 
@@ -179,28 +179,37 @@
                             android:layout_height="56dp"
                             android:text="Pair with Parent"
                             android:textStyle="bold"
-                            app:backgroundTint="?attr/colorPrimary"
-                            app:cornerRadius="12dp"
+                            android:textAllCaps="false"
+                            app:backgroundTint="@color/google_blue"
+                            app:cornerRadius="16dp"
                             android:layout_marginBottom="12dp"/>
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnScanQR"
                             android:layout_width="match_parent"
                             android:layout_height="56dp"
-                            android:text="📷 Scan QR Code"
+                            android:text="Scan QR Code"
                             android:textStyle="bold"
-                            app:backgroundTint="#10B981"
-                            app:cornerRadius="12dp"
+                            android:textAllCaps="false"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            app:backgroundTint="@color/success_bg"
+                            android:textColor="@color/google_green"
+                            app:cornerRadius="16dp"
+                            app:icon="@android:drawable/ic_menu_camera"
+                            app:iconGravity="textStart"
                             android:layout_marginBottom="12dp"/>
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnStartMonitoring"
                             android:layout_width="match_parent"
                             android:layout_height="56dp"
-                            android:text="▶️ Start Monitoring"
+                            android:text="Start Monitoring"
                             android:textStyle="bold"
-                            app:backgroundTint="#F59E0B"
-                            app:cornerRadius="12dp"
+                            android:textAllCaps="false"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            app:backgroundTint="@color/warning_bg"
+                            android:textColor="@color/google_yellow"
+                            app:cornerRadius="16dp"
                             android:visibility="gone"/>
 
                     </LinearLayout>
@@ -210,45 +219,45 @@
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="4dp"
-                    app:cardBackgroundColor="#FFEBEE"
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="2dp"
+                    app:cardBackgroundColor="@color/danger_bg"
                     android:layout_marginBottom="16dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="20dp"
+                        android:padding="24dp"
                         android:gravity="center">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="🆘 Emergency Alert"
-                            android:textSize="18sp"
+                            android:text="Emergency Alert"
+                            android:textSize="20sp"
                             android:textStyle="bold"
-                            android:textColor="#C62828"
+                            android:textColor="@color/danger"
                             android:layout_marginBottom="8dp"/>
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Tap to immediately alert your parent"
-                            android:textSize="13sp"
-                            android:textColor="#6B7280"
-                            android:layout_marginBottom="16dp"/>
+                            android:textSize="14sp"
+                            android:textColor="@color/text_secondary"
+                            android:layout_marginBottom="20dp"/>
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnSos"
                             android:layout_width="match_parent"
-                            android:layout_height="60dp"
+                            android:layout_height="64dp"
                             android:text="SEND SOS ALERT"
                             android:textSize="16sp"
                             android:textStyle="bold"
                             android:letterSpacing="0.05"
-                            app:backgroundTint="#EF4444"
-                            app:cornerRadius="12dp"/>
+                            app:backgroundTint="@color/danger"
+                            app:cornerRadius="16dp"/>
 
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -257,30 +266,30 @@
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:cardCornerRadius="16dp"
+                    app:cardCornerRadius="24dp"
                     app:cardElevation="2dp"
-                    app:cardBackgroundColor="#E8EAF6">
+                    app:cardBackgroundColor="@color/info_bg">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="16dp">
+                        android:padding="20dp">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="ℹ️  This device is being monitored"
-                            android:textSize="13sp"
-                            android:textColor="#3F51B5"
+                            android:text="This device is being monitored"
+                            android:textSize="14sp"
+                            android:textColor="@color/google_blue"
                             android:textStyle="bold"/>
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Location tracking and app monitoring are active for your safety."
-                            android:textSize="12sp"
-                            android:textColor="#6B7280"
+                            android:textSize="13sp"
+                            android:textColor="@color/text_secondary"
                             android:layout_marginTop="4dp"/>
 
                     </LinearLayout>

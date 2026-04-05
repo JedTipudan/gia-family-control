@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.GiaFamilyControl" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- Stripe Design System - Auto Dark/Light -->
-        <item name="colorPrimary">@color/accent_primary</item>
-        <item name="colorPrimaryVariant">@color/accent_pressed</item>
+    <style name="Theme.GiaFamilyControl" parent="Theme.Material3.Light.NoActionBar">
+        <!-- Google Family Link Material You Theme -->
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryVariant">@color/primary_dark</item>
         <item name="colorOnPrimary">@color/white</item>
-        <item name="colorSecondary">@color/success</item>
-        <item name="colorSecondaryVariant">@color/success</item>
+        <item name="colorSecondary">@color/google_green</item>
+        <item name="colorSecondaryVariant">@color/google_green</item>
         <item name="colorOnSecondary">@color/white</item>
         
         <item name="android:windowBackground">@color/bg_primary</item>
-        <item name="android:statusBarColor">@color/bg_primary</item>
-        <item name="android:navigationBarColor">@color/bg_primary</item>
+        <item name="android:statusBarColor">@color/white</item>
+        <item name="android:navigationBarColor">@color/white</item>
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:windowLightNavigationBar">true</item>
         
@@ -25,6 +25,11 @@
         <item name="android:textColorSecondary">@color/text_secondary</item>
         <item name="android:textColorTertiary">@color/text_tertiary</item>
         
+        <!-- Material 3 Components -->
+        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.Material3.Corner.Large</item>
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.Material3.Corner.ExtraLarge</item>
+        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.Material3.Corner.ExtraLarge</item>
+        
         <!-- Custom attributes -->
         <item name="backgroundColor">@color/bg_primary</item>
         <item name="cardBackgroundColor">@color/bg_elevated</item>
@@ -33,21 +38,21 @@
         <item name="drawerBackgroundColor">@color/bg_secondary</item>
     </style>
 
-    <style name="Theme.GiaFamilyControl.LockScreen" parent="Theme.MaterialComponents.NoActionBar">
+    <style name="Theme.GiaFamilyControl.LockScreen" parent="Theme.Material3.Dark.NoActionBar">
         <item name="android:windowBackground">#CC000000</item>
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowShowWallpaper">false</item>
         <item name="android:windowFullscreen">true</item>
     </style>
 
-    <style name="Theme.GiaFamilyControl.Overlay" parent="Theme.MaterialComponents.NoActionBar">
+    <style name="Theme.GiaFamilyControl.Overlay" parent="Theme.Material3.Light.NoActionBar">
         <item name="android:windowBackground">@color/bg_elevated</item>
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowFullscreen">true</item>
     </style>
 
-    <style name="Theme.GiaFamilyControl.Splash" parent="Theme.MaterialComponents.NoActionBar">
-        <item name="android:windowBackground">@color/accent_primary</item>
+    <style name="Theme.GiaFamilyControl.Splash" parent="Theme.Material3.Light.NoActionBar">
+        <item name="android:windowBackground">@color/primary</item>
         <item name="android:windowFullscreen">true</item>
     </style>
 
