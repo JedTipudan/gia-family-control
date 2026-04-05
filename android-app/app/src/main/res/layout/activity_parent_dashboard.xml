@@ -18,20 +18,20 @@
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="64dp"
+            android:layout_height="56dp"
             android:background="@color/white"
-            android:elevation="2dp"
-            app:title="Family Link"
+            android:elevation="1dp"
+            app:title="Gia Family Control"
             app:titleTextColor="@color/text_primary"
             app:navigationIcon="@drawable/ic_menu">
             
             <ImageView
                 android:id="@+id/btnRefresh"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:layout_gravity="end"
-                android:layout_marginEnd="4dp"
-                android:padding="12dp"
+                android:layout_marginEnd="8dp"
+                android:padding="8dp"
                 android:src="@android:drawable/ic_popup_sync"
                 android:contentDescription="Refresh"
                 android:background="?attr/selectableItemBackgroundBorderless"
@@ -50,44 +50,44 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="20dp">
+                android:padding="16dp">
 
                 <!-- Child Profile Card -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:cardCornerRadius="24dp"
-                    app:cardElevation="2dp"
-                    android:layout_marginBottom="16dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="1dp"
+                    android:layout_marginBottom="12dp"
                     app:cardBackgroundColor="@color/white">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="24dp">
+                        android:padding="20dp">
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="horizontal"
                             android:gravity="center_vertical"
-                            android:layout_marginBottom="20dp">
+                            android:layout_marginBottom="16dp">
 
                             <!-- Child Avatar -->
                             <FrameLayout
-                                android:layout_width="64dp"
-                                android:layout_height="64dp"
+                                android:layout_width="56dp"
+                                android:layout_height="56dp"
                                 android:layout_marginEnd="16dp">
                                 
                                 <View
-                                    android:layout_width="64dp"
-                                    android:layout_height="64dp"
-                                    android:background="@drawable/status_online"/>
+                                    android:layout_width="56dp"
+                                    android:layout_height="56dp"
+                                    android:background="@drawable/circle_avatar_bg"/>
                                 
                                 <ImageView
-                                    android:layout_width="64dp"
-                                    android:layout_height="64dp"
+                                    android:layout_width="56dp"
+                                    android:layout_height="56dp"
                                     android:src="@mipmap/ic_launcher"
                                     android:scaleType="centerCrop"/>
                                     
@@ -104,7 +104,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Child Device"
-                                    android:textSize="22sp"
+                                    android:textSize="20sp"
                                     android:textStyle="bold"
                                     android:textColor="@color/text_primary"/>
 
@@ -113,17 +113,16 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Pair Code: ---"
-                                    android:textSize="14sp"
+                                    android:textSize="13sp"
                                     android:textColor="@color/google_blue"
-                                    android:textStyle="bold"
                                     android:layout_marginTop="4dp"/>
 
                             </LinearLayout>
 
                             <View
                                 android:id="@+id/statusIndicator"
-                                android:layout_width="16dp"
-                                android:layout_height="16dp"
+                                android:layout_width="12dp"
+                                android:layout_height="12dp"
                                 android:background="@drawable/status_offline"/>
 
                         </LinearLayout>
@@ -149,7 +148,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="---%"
-                                    android:textSize="20sp"
+                                    android:textSize="18sp"
                                     android:textStyle="bold"
                                     android:textColor="@color/text_primary"/>
 
@@ -157,7 +156,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Battery"
-                                    android:textSize="12sp"
+                                    android:textSize="11sp"
                                     android:textColor="@color/text_secondary"
                                     android:layout_marginTop="4dp"/>
 
@@ -180,14 +179,14 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="📶"
-                                    android:textSize="20sp"/>
+                                    android:textSize="18sp"/>
 
                                 <TextView
                                     android:id="@+id/tvConnectionStatus"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Offline"
-                                    android:textSize="12sp"
+                                    android:textSize="11sp"
                                     android:textStyle="bold"
                                     android:textColor="@color/text_primary"
                                     android:layout_marginTop="4dp"/>
@@ -197,7 +196,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Last seen"
-                                    android:textSize="10sp"
+                                    android:textSize="9sp"
                                     android:textColor="@color/text_secondary"
                                     android:layout_marginTop="2dp"/>
 
@@ -220,14 +219,14 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="🔓"
-                                    android:textSize="20sp"/>
+                                    android:textSize="18sp"/>
 
                                 <TextView
                                     android:id="@+id/tvLockStatus"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Unlocked"
-                                    android:textSize="12sp"
+                                    android:textSize="11sp"
                                     android:textColor="@color/text_secondary"
                                     android:layout_marginTop="4dp"/>
 
@@ -242,9 +241,9 @@
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:cardCornerRadius="24dp"
-                    app:cardElevation="2dp"
-                    android:layout_marginBottom="16dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="1dp"
+                    android:layout_marginBottom="12dp"
                     app:cardBackgroundColor="@color/white">
 
                     <LinearLayout
@@ -256,7 +255,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="horizontal"
-                            android:padding="20dp"
+                            android:padding="16dp"
                             android:gravity="center_vertical">
 
                             <TextView
@@ -264,7 +263,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:text="Location"
-                                android:textSize="18sp"
+                                android:textSize="16sp"
                                 android:textStyle="bold"
                                 android:textColor="@color/text_primary"/>
 
@@ -283,64 +282,64 @@
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:cardCornerRadius="24dp"
-                    app:cardElevation="2dp"
-                    android:layout_marginBottom="16dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="1dp"
+                    android:layout_marginBottom="12dp"
                     app:cardBackgroundColor="@color/white">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="20dp">
+                        android:padding="16dp">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Controls"
-                            android:textSize="18sp"
+                            android:textSize="16sp"
                             android:textStyle="bold"
                             android:textColor="@color/text_primary"
-                            android:layout_marginBottom="16dp"/>
+                            android:layout_marginBottom="12dp"/>
 
                         <!-- Lock/Unlock Row -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="horizontal"
-                            android:layout_marginBottom="12dp">
+                            android:layout_marginBottom="8dp">
 
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/btnLock"
                                 android:layout_width="0dp"
-                                android:layout_height="56dp"
+                                android:layout_height="48dp"
                                 android:layout_weight="1"
-                                android:text="Lock device"
-                                android:textSize="14sp"
+                                android:text="Lock"
+                                android:textSize="13sp"
                                 android:textAllCaps="false"
                                 style="@style/Widget.Material3.Button.TonalButton"
                                 app:backgroundTint="@color/danger_bg"
                                 android:textColor="@color/danger"
-                                app:cornerRadius="16dp"
+                                app:cornerRadius="12dp"
                                 app:icon="@android:drawable/ic_lock_lock"
                                 app:iconGravity="textStart"
-                                android:layout_marginEnd="8dp"/>
+                                android:layout_marginEnd="6dp"/>
 
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/btnUnlock"
                                 android:layout_width="0dp"
-                                android:layout_height="56dp"
+                                android:layout_height="48dp"
                                 android:layout_weight="1"
                                 android:text="Unlock"
-                                android:textSize="14sp"
+                                android:textSize="13sp"
                                 android:textAllCaps="false"
                                 style="@style/Widget.Material3.Button.TonalButton"
                                 app:backgroundTint="@color/success_bg"
                                 android:textColor="@color/success"
-                                app:cornerRadius="16dp"
+                                app:cornerRadius="12dp"
                                 app:icon="@android:drawable/ic_lock_idle_lock"
                                 app:iconGravity="textStart"
-                                android:layout_marginStart="8dp"/>
+                                android:layout_marginStart="6dp"/>
 
                         </LinearLayout>
 
@@ -348,30 +347,30 @@
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnApps"
                             android:layout_width="match_parent"
-                            android:layout_height="56dp"
+                            android:layout_height="48dp"
                             android:text="Manage apps"
-                            android:textSize="14sp"
+                            android:textSize="13sp"
                             android:textAllCaps="false"
                             style="@style/Widget.Material3.Button.TonalButton"
                             app:backgroundTint="@color/info_bg"
                             android:textColor="@color/google_blue"
-                            app:cornerRadius="16dp"
+                            app:cornerRadius="12dp"
                             app:icon="@android:drawable/ic_menu_manage"
                             app:iconGravity="textStart"
-                            android:layout_marginBottom="12dp"/>
+                            android:layout_marginBottom="8dp"/>
 
                         <!-- Unpair Button -->
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnUnpair"
                             android:layout_width="match_parent"
-                            android:layout_height="56dp"
+                            android:layout_height="48dp"
                             android:text="Unpair device"
-                            android:textSize="14sp"
+                            android:textSize="13sp"
                             android:textAllCaps="false"
                             style="@style/Widget.Material3.Button.OutlinedButton"
                             app:strokeColor="@color/border_primary"
                             android:textColor="@color/text_secondary"
-                            app:cornerRadius="16dp"
+                            app:cornerRadius="12dp"
                             app:icon="@android:drawable/ic_menu_close_clear_cancel"
                             app:iconGravity="textStart"/>
 
