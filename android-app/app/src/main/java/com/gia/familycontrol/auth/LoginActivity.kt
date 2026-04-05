@@ -27,11 +27,9 @@ class LoginActivity : AppCompatActivity() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Animate card sliding up
-        val slideUp = AnimationUtils.loadAnimation(this, R.anim.slide_up)
+        // Animate elements
         val fadeIn = AnimationUtils.loadAnimation(this, R.anim.fade_in)
-        binding.cardForm.startAnimation(slideUp)
-        binding.layoutBranding.startAnimation(fadeIn)
+        binding.root.startAnimation(fadeIn)
 
         binding.btnLogin.setOnClickListener { doLogin() }
         binding.tvRegister.setOnClickListener {
@@ -68,7 +66,7 @@ class LoginActivity : AppCompatActivity() {
                                else ChildDashboardActivity::class.java
                     startActivity(Intent(this@LoginActivity, dest))
                     overridePendingTransition(R.anim.fade_in, R.anim.fade_in)
-                    finish()
+                    finishAffinity()
                 } else {
                     setLoading(false)
                     showError("Invalid email or password")
@@ -87,7 +85,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun setLoading(loading: Boolean) {
         binding.btnLogin.isEnabled = !loading
-        binding.btnLogin.text = if (loading) "Signing in…" else "Sign in"
+        binding.btnLogin.text = if (loading) "Signing in…" else "Sign In"
         binding.errorBox.visibility = View.GONE
     }
 }
