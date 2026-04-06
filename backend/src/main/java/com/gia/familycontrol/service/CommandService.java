@@ -153,7 +153,18 @@ public class CommandService {
             }
             case BLOCK_APP -> fcmService.sendAppBlockCommand(device.getFcmToken(), request.getPackageName(), true);
             case UNBLOCK_APP -> fcmService.sendAppBlockCommand(device.getFcmToken(), request.getPackageName(), false);
-            default -> fcmService.sendCommand(device.getFcmToken(), command.getCommandType().name(), null);
+            default -> {
+                // Build metadata map — include packageName and metadata if present
+                java.util.Map<String, String> data = new java.util.HashMap<>();
+                if (request.getPackageName() != null) data.put("packageName", request.getPackageName());
+                if (request.getMetadata()    != null) data.put("metadata",    request.getMetadata());
+                // For GRANT_TEMP_ACCESS the minutes come in metadata field
+                if ("GRANT_TEMP_ACCESS".equals(request.getCommandType()) && request.getMetadata() != null) {
+                    data.put("minutes", request.getMetadata());
+                }
+                fcmService.sendCommand(device.getFcmToken(), command.getCommandType().name(),
+                        data.isEmpty() ? null : data);
+            }
         }
 
         command.setStatus(Command.Status.DELIVERED);

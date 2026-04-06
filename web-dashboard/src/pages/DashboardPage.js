@@ -51,12 +51,18 @@ export default function DashboardPage() {
     return () => clearInterval(id);
   }, [childDeviceId]);
 
-  const sendCommand = useCallback(async (type, pkg = null) => {
+  const sendCommand = useCallback(async (type, value = null) => {
     setCmdLoading(type);
     try {
-      await commandApi.send(childDeviceId, type, pkg);
-    } catch {
-      alert('Failed to send command');
+      // BLOCK_APP / UNBLOCK_APP use packageName field; everything else uses metadata
+      if (type === 'BLOCK_APP' || type === 'UNBLOCK_APP') {
+        await commandApi.sendApp(childDeviceId, type, value);
+      } else {
+        await commandApi.send(childDeviceId, type, value);
+      }
+    } catch (err) {
+      const msg = err?.response?.data?.message || err?.response?.data || err?.message || 'Unknown error';
+      alert(`Failed to send command: ${msg}`);
     } finally {
       setCmdLoading(null);
     }
@@ -148,7 +154,7 @@ export default function DashboardPage() {
             />
           )}
           {page === 'location' && <LocationPage location={location} isLoaded={isLoaded} />}
-          {page === 'apps'     && <AppManagerPanel deviceId={childDeviceId} onBlockApp={pkg => sendCommand('BLOCK_APP', pkg)} />}
+          {page === 'apps'     && <AppManagerPanel deviceId={childDeviceId} onBlockApp={pkg => commandApi.sendApp(childDeviceId, 'BLOCK_APP', pkg)} />}
           {page === 'activity' && <ActivityLog deviceId={childDeviceId} />}
           {page === 'pairing'  && <PairingPage />}
         </div>

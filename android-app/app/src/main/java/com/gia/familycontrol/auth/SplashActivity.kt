@@ -5,7 +5,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.gia.familycontrol.databinding.ActivitySplashBinding
-import com.gia.familycontrol.ui.child.ChildDashboardActivity
+import com.gia.familycontrol.ui.child.ChildLauncherActivity
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -19,18 +19,13 @@ class SplashActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         lifecycleScope.launch {
-            delay(2000)
-            checkAuth()
+            delay(1500)
+            val prefs = getSharedPreferences("gia_prefs", MODE_PRIVATE)
+            val role  = prefs.getString("role", null)
+            val dest  = if (role == "CHILD") ChildLauncherActivity::class.java
+                        else LoginActivity::class.java
+            startActivity(Intent(this@SplashActivity, dest))
+            finish()
         }
-    }
-
-    private fun checkAuth() {
-        val prefs = getSharedPreferences("gia_prefs", MODE_PRIVATE)
-        val role = prefs.getString("role", null)
-        // Child app only — always route to child dashboard or login
-        val dest = if (role == "CHILD") ChildDashboardActivity::class.java
-                   else LoginActivity::class.java
-        startActivity(Intent(this, dest))
-        finish()
     }
 }

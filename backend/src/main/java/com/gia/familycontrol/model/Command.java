@@ -35,6 +35,11 @@ public class Command {
     @Column(name = "executed_at")
     private LocalDateTime executedAt;
 
-    public enum CommandType { LOCK, UNLOCK, BLOCK_APP, UNBLOCK_APP, SOS, EMERGENCY }
+    public enum CommandType {
+        LOCK, UNLOCK, BLOCK_APP, UNBLOCK_APP, SOS, EMERGENCY,
+        GRANT_TEMP_ACCESS, REVOKE_TEMP_ACCESS,
+        ENABLE_LAUNCHER, DISABLE_LAUNCHER,
+        SET_PIN, HIDE_APP, UNHIDE_APP
+    }
     public enum Status { PENDING, DELIVERED, EXECUTED, FAILED }
 }

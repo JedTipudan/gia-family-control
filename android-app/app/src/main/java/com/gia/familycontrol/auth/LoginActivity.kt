@@ -13,7 +13,7 @@ import com.gia.familycontrol.model.LoginRequest
 import com.gia.familycontrol.network.JWT_TOKEN_KEY
 import com.gia.familycontrol.network.RetrofitClient
 import com.gia.familycontrol.network.dataStore
-import com.gia.familycontrol.ui.child.ChildDashboardActivity
+import com.gia.familycontrol.ui.child.ChildLauncherActivity
 import kotlinx.coroutines.launch
 
 class LoginActivity : AppCompatActivity() {
@@ -65,7 +65,7 @@ class LoginActivity : AppCompatActivity() {
                         .putString("full_name", auth.fullName)
                         .putString("email", email)
                         .apply()
-                    startActivity(Intent(this@LoginActivity, ChildDashboardActivity::class.java))
+                    startActivity(Intent(this@LoginActivity, ChildLauncherActivity::class.java))
                     overridePendingTransition(R.anim.fade_in, R.anim.fade_in)
                     finishAffinity()
                 } else {

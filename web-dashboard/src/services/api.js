@@ -38,7 +38,9 @@ export const locationApi = {
 };
 
 export const commandApi = {
-  send: (targetDeviceId, commandType, packageName = null) =>
+  send: (targetDeviceId, commandType, metadata = null) =>
+    api.post('/api/send-command', { targetDeviceId, commandType, metadata }),
+  sendApp: (targetDeviceId, commandType, packageName) =>
     api.post('/api/send-command', { targetDeviceId, commandType, packageName }),
   getHistory: (deviceId) => api.get(`/api/commands/${deviceId}`),
 };

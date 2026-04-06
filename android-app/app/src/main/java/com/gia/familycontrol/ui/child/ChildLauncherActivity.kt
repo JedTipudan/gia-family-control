@@ -1,8 +1,10 @@
 package com.gia.familycontrol.ui.child
 
+import android.app.role.RoleManager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -15,7 +17,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.gia.familycontrol.R
-import com.gia.familycontrol.auth.LoginActivity
 import com.gia.familycontrol.util.AppHideManager
 import com.gia.familycontrol.util.SecureAuthManager
 
@@ -26,65 +27,92 @@ class ChildLauncherActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Not logged in yet — send to login, stay in back stack so
-        // pressing Home after login returns here (the launcher)
-        val prefs = getSharedPreferences("gia_prefs", MODE_PRIVATE)
-        if (prefs.getString("jwt_token", null) == null) {
-            startActivity(Intent(this, LoginActivity::class.java))
+        // First time: ask to become default home app
+        if (!isDefaultHome()) {
+            requestHomeRole()
             return
         }
 
-        setContentView(R.layout.activity_child_launcher)
-        recyclerView = findViewById(R.id.rvLauncherApps)
-        recyclerView.layoutManager = GridLayoutManager(this, 4)
-        loadAllowedApps()
+        showLauncher()
+    }
 
-        findViewById<ImageView>(R.id.ivParentSettings)
-            .setOnClickListener { showParentAuthDialog() }
+    private fun isDefaultHome(): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val rm = getSystemService(RoleManager::class.java)
+            return rm.isRoleHeld(RoleManager.ROLE_HOME)
+        }
+        val info = packageManager.resolveActivity(
+            Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME),
+            PackageManager.MATCH_DEFAULT_ONLY
+        )
+        return info?.activityInfo?.packageName == packageName
+    }
+
+    private fun requestHomeRole() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val rm = getSystemService(RoleManager::class.java)
+            startActivityForResult(
+                rm.createRequestRoleIntent(RoleManager.ROLE_HOME),
+                REQ_HOME
+            )
+        } else {
+            // Android 9 and below — show chooser via home intent
+            val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
+            startActivity(intent)
+            // After user picks, onResume will call showLauncher
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQ_HOME) showLauncher()
     }
 
     override fun onResume() {
         super.onResume()
-        val prefs = getSharedPreferences("gia_prefs", MODE_PRIVATE)
-        if (prefs.getString("jwt_token", null) == null) {
-            startActivity(Intent(this, LoginActivity::class.java))
-            return
-        }
-        // Check lock state
+        // Check lock
         if (getSharedPreferences("gia_lock", MODE_PRIVATE).getBoolean("is_locked", false)) {
             startActivity(Intent(this, LockScreenActivity::class.java))
             return
         }
+        if (::recyclerView.isInitialized) loadAllowedApps()
+    }
+
+    private fun showLauncher() {
+        setContentView(R.layout.activity_child_launcher)
+        recyclerView = findViewById(R.id.rvLauncherApps)
+        recyclerView.layoutManager = GridLayoutManager(this, 4)
         loadAllowedApps()
+        findViewById<ImageView>(R.id.ivParentSettings)
+            .setOnClickListener { showParentAuthDialog() }
     }
 
     private fun loadAllowedApps() {
-        val pm = packageManager
-        val hiddenPkgs = AppHideManager.getHiddenPackages(this)
+        val pm          = packageManager
+        val hiddenPkgs  = AppHideManager.getHiddenPackages(this)
         val blockedPkgs = getSharedPreferences("gia_blocked_apps", MODE_PRIVATE)
             .getStringSet("blocked", emptySet()) ?: emptySet()
 
-        val launchIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
-        val allApps: List<ResolveInfo> = pm.queryIntentActivities(launchIntent, 0)
-
-        val allowed = allApps.filter { info ->
-            val pkg = info.activityInfo.packageName
-            pkg != packageName && pkg !in hiddenPkgs && pkg !in blockedPkgs
+        val apps = pm.queryIntentActivities(
+            Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER), 0
+        ).filter { it.activityInfo.packageName != packageName
+                && it.activityInfo.packageName !in hiddenPkgs
+                && it.activityInfo.packageName !in blockedPkgs
         }.sortedBy { it.loadLabel(pm).toString().lowercase() }
 
-        recyclerView.adapter = LauncherAppAdapter(allowed, pm) { info ->
-            val launch = pm.getLaunchIntentForPackage(info.activityInfo.packageName) ?: return@LauncherAppAdapter
-            launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            startActivity(launch)
+        recyclerView.adapter = LauncherAppAdapter(apps, pm) { info ->
+            pm.getLaunchIntentForPackage(info.activityInfo.packageName)
+                ?.apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
+                ?.let { startActivity(it) }
         }
     }
 
     @Deprecated("Deprecated in Java")
-    override fun onBackPressed() { /* Block — child cannot exit launcher */ }
+    override fun onBackPressed() { /* Block — child cannot exit */ }
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
-        loadAllowedApps()
+        if (::recyclerView.isInitialized) loadAllowedApps()
     }
 
     private fun showParentAuthDialog() {
@@ -109,6 +137,10 @@ class ChildLauncherActivity : AppCompatActivity() {
             }
             .setNegativeButton("Cancel", null)
             .show()
+    }
+
+    companion object {
+        private const val REQ_HOME = 1001
     }
 }
 
