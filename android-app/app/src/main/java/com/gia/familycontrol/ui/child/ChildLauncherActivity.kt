@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.gia.familycontrol.R
+import com.gia.familycontrol.auth.LoginActivity
 import com.gia.familycontrol.util.AppHideManager
 import com.gia.familycontrol.util.SecureAuthManager
 
@@ -24,25 +25,37 @@ class ChildLauncherActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_child_launcher)
 
+        // Not logged in yet — send to login, stay in back stack so
+        // pressing Home after login returns here (the launcher)
+        val prefs = getSharedPreferences("gia_prefs", MODE_PRIVATE)
+        if (prefs.getString("jwt_token", null) == null) {
+            startActivity(Intent(this, LoginActivity::class.java))
+            return
+        }
+
+        setContentView(R.layout.activity_child_launcher)
         recyclerView = findViewById(R.id.rvLauncherApps)
         recyclerView.layoutManager = GridLayoutManager(this, 4)
         loadAllowedApps()
 
-        // Make bottom dock settings icon rounded
-        val settingsBtn = findViewById<ImageView>(R.id.ivParentSettings)
-        settingsBtn.setOnClickListener { showParentAuthDialog() }
+        findViewById<ImageView>(R.id.ivParentSettings)
+            .setOnClickListener { showParentAuthDialog() }
     }
 
     override fun onResume() {
         super.onResume()
-        loadAllowedApps()
-        // Check if device is locked
-        val lockPrefs = getSharedPreferences("gia_lock", MODE_PRIVATE)
-        if (lockPrefs.getBoolean("is_locked", false)) {
-            startActivity(Intent(this, LockScreenActivity::class.java))
+        val prefs = getSharedPreferences("gia_prefs", MODE_PRIVATE)
+        if (prefs.getString("jwt_token", null) == null) {
+            startActivity(Intent(this, LoginActivity::class.java))
+            return
         }
+        // Check lock state
+        if (getSharedPreferences("gia_lock", MODE_PRIVATE).getBoolean("is_locked", false)) {
+            startActivity(Intent(this, LockScreenActivity::class.java))
+            return
+        }
+        loadAllowedApps()
     }
 
     private fun loadAllowedApps() {
@@ -67,7 +80,7 @@ class ChildLauncherActivity : AppCompatActivity() {
     }
 
     @Deprecated("Deprecated in Java")
-    override fun onBackPressed() { /* Block back — child cannot exit launcher */ }
+    override fun onBackPressed() { /* Block — child cannot exit launcher */ }
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)

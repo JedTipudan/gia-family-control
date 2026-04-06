@@ -26,6 +26,12 @@ export const authApi = {
   register: (data) => api.post('/api/auth/register', data),
 };
 
+export const pairApi = {
+  getMe:          ()         => api.get('/api/users/me'),
+  getChildDevices: ()        => api.get('/api/child-devices'),
+  unpair:         (deviceId) => api.post(`/api/unpair-device/${deviceId}`),
+};
+
 export const locationApi = {
   getLatest: (deviceId) => api.get(`/api/location/${deviceId}/latest`),
   getHistory: (deviceId, limit = 100) => api.get(`/api/location/${deviceId}/history`, { params: { limit } }),

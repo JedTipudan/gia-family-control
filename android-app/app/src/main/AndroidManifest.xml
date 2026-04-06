@@ -43,18 +43,11 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="${MAPS_API_KEY}"/>
 
-        <!-- Auth -->
+        <!-- Auth (no LAUNCHER category — not shown in app drawer) -->
         <activity android:name=".auth.SplashActivity"
-            android:exported="true"
-            android:theme="@style/Theme.GiaFamilyControl.Splash">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <!-- Child Launcher is also the app entry when used as home -->
-        <activity android:name=".auth.LoginActivity"
-            android:exported="false"/>
+            android:exported="false"
+            android:theme="@style/Theme.GiaFamilyControl.Splash"/>
+        <activity android:name=".auth.LoginActivity" android:exported="false"/>
         <activity android:name=".auth.RegisterActivity" android:exported="false"/>
 
         <!-- Parent Activities -->
@@ -68,7 +61,12 @@
             android:screenOrientation="portrait"/>
         <activity android:name=".ui.child.DebugActivity" android:exported="false"/>
 
-        <!-- Child Launcher — always registered as Home app -->
+        <!--
+            Child Launcher — registered as BOTH a home app AND a launcher app.
+            CATEGORY_HOME + CATEGORY_DEFAULT = Android asks "set as home?" on install.
+            CATEGORY_LAUNCHER = appears in app drawer so user can open it to login first.
+            This is exactly how Nova Launcher works.
+        -->
         <activity
             android:name=".ui.child.ChildLauncherActivity"
             android:exported="true"
@@ -79,6 +77,7 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.HOME" />
                 <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity

@@ -214,18 +214,86 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun showTempAccessDialog() {
         if (childDeviceId == -1L) { Toast.makeText(this, "No child device paired", Toast.LENGTH_SHORT).show(); return }
-        val options = arrayOf("15 minutes", "30 minutes", "1 hour", "2 hours")
-        val minutes = intArrayOf(15, 30, 60, 120)
-        AlertDialog.Builder(this)
-            .setTitle("Grant Temporary Access")
-            .setItems(options) { _, which ->
-                lifecycleScope.launch {
-                    try {
-                        api.sendCommand(SendCommandRequest(childDeviceId, "GRANT_TEMP_ACCESS", minutes[which].toString()))
-                        Toast.makeText(this@ParentDashboardActivity, "✅ Temporary access: ${options[which]}", Toast.LENGTH_SHORT).show()
-                    } catch (_: Exception) {}
+
+        val layout = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            setPadding(48, 16, 48, 8)
+        }
+
+        // Preset buttons row
+        val presets = listOf(5, 10, 15, 30, 60)
+        val btnRow = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.HORIZONTAL
+            gravity = android.view.Gravity.CENTER
+        }
+        presets.forEach { min ->
+            val btn = com.google.android.material.button.MaterialButton(
+                this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle
+            ).apply {
+                text = if (min < 60) "${min}m" else "1h"
+                textSize = 13f
+                isAllCaps = false
+                val lp = android.widget.LinearLayout.LayoutParams(0,
+                    android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
+                    setMargins(4, 0, 4, 0)
                 }
-            }.show()
+                layoutParams = lp
+                setOnClickListener {
+                    grantTempAccess(min)
+                    (parent as? android.view.ViewGroup)?.let {
+                        val dialog = it.tag
+                        if (dialog is android.app.Dialog) dialog.dismiss()
+                    }
+                }
+            }
+            btnRow.addView(btn)
+        }
+        layout.addView(btnRow)
+
+        // Divider label
+        val divLabel = android.widget.TextView(this).apply {
+            text = "or enter custom minutes"
+            textSize = 12f
+            gravity = android.view.Gravity.CENTER
+            setPadding(0, 20, 0, 8)
+            setTextColor(android.graphics.Color.GRAY)
+        }
+        layout.addView(divLabel)
+
+        // Custom input
+        val input = android.widget.EditText(this).apply {
+            hint = "e.g. 45"
+            inputType = android.text.InputType.TYPE_CLASS_NUMBER
+            gravity = android.view.Gravity.CENTER
+        }
+        layout.addView(input)
+
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("⏱ Temporary Access")
+            .setView(layout)
+            .setPositiveButton("Grant") { _, _ ->
+                val custom = input.text.toString().toIntOrNull()
+                if (custom != null && custom > 0) grantTempAccess(custom)
+                else Toast.makeText(this, "Enter a valid number of minutes", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("Cancel", null)
+            .create()
+
+        // Tag dialog on btnRow so preset buttons can dismiss it
+        btnRow.tag = dialog
+        dialog.show()
+    }
+
+    private fun grantTempAccess(minutes: Int) {
+        lifecycleScope.launch {
+            try {
+                api.sendCommand(SendCommandRequest(childDeviceId, "GRANT_TEMP_ACCESS", minutes.toString()))
+                val label = if (minutes < 60) "$minutes minutes" else "${minutes / 60}h ${minutes % 60}m".trimEnd('m').trimEnd(' ')
+                Toast.makeText(this@ParentDashboardActivity, "✅ Access granted: $minutes min", Toast.LENGTH_SHORT).show()
+            } catch (_: Exception) {
+                Toast.makeText(this@ParentDashboardActivity, "Failed to grant access", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun showSetPinDialog() {
