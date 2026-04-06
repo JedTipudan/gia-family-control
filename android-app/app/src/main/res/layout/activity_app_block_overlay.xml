@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
-    android:background="#EE1A1A2E"
-    android:padding="32dp">
+    android:background="#F20D1117"
+    android:padding="40dp">
 
-    <ImageView
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:src="@android:drawable/ic_delete"
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="🚫"
+        android:textSize="64sp"
         android:layout_marginBottom="24dp"/>
 
     <TextView
@@ -18,9 +20,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="App Blocked"
-        android:textColor="#FFFFFF"
+        android:textColor="#F87171"
         android:textSize="22sp"
         android:textStyle="bold"
+        android:gravity="center"
         android:layout_marginBottom="12dp"/>
 
     <TextView
@@ -28,16 +31,22 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="This app has been restricted by your parent."
-        android:textColor="#CCFFFFFF"
+        android:textColor="#9CA3AF"
         android:textSize="15sp"
         android:gravity="center"
-        android:layout_marginBottom="32dp"/>
+        android:layout_marginBottom="40dp"/>
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnGoHome"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Go to Home"
-        android:backgroundTint="#4CAF50"/>
+        android:layout_width="200dp"
+        android:layout_height="50dp"
+        android:text="Go Back"
+        android:textAllCaps="false"
+        android:textColor="#FFFFFF"
+        app:backgroundTint="#1F1F1F"
+        app:strokeColor="#2A2A2A"
+        app:strokeWidth="1dp"
+        app:cornerRadius="12dp"
+        style="@style/Widget.Material3.Button.OutlinedButton"/>
 
 </LinearLayout>

@@ -43,15 +43,25 @@ class GiaFcmService : FirebaseMessagingService() {
             }
             "HIDE_APP" -> {
                 val pkg = message.data["packageName"] ?: return
-                val result = AppHideManager.hideApp(this, pkg)
-                ActionLogger.log(this, "HIDE_APP", "$pkg result=$result")
-                android.util.Log.d("GiaFcmService", "HIDE_APP $pkg = $result")
+                // Store in hidden prefs — launcher filters these out
+                val prefs = getSharedPreferences("gia_hidden_apps", MODE_PRIVATE)
+                val hidden = prefs.getStringSet("hidden", mutableSetOf())!!.toMutableSet()
+                hidden.add(pkg)
+                prefs.edit().putStringSet("hidden", hidden).apply()
+                // Also try Device Owner hide if available
+                AppHideManager.hideApp(this, pkg)
+                ActionLogger.log(this, "HIDE_APP", pkg)
+                android.util.Log.d("GiaFcmService", "HIDE_APP $pkg")
             }
             "UNHIDE_APP" -> {
                 val pkg = message.data["packageName"] ?: return
-                val result = AppHideManager.unhideApp(this, pkg)
-                ActionLogger.log(this, "UNHIDE_APP", "$pkg result=$result")
-                android.util.Log.d("GiaFcmService", "UNHIDE_APP $pkg = $result")
+                val prefs = getSharedPreferences("gia_hidden_apps", MODE_PRIVATE)
+                val hidden = prefs.getStringSet("hidden", mutableSetOf())!!.toMutableSet()
+                hidden.remove(pkg)
+                prefs.edit().putStringSet("hidden", hidden).apply()
+                AppHideManager.unhideApp(this, pkg)
+                ActionLogger.log(this, "UNHIDE_APP", pkg)
+                android.util.Log.d("GiaFcmService", "UNHIDE_APP $pkg")
             }
             "GRANT_TEMP_ACCESS" -> {
                 val minutes = message.data["minutes"]?.toIntOrNull() ?: 30

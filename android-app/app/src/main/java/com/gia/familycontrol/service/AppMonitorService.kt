@@ -166,18 +166,24 @@ class AppMonitorService : LifecycleService() {
     private fun forceCloseApp(packageName: String) {
         try {
             Log.d("AppMonitorService", "🚫 FORCE CLOSING: $packageName")
-            
-            // Method 1: Send to home screen
-            val homeIntent = Intent(Intent.ACTION_MAIN).apply {
-                addCategory(Intent.CATEGORY_HOME)
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or 
-                        Intent.FLAG_ACTIVITY_CLEAR_TASK or
-                        Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS or
-                        Intent.FLAG_ACTIVITY_NO_ANIMATION
+
+            // Check temp access — if active, skip blocking
+            if (com.gia.familycontrol.util.SecureAuthManager.isTemporaryAccessActive(this)) {
+                Log.d("AppMonitorService", "⏱ Temp access active — skipping block for $packageName")
+                return
             }
-            startActivity(homeIntent)
-            
-            Log.d("AppMonitorService", "✅ App blocked: $packageName")
+
+            // Show block overlay (keeps appearing every time app is opened)
+            val overlayIntent = Intent(this, AppBlockOverlayActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                        Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                        Intent.FLAG_ACTIVITY_SINGLE_TOP or
+                        Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
+                putExtra("blocked_package", packageName)
+            }
+            startActivity(overlayIntent)
+
+            Log.d("AppMonitorService", "✅ Block overlay shown for: $packageName")
         } catch (e: Exception) {
             Log.e("AppMonitorService", "❌ Failed to block app", e)
         }

@@ -3,6 +3,7 @@ import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
 import { commandApi, locationApi } from '../services/api';
 import { subscribeToDeviceLocation, subscribeToDeviceStatus } from '../services/firebase';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import AppManagerPanel from '../components/AppManagerPanel';
 import ActivityLog from '../components/ActivityLog';
 import PairingPage from './PairingPage';
@@ -21,6 +22,7 @@ const NAV = [
 
 export default function DashboardPage() {
   const { user, logout } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
   const [childDeviceId]                   = useState(() => Number(localStorage.getItem('child_device_id') || 1));
   const [location, setLocation]           = useState(null);
   const [deviceStatus, setDeviceStatus]   = useState({});
@@ -123,6 +125,9 @@ export default function DashboardPage() {
 
         <div style={s.sideFooter}>
           {!sideCollapsed && <span style={s.sideUser}>{user?.fullName || 'Parent'}</span>}
+          <button style={s.themeBtn} onClick={toggleTheme} title={isDark ? 'Light mode' : 'Dark mode'}>
+            {isDark ? '☀️' : '🌙'}
+          </button>
           <button style={s.logoutBtn} onClick={logout} title="Sign out">⏻</button>
         </div>
       </aside>
@@ -369,6 +374,7 @@ const s = {
   sideFooter:   { marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', borderTop: '1px solid var(--border-primary)' },
   sideUser:     { fontSize: 13, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
   logoutBtn:    { background: 'none', border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer', fontSize: 18, padding: 4, flexShrink: 0 },
+  themeBtn:     { background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, padding: 4, flexShrink: 0 },
 
   main:         { flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' },
   topbar:       { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px', height: 56, borderBottom: '1px solid var(--border-primary)', background: 'var(--bg-secondary)', flexShrink: 0 },
