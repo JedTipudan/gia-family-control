@@ -46,7 +46,7 @@ export default function AppManagerPanel({ deviceId }) {
   const toggleBlock = async (packageName, currentlyBlocked) => {
     try {
       if (currentlyBlocked) {
-        await appApi.removeControl(deviceId, packageName);
+        await appApi.removeControl(deviceId, packageName, 'BLOCKED');
         setControls(prev => prev.filter(c => !(c.packageName === packageName && c.controlType === 'BLOCKED')));
         await commandApi.sendApp(deviceId, 'UNBLOCK_APP', packageName);
       } else {
@@ -54,13 +54,13 @@ export default function AppManagerPanel({ deviceId }) {
         setControls(prev => [...prev.filter(c => !(c.packageName === packageName && c.controlType === 'BLOCKED')), data]);
         await commandApi.sendApp(deviceId, 'BLOCK_APP', packageName);
       }
-    } catch { alert('Failed to update block'); }
+    } catch (e) { alert('Failed to update block: ' + (e?.response?.data?.message || e?.message || 'error')); }
   };
 
   const toggleHide = async (packageName, currentlyHidden) => {
     try {
       if (currentlyHidden) {
-        await appApi.removeControl(deviceId, packageName);
+        await appApi.removeControl(deviceId, packageName, 'HIDDEN');
         setControls(prev => prev.filter(c => !(c.packageName === packageName && c.controlType === 'HIDDEN')));
         await commandApi.sendApp(deviceId, 'UNHIDE_APP', packageName);
       } else {
@@ -68,7 +68,7 @@ export default function AppManagerPanel({ deviceId }) {
         setControls(prev => [...prev.filter(c => !(c.packageName === packageName && c.controlType === 'HIDDEN')), data]);
         await commandApi.sendApp(deviceId, 'HIDE_APP', packageName);
       }
-    } catch { alert('Failed to update hide'); }
+    } catch (e) { alert('Failed to update hide: ' + (e?.response?.data?.message || e?.message || 'error')); }
   };
 
   const handleAdd = async (e) => {

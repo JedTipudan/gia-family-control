@@ -1,77 +1,99 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FF0D1117">
+    android:background="#FF0A0A0F">
 
-    <!-- Clock + Date at top -->
-    <LinearLayout
-        android:id="@+id/layoutClock"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:paddingTop="56dp"
-        android:paddingBottom="24dp"
-        android:layout_alignParentTop="true">
-
-        <TextClock
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:format12Hour="h:mm"
-            android:format24Hour="HH:mm"
-            android:textSize="80sp"
-            android:textColor="#FFFFFFFF"
-            android:textStyle="bold"
-            android:letterSpacing="-0.04"
-            android:fontFamily="sans-serif-light"/>
-
-        <TextClock
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:format12Hour="EEEE, MMMM d"
-            android:format24Hour="EEEE, MMMM d"
-            android:textSize="15sp"
-            android:textColor="#99FFFFFF"
-            android:layout_marginTop="4dp"/>
-
-    </LinearLayout>
-
-    <!-- App Grid -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvLauncherApps"
+    <!-- Scrollable content: clock + app grid -->
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/bottomDock"
-        android:layout_below="@+id/layoutClock"
-        android:paddingHorizontal="8dp"
-        android:paddingBottom="8dp"
-        android:clipToPadding="false"
-        android:overScrollMode="never"/>
+        android:fillViewport="true"
+        android:overScrollMode="never"
+        android:paddingBottom="96dp"
+        android:clipToPadding="false">
 
-    <!-- Bottom Dock -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Clock section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:paddingTop="72dp"
+                android:paddingBottom="32dp">
+
+                <TextClock
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:format12Hour="h:mm"
+                    android:format24Hour="HH:mm"
+                    android:textSize="88sp"
+                    android:textColor="#FFFFFFFF"
+                    android:fontFamily="sans-serif-thin"
+                    android:letterSpacing="-0.05"
+                    android:includeFontPadding="false"/>
+
+                <TextClock
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:format12Hour="EEEE, MMMM d"
+                    android:format24Hour="EEEE, MMMM d"
+                    android:textSize="14sp"
+                    android:textColor="#88FFFFFF"
+                    android:letterSpacing="0.04"
+                    android:layout_marginTop="6dp"/>
+
+            </LinearLayout>
+
+            <!-- App grid -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvLauncherApps"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="16dp"
+                android:clipToPadding="false"
+                android:overScrollMode="never"
+                android:nestedScrollingEnabled="false"/>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Bottom dock — fixed at bottom -->
     <LinearLayout
         android:id="@+id/bottomDock"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center"
-        android:layout_alignParentBottom="true"
-        android:paddingBottom="28dp"
+        android:layout_gravity="bottom"
+        android:paddingBottom="24dp"
         android:paddingTop="12dp"
-        android:paddingHorizontal="32dp"
+        android:paddingHorizontal="40dp"
         android:background="#00000000">
 
-        <ImageView
+        <!-- Settings gear — PIN protected -->
+        <LinearLayout
             android:id="@+id/ivParentSettings"
-            android:layout_width="52dp"
-            android:layout_height="52dp"
-            android:src="@android:drawable/ic_menu_manage"
-            android:tint="#88FFFFFF"
-            android:padding="12dp"
-            android:background="#22FFFFFF"
-            android:contentDescription="Settings"/>
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:gravity="center"
+            android:background="#18FFFFFF"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@android:drawable/ic_menu_manage"
+                android:tint="#AAFFFFFF"/>
+
+        </LinearLayout>
 
     </LinearLayout>
 
-</RelativeLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

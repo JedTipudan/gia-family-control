@@ -34,8 +34,9 @@ public class AppController {
     @DeleteMapping("/control/{deviceId}/{packageName}")
     @PreAuthorize("hasRole('PARENT')")
     public ResponseEntity<Void> removeControl(@PathVariable Long deviceId,
-                                               @PathVariable String packageName) {
-        appControlService.removeAppControl(deviceId, packageName);
+                                               @PathVariable String packageName,
+                                               @RequestParam(required = false) String controlType) {
+        appControlService.removeAppControl(deviceId, packageName, controlType);
         return ResponseEntity.ok().build();
     }
     

@@ -4,14 +4,15 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:gravity="center"
-    android:paddingVertical="10dp"
-    android:paddingHorizontal="4dp">
+    android:paddingVertical="12dp"
+    android:paddingHorizontal="6dp">
 
     <ImageView
         android:id="@+id/ivLauncherIcon"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:scaleType="fitCenter"/>
+        android:layout_width="58dp"
+        android:layout_height="58dp"
+        android:scaleType="fitCenter"
+        android:elevation="2dp"/>
 
     <TextView
         android:id="@+id/tvLauncherLabel"
@@ -21,7 +22,8 @@
         android:maxLines="1"
         android:ellipsize="end"
         android:textSize="11sp"
-        android:textColor="#CCFFFFFF"
-        android:layout_marginTop="6dp"/>
+        android:textColor="#BBFFFFFF"
+        android:letterSpacing="0.01"
+        android:layout_marginTop="7dp"/>
 
 </LinearLayout>

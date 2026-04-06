@@ -1,11 +1,7 @@
 package com.gia.parentcontrol.network
 
 import android.content.Context
-import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
 import com.gia.parentcontrol.model.*
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -14,9 +10,6 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.*
 import java.util.concurrent.TimeUnit
-
-val Context.dataStore by preferencesDataStore(name = "parent_prefs")
-val JWT_TOKEN_KEY = stringPreferencesKey("jwt_token")
 
 interface ApiService {
 
@@ -31,12 +24,6 @@ interface ApiService {
 
     @GET("api/location/{deviceId}/latest")
     suspend fun getLatestLocation(@Path("deviceId") deviceId: Long): Response<LocationResponse>
-
-    @GET("api/location/{deviceId}/history")
-    suspend fun getLocationHistory(
-        @Path("deviceId") deviceId: Long,
-        @Query("limit") limit: Int = 100
-    ): Response<List<LocationResponse>>
 
     @POST("api/send-command")
     suspend fun sendCommand(@Body request: SendCommandRequest): Response<CommandResponse>
@@ -71,23 +58,31 @@ object RetrofitClient {
     private const val BASE_URL = "https://gia-family-control-production.up.railway.app/"
 
     fun create(context: Context): ApiService {
+        val appContext = context.applicationContext
+
         val authInterceptor = Interceptor { chain ->
-            // Read token from plain SharedPreferences — avoids runBlocking deadlock on main thread
-            val token = context.getSharedPreferences("parent_prefs", Context.MODE_PRIVATE)
+            val token = appContext
+                .getSharedPreferences("parent_prefs", Context.MODE_PRIVATE)
                 .getString("jwt_token_plain", null)
+
             val request = if (token != null) {
                 chain.request().newBuilder()
                     .addHeader("Authorization", "Bearer $token")
                     .build()
-            } else chain.request()
+            } else {
+                chain.request()
+            }
             chain.proceed(request)
         }
 
         val client = OkHttpClient.Builder()
             .addInterceptor(authInterceptor)
-            .addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BASIC })
+            .addInterceptor(HttpLoggingInterceptor().apply {
+                level = HttpLoggingInterceptor.Level.BASIC
+            })
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
             .build()
 
         return Retrofit.Builder()

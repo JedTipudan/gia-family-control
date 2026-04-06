@@ -4,13 +4,10 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.lifecycleScope
 import com.gia.parentcontrol.databinding.ActivityLoginBinding
 import com.gia.parentcontrol.model.LoginRequest
-import com.gia.parentcontrol.network.JWT_TOKEN_KEY
 import com.gia.parentcontrol.network.RetrofitClient
-import com.gia.parentcontrol.network.dataStore
 import com.gia.parentcontrol.ui.dashboard.ParentDashboardActivity
 import kotlinx.coroutines.launch
 
@@ -30,7 +27,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun doLogin() {
-        val email = binding.etEmail.text.toString().trim()
+        val email    = binding.etEmail.text.toString().trim()
         val password = binding.etPassword.text.toString()
         if (email.isEmpty() || password.isEmpty()) { showError("Fill in all fields"); return }
 
@@ -45,8 +42,7 @@ class LoginActivity : AppCompatActivity() {
                         showError("This app is for parents only. Use the child app.")
                         return@launch
                     }
-                    // Persist token in DataStore + plain prefs for splash check
-                    dataStore.edit { it[JWT_TOKEN_KEY] = auth.token }
+                    // Save to SharedPreferences only — no DataStore
                     getSharedPreferences("parent_prefs", MODE_PRIVATE).edit()
                         .putString("jwt_token_plain", auth.token)
                         .putString("role", auth.role)
@@ -62,7 +58,7 @@ class LoginActivity : AppCompatActivity() {
                 }
             } catch (e: Exception) {
                 setLoading(false)
-                showError("Connection error. Check your internet.")
+                showError("Connection error: ${e.message}")
             }
         }
     }

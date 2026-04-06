@@ -82,8 +82,9 @@ class ChildLauncherActivity : AppCompatActivity() {
         setContentView(R.layout.activity_child_launcher)
         recyclerView = findViewById(R.id.rvLauncherApps)
         recyclerView.layoutManager = GridLayoutManager(this, 4)
+        recyclerView.setHasFixedSize(false)
         loadAllowedApps()
-        findViewById<ImageView>(R.id.ivParentSettings)
+        findViewById<android.view.View>(R.id.ivParentSettings)
             .setOnClickListener { showParentAuthDialog() }
     }
 

@@ -36,14 +36,17 @@ public class AppControlService {
         Device device = deviceRepository.findById(request.getDeviceId())
                 .orElseThrow(() -> new RuntimeException("Device not found"));
 
+        AppControl.ControlType type = AppControl.ControlType.valueOf(request.getControlType());
+
+        // Find existing row for this device + package + controlType (not just package)
         AppControl control = appControlRepository
-                .findByDeviceIdAndPackageName(device.getId(), request.getPackageName())
+                .findByDeviceIdAndPackageNameAndControlType(device.getId(), request.getPackageName(), type)
                 .orElse(new AppControl());
 
         control.setParentId(parent.getId());
         control.setDeviceId(device.getId());
         control.setPackageName(request.getPackageName());
-        control.setControlType(AppControl.ControlType.valueOf(request.getControlType()));
+        control.setControlType(type);
 
         if (request.getScheduleStart() != null)
             control.setScheduleStart(LocalTime.parse(request.getScheduleStart()));
@@ -53,20 +56,24 @@ public class AppControlService {
 
         appControlRepository.save(control);
 
-        // Only send FCM for block/unblock — hide/unhide are sent separately via send-command
-        if (control.getControlType() == AppControl.ControlType.BLOCKED) {
+        // Only send FCM for BLOCKED/ALLOWED — HIDDEN/VISIBLE go via send-command
+        if (type == AppControl.ControlType.BLOCKED) {
             fcmService.sendAppBlockCommand(device.getFcmToken(), request.getPackageName(), true);
-        } else if (control.getControlType() == AppControl.ControlType.ALLOWED) {
+        } else if (type == AppControl.ControlType.ALLOWED) {
             fcmService.sendAppBlockCommand(device.getFcmToken(), request.getPackageName(), false);
         }
-        // HIDDEN/VISIBLE are handled by the /send-command endpoint directly
 
         return control;
     }
 
     @Transactional
-    public void removeAppControl(Long deviceId, String packageName) {
-        appControlRepository.deleteByDeviceIdAndPackageName(deviceId, packageName);
+    public void removeAppControl(Long deviceId, String packageName, String controlType) {
+        if (controlType != null) {
+            appControlRepository.deleteByDeviceIdAndPackageNameAndControlType(
+                deviceId, packageName, AppControl.ControlType.valueOf(controlType));
+        } else {
+            appControlRepository.deleteByDeviceIdAndPackageName(deviceId, packageName);
+        }
     }
     
     public List<com.gia.familycontrol.model.App> getInstalledApps(Long deviceId) {
