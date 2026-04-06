@@ -33,7 +33,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Create your family account"
+            android:text="Child Account Registration"
             android:textColor="#B3E5FC"
             android:textSize="14sp"
             android:layout_marginTop="6dp"/>
@@ -74,6 +74,32 @@
                 android:textColor="#607D8B"
                 android:textSize="14sp"
                 android:layout_marginBottom="28dp"/>
+
+            <!-- Child-only notice -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:background="#E8F0FE"
+                android:padding="12dp"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="👦"
+                    android:textSize="20sp"
+                    android:layout_marginEnd="10dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="This app is for children only. Parents must use the Gia Parent Control app."
+                    android:textColor="#1565C0"
+                    android:textSize="13sp"/>
+
+            </LinearLayout>
 
             <!-- Full Name Field -->
             <com.google.android.material.textfield.TextInputLayout
@@ -157,45 +183,6 @@
                     android:imeOptions="actionDone"/>
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Role Selection -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="I am registering as"
-                android:textColor="#0F2D5E"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="12dp"/>
-
-            <RadioGroup
-                android:id="@+id/rgRole"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="24dp">
-
-                <com.google.android.material.radiobutton.MaterialRadioButton
-                    android:id="@+id/rbParent"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Parent"
-                    android:checked="true"
-                    android:textSize="15sp"
-                    android:textColor="#0F2D5E"
-                    android:padding="10dp"/>
-
-                <com.google.android.material.radiobutton.MaterialRadioButton
-                    android:id="@+id/rbChild"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Child"
-                    android:textSize="15sp"
-                    android:textColor="#0F2D5E"
-                    android:padding="10dp"/>
-
-            </RadioGroup>
 
             <!-- Error Message -->
             <TextView
