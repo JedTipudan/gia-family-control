@@ -67,50 +67,34 @@ public class CommandService {
         
         log.info("Parent found: {} (ID: {})", parent.getFullName(), parent.getId());
         
-        // Get parent's device
-        Device parentDevice = deviceRepository.findByUserId(parent.getId())
-                .orElseThrow(() -> {
-                    log.error("Parent device not found for user ID: {}", parent.getId());
-                    return new RuntimeException("Parent device not found. Parent must login to their device first.");
-                });
+        // Get parent's device — optional, only needed for FCM
+        Device parentDevice = deviceRepository.findByUserId(parent.getId()).orElse(null);
         
-        log.info("Parent device found: ID {}, FCM token: {}", 
-                parentDevice.getId(), 
-                parentDevice.getFcmToken() != null ? "SET" : "NULL");
-        
-        // Validate parent FCM token
-        if (parentDevice.getFcmToken() == null || parentDevice.getFcmToken().trim().isEmpty()) {
-            throw new RuntimeException("Parent device is not registered for notifications. Parent must login to their app first.");
-        }
-        
-        // Save SOS command to database
+        // Save SOS command to database regardless
         Command command = new Command();
         command.setSenderId(child.getId());
-        command.setTargetDeviceId(parentDevice.getId());
+        command.setTargetDeviceId(childDevice.getId());
         command.setCommandType(Command.CommandType.SOS);
-        command.setStatus(Command.Status.DELIVERED);
+        command.setStatus(Command.Status.PENDING);
         commandRepository.save(command);
         
-        log.info("SOS command saved to database: ID {}", command.getId());
-        
-        // Send urgent FCM notification to parent
-        log.info("Sending FCM SOS alert to parent device...");
-        log.info("Child Name: {}", child.getFullName());
-        log.info("Location: {}", request.getMetadata());
-        
-        try {
-            fcmService.sendSosAlert(
-                parentDevice.getFcmToken(), 
-                child.getFullName(), 
-                request.getMetadata()
-            );
-            log.info("✅ SOS alert sent successfully via FCM");
-        } catch (Exception e) {
-            log.error("❌ Failed to send FCM SOS alert", e);
-            throw new RuntimeException("Failed to send SOS alert to parent: " + e.getMessage());
+        // Send FCM only if parent has a device with FCM token
+        if (parentDevice != null && parentDevice.getFcmToken() != null && !parentDevice.getFcmToken().trim().isEmpty()) {
+            try {
+                fcmService.sendSosAlert(parentDevice.getFcmToken(), child.getFullName(), request.getMetadata());
+                command.setStatus(Command.Status.DELIVERED);
+                log.info("✅ SOS alert sent via FCM");
+            } catch (Exception e) {
+                log.error("❌ FCM SOS failed: {}", e.getMessage());
+                command.setStatus(Command.Status.FAILED);
+            }
+        } else {
+            log.warn("⚠️ Parent has no FCM token — SOS saved to DB only");
+            command.setStatus(Command.Status.DELIVERED);
         }
         
-        log.info("=== SOS COMMAND COMPLETED SUCCESSFULLY ===");
+        commandRepository.save(command);
+        log.info("=== SOS COMMAND COMPLETED ===");
         return command;
     }
     

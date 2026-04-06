@@ -55,7 +55,12 @@ CREATE TABLE commands (
     id               BIGINT AUTO_INCREMENT PRIMARY KEY,
     sender_id        BIGINT NOT NULL,
     target_device_id BIGINT NOT NULL,
-    command_type     ENUM('LOCK','UNLOCK','BLOCK_APP','UNBLOCK_APP','SOS','EMERGENCY') NOT NULL,
+    command_type     ENUM(
+        'LOCK','UNLOCK','BLOCK_APP','UNBLOCK_APP','SOS','EMERGENCY',
+        'GRANT_TEMP_ACCESS','REVOKE_TEMP_ACCESS',
+        'ENABLE_LAUNCHER','DISABLE_LAUNCHER',
+        'SET_PIN','HIDE_APP','UNHIDE_APP'
+    ) NOT NULL,
     payload          JSON,
     status           ENUM('PENDING','DELIVERED','EXECUTED','FAILED') DEFAULT 'PENDING',
     sent_at          DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -83,13 +88,13 @@ CREATE TABLE app_controls (
     parent_id       BIGINT NOT NULL,
     device_id       BIGINT NOT NULL,
     package_name    VARCHAR(255) NOT NULL,
-    control_type    ENUM('BLOCKED','ALLOWED','SCHEDULED') NOT NULL DEFAULT 'BLOCKED',
+    control_type    ENUM('BLOCKED','ALLOWED','SCHEDULED','HIDDEN','VISIBLE') NOT NULL DEFAULT 'BLOCKED',
     schedule_start  TIME NULL,
     schedule_end    TIME NULL,
     schedule_days   VARCHAR(20) NULL COMMENT 'e.g. MON,TUE,WED',
     created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at      DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    UNIQUE KEY uq_ctrl (device_id, package_name),
+    UNIQUE KEY uq_ctrl_type (device_id, package_name, control_type),
     CONSTRAINT fk_ctrl_parent FOREIGN KEY (parent_id) REFERENCES users(id),
     CONSTRAINT fk_ctrl_device FOREIGN KEY (device_id) REFERENCES devices(id) ON DELETE CASCADE
 );

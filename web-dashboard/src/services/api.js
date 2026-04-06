@@ -27,9 +27,9 @@ export const authApi = {
 };
 
 export const pairApi = {
-  getMe:          ()         => api.get('/api/users/me'),
-  getChildDevices: ()        => api.get('/api/child-devices'),
-  unpair:         (deviceId) => api.post(`/api/unpair-device/${deviceId}`),
+  getMe:           ()         => api.get('/api/users/me'),
+  getChildDevices: ()         => api.get('/api/child-devices'),
+  unpair:          (deviceId) => api.post(`/api/unpair-device/${deviceId}`),
 };
 
 export const locationApi = {

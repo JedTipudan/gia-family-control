@@ -5,7 +5,7 @@ const ThemeContext = createContext();
 export function ThemeProvider({ children }) {
   const [isDark, setIsDark] = useState(() => {
     const saved = localStorage.getItem('theme');
-    return saved ? saved === 'dark' : true; // Default to dark
+    return saved === 'dark'; // default = light
   });
 
   useEffect(() => {
@@ -13,7 +13,12 @@ export function ThemeProvider({ children }) {
     document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
   }, [isDark]);
 
-  const toggleTheme = () => setIsDark(!isDark);
+  // Apply on first render too
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  }, []);
+
+  const toggleTheme = () => setIsDark(v => !v);
 
   return (
     <ThemeContext.Provider value={{ isDark, toggleTheme }}>

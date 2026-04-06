@@ -4,13 +4,10 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.lifecycleScope
 import com.gia.parentcontrol.databinding.ActivityRegisterBinding
 import com.gia.parentcontrol.model.RegisterRequest
-import com.gia.parentcontrol.network.JWT_TOKEN_KEY
 import com.gia.parentcontrol.network.RetrofitClient
-import com.gia.parentcontrol.network.dataStore
 import com.gia.parentcontrol.ui.dashboard.ParentDashboardActivity
 import kotlinx.coroutines.launch
 
@@ -28,8 +25,8 @@ class RegisterActivity : AppCompatActivity() {
     }
 
     private fun doRegister() {
-        val name = binding.etFullName.text.toString().trim()
-        val email = binding.etEmail.text.toString().trim()
+        val name     = binding.etFullName.text.toString().trim()
+        val email    = binding.etEmail.text.toString().trim()
         val password = binding.etPassword.text.toString()
         if (name.isEmpty() || email.isEmpty() || password.isEmpty()) {
             showError("Fill in all fields"); return
@@ -42,7 +39,6 @@ class RegisterActivity : AppCompatActivity() {
                 val response = api.register(RegisterRequest(email, password, name, "PARENT"))
                 if (response.isSuccessful && response.body() != null) {
                     val auth = response.body()!!
-                    dataStore.edit { it[JWT_TOKEN_KEY] = auth.token }
                     getSharedPreferences("parent_prefs", MODE_PRIVATE).edit()
                         .putString("jwt_token_plain", auth.token)
                         .putString("role", auth.role)
@@ -57,7 +53,7 @@ class RegisterActivity : AppCompatActivity() {
                 }
             } catch (e: Exception) {
                 setLoading(false)
-                showError("Connection error.")
+                showError("Connection error: ${e.message}")
             }
         }
     }

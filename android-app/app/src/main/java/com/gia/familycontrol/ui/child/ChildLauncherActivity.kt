@@ -4,8 +4,11 @@ import android.app.role.RoleManager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
+import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,32 +17,38 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.gia.familycontrol.R
 import com.gia.familycontrol.util.AppHideManager
 import com.gia.familycontrol.util.SecureAuthManager
+import java.util.concurrent.Executors
 
 class ChildLauncherActivity : AppCompatActivity() {
 
     private lateinit var recyclerView: RecyclerView
+    private lateinit var adapter: LauncherAppAdapter
+    private val executor = Executors.newSingleThreadExecutor()
+    private val mainHandler = Handler(Looper.getMainLooper())
+    private var currentApps = listOf<AppItem>()
+
+    data class AppItem(val packageName: String, val label: String, val icon: Drawable)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // First time: ask to become default home app
         if (!isDefaultHome()) {
             requestHomeRole()
             return
         }
 
-        showLauncher()
+        initLauncher()
     }
 
     private fun isDefaultHome(): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val rm = getSystemService(RoleManager::class.java)
-            return rm.isRoleHeld(RoleManager.ROLE_HOME)
+            return getSystemService(RoleManager::class.java).isRoleHeld(RoleManager.ROLE_HOME)
         }
         val info = packageManager.resolveActivity(
             Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME),
@@ -50,133 +59,155 @@ class ChildLauncherActivity : AppCompatActivity() {
 
     private fun requestHomeRole() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val rm = getSystemService(RoleManager::class.java)
             startActivityForResult(
-                rm.createRequestRoleIntent(RoleManager.ROLE_HOME),
+                getSystemService(RoleManager::class.java).createRequestRoleIntent(RoleManager.ROLE_HOME),
                 REQ_HOME
             )
         } else {
-            // Android 9 and below — show chooser via home intent
-            val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
-            startActivity(intent)
-            // After user picks, onResume will call showLauncher
+            startActivity(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME))
         }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQ_HOME) showLauncher()
+        if (requestCode == REQ_HOME) initLauncher()
+    }
+
+    private fun initLauncher() {
+        setContentView(R.layout.activity_child_launcher)
+
+        recyclerView = findViewById(R.id.rvLauncherApps)
+        adapter = LauncherAppAdapter { item ->
+            packageManager.getLaunchIntentForPackage(item.packageName)
+                ?.apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
+                ?.let { startActivity(it) }
+        }
+
+        recyclerView.apply {
+            layoutManager = GridLayoutManager(this@ChildLauncherActivity, 4)
+            adapter = this@ChildLauncherActivity.adapter
+            setHasFixedSize(true)
+            itemAnimator = null // disable animations for smoothness
+        }
+
+        findViewById<View>(R.id.ivParentSettings).setOnClickListener { showParentAuthDialog() }
+
+        loadAppsAsync()
     }
 
     override fun onResume() {
         super.onResume()
-        // Check lock
         if (getSharedPreferences("gia_lock", MODE_PRIVATE).getBoolean("is_locked", false)) {
             startActivity(Intent(this, LockScreenActivity::class.java))
             return
         }
-        if (::recyclerView.isInitialized) loadAllowedApps()
+        if (::recyclerView.isInitialized) loadAppsAsync()
     }
 
-    private fun showLauncher() {
-        setContentView(R.layout.activity_child_launcher)
-        recyclerView = findViewById(R.id.rvLauncherApps)
-        recyclerView.layoutManager = GridLayoutManager(this, 4)
-        recyclerView.setHasFixedSize(false)
-        loadAllowedApps()
-        findViewById<android.view.View>(R.id.ivParentSettings)
-            .setOnClickListener { showParentAuthDialog() }
-    }
+    // Load apps on background thread, update UI with DiffUtil — no jank
+    private fun loadAppsAsync() {
+        executor.execute {
+            val pm = packageManager
+            val hiddenPkgs  = AppHideManager.getHiddenPackages(this)
+            val blockedPkgs = getSharedPreferences("gia_blocked_apps", MODE_PRIVATE)
+                .getStringSet("blocked", emptySet()) ?: emptySet()
 
-    private fun loadAllowedApps() {
-        val pm          = packageManager
-        val hiddenPkgs  = AppHideManager.getHiddenPackages(this)
-        val blockedPkgs = getSharedPreferences("gia_blocked_apps", MODE_PRIVATE)
-            .getStringSet("blocked", emptySet()) ?: emptySet()
+            val newApps = pm.queryIntentActivities(
+                Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER),
+                PackageManager.GET_META_DATA
+            ).filter {
+                val pkg = it.activityInfo.packageName
+                pkg != packageName && pkg !in hiddenPkgs && pkg !in blockedPkgs
+            }.map {
+                AppItem(
+                    packageName = it.activityInfo.packageName,
+                    label       = it.loadLabel(pm).toString(),
+                    icon        = it.loadIcon(pm)
+                )
+            }.sortedBy { it.label.lowercase() }
 
-        val apps = pm.queryIntentActivities(
-            Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER), 0
-        ).filter { it.activityInfo.packageName != packageName
-                && it.activityInfo.packageName !in hiddenPkgs
-                && it.activityInfo.packageName !in blockedPkgs
-        }.sortedBy { it.loadLabel(pm).toString().lowercase() }
+            val diff = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
+                override fun getOldListSize() = currentApps.size
+                override fun getNewListSize() = newApps.size
+                override fun areItemsTheSame(o: Int, n: Int) =
+                    currentApps[o].packageName == newApps[n].packageName
+                override fun areContentsTheSame(o: Int, n: Int) =
+                    currentApps[o].label == newApps[n].label
+            })
 
-        recyclerView.adapter = LauncherAppAdapter(apps, pm) { info ->
-            pm.getLaunchIntentForPackage(info.activityInfo.packageName)
-                ?.apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
-                ?.let { startActivity(it) }
+            mainHandler.post {
+                currentApps = newApps
+                adapter.setApps(newApps)
+                diff.dispatchUpdatesTo(adapter)
+            }
         }
     }
 
     @Deprecated("Deprecated in Java")
-    override fun onBackPressed() { /* Block — child cannot exit */ }
+    override fun onBackPressed() { /* Block — child cannot exit launcher */ }
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
-        if (::recyclerView.isInitialized) loadAllowedApps()
+        if (::recyclerView.isInitialized) loadAppsAsync()
+    }
+
+    override fun onDestroy() {
+        executor.shutdown()
+        super.onDestroy()
     }
 
     private fun showParentAuthDialog() {
-        val prefs = getSharedPreferences("gia_prefs", MODE_PRIVATE)
+        val prefs    = getSharedPreferences("gia_prefs", MODE_PRIVATE)
         val isPaired = prefs.getLong("device_id", -1L) != -1L
-        val hasPin  = SecureAuthManager.hasPin(this)
+        val hasPin   = SecureAuthManager.hasPin(this)
 
-        // Not paired yet — go straight to dashboard to enter pair code
-        if (!isPaired) {
-            startActivity(Intent(this, ChildDashboardActivity::class.java))
-            return
-        }
-
-        // Paired but no PIN set yet — still allow access
-        if (!hasPin) {
-            startActivity(Intent(this, ChildDashboardActivity::class.java))
-            return
-        }
-
-        // Paired + PIN set — require PIN
-        val input = android.widget.EditText(this).apply {
-            inputType = android.text.InputType.TYPE_CLASS_NUMBER or
-                    android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD
-            hint = "Enter parent PIN"
-        }
-        AlertDialog.Builder(this)
-            .setTitle("Parent Access")
-            .setView(input)
-            .setPositiveButton("Unlock") { _, _ ->
-                if (SecureAuthManager.verifyPin(this, input.text.toString())) {
-                    startActivity(Intent(this, ChildDashboardActivity::class.java))
-                } else {
-                    Toast.makeText(this, "Incorrect PIN", Toast.LENGTH_SHORT).show()
+        when {
+            !isPaired || !hasPin -> startActivity(Intent(this, ChildDashboardActivity::class.java))
+            else -> {
+                val input = android.widget.EditText(this).apply {
+                    inputType = android.text.InputType.TYPE_CLASS_NUMBER or
+                            android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD
+                    hint = "Enter parent PIN"
                 }
+                AlertDialog.Builder(this)
+                    .setTitle("Parent Access")
+                    .setView(input)
+                    .setPositiveButton("Unlock") { _, _ ->
+                        if (SecureAuthManager.verifyPin(this, input.text.toString()))
+                            startActivity(Intent(this, ChildDashboardActivity::class.java))
+                        else
+                            Toast.makeText(this, "Incorrect PIN", Toast.LENGTH_SHORT).show()
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .show()
             }
-            .setNegativeButton("Cancel", null)
-            .show()
+        }
     }
 
-    companion object {
-        private const val REQ_HOME = 1001
-    }
+    companion object { private const val REQ_HOME = 1001 }
 }
 
 class LauncherAppAdapter(
-    private val apps: List<ResolveInfo>,
-    private val pm: PackageManager,
-    private val onLaunch: (ResolveInfo) -> Unit
+    private val onLaunch: (ChildLauncherActivity.AppItem) -> Unit
 ) : RecyclerView.Adapter<LauncherAppAdapter.VH>() {
 
+    private var apps = listOf<ChildLauncherActivity.AppItem>()
+
+    fun setApps(newApps: List<ChildLauncherActivity.AppItem>) { apps = newApps }
+
     inner class VH(view: View) : RecyclerView.ViewHolder(view) {
-        val icon: ImageView = view.findViewById(R.id.ivLauncherIcon)
-        val label: TextView = view.findViewById(R.id.tvLauncherLabel)
+        val icon:  ImageView = view.findViewById(R.id.ivLauncherIcon)
+        val label: TextView  = view.findViewById(R.id.tvLauncherLabel)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
         VH(LayoutInflater.from(parent.context).inflate(R.layout.item_launcher_app, parent, false))
 
     override fun onBindViewHolder(holder: VH, position: Int) {
-        val info = apps[position]
-        holder.icon.setImageDrawable(info.loadIcon(pm))
-        holder.label.text = info.loadLabel(pm).toString()
-        holder.itemView.setOnClickListener { onLaunch(info) }
+        val item = apps[position]
+        holder.icon.setImageDrawable(item.icon)
+        holder.label.text = item.label
+        holder.itemView.setOnClickListener { onLaunch(item) }
     }
 
     override fun getItemCount() = apps.size
