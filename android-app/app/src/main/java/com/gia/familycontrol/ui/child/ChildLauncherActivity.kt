@@ -116,10 +116,23 @@ class ChildLauncherActivity : AppCompatActivity() {
     }
 
     private fun showParentAuthDialog() {
-        if (!SecureAuthManager.hasPin(this)) {
-            Toast.makeText(this, "No PIN set. Contact parent.", Toast.LENGTH_SHORT).show()
+        val prefs = getSharedPreferences("gia_prefs", MODE_PRIVATE)
+        val isPaired = prefs.getLong("device_id", -1L) != -1L
+        val hasPin  = SecureAuthManager.hasPin(this)
+
+        // Not paired yet — go straight to dashboard to enter pair code
+        if (!isPaired) {
+            startActivity(Intent(this, ChildDashboardActivity::class.java))
             return
         }
+
+        // Paired but no PIN set yet — still allow access
+        if (!hasPin) {
+            startActivity(Intent(this, ChildDashboardActivity::class.java))
+            return
+        }
+
+        // Paired + PIN set — require PIN
         val input = android.widget.EditText(this).apply {
             inputType = android.text.InputType.TYPE_CLASS_NUMBER or
                     android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD

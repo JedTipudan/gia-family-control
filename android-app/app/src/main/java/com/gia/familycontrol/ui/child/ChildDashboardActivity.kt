@@ -227,7 +227,15 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
         binding.btnStartMonitoring.text = "✅ Monitoring Active"
         binding.tvStatus.text = "✅ Monitoring active! Your parent can now track and lock your device."
         
-        Toast.makeText(this, "✅ Monitoring started! Services running in background.", Toast.LENGTH_LONG).show()
+        Toast.makeText(this, "✅ Monitoring started!", Toast.LENGTH_LONG).show()
+        
+        // Go back to launcher — child is now fully set up
+        val home = Intent(Intent.ACTION_MAIN).apply {
+            addCategory(Intent.CATEGORY_HOME)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        startActivity(home)
+        finish()
     }
     
     private fun hasUsageStatsPermission(): Boolean {
@@ -411,8 +419,6 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
                         Toast.makeText(this@ChildDashboardActivity, 
                             "✅ Paired! Click 'Start Monitoring' to begin.", 
                             Toast.LENGTH_LONG).show()
-                        
-                        Log.d("ChildDashboard", "Pairing complete. User can now start monitoring.")
                         
                     } else {
                         val errorBody = response.errorBody()?.string()

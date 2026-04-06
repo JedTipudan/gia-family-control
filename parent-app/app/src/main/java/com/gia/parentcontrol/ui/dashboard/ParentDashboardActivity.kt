@@ -73,6 +73,10 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback {
         binding.btnUnpair.setOnClickListener { confirmUnpair() }
         binding.btnLogout.setOnClickListener { logout() }
         binding.btnRefresh.setOnClickListener { loadChildDevice() }
+        // Pairing banner button
+        binding.btnShowQrBanner.setOnClickListener {
+            startActivity(Intent(this, QRCodeActivity::class.java))
+        }
     }
 
     private fun setupMap() {
@@ -119,6 +123,7 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback {
                     } else {
                         binding.tvChildName.text = "No child device paired"
                         binding.tvChildStatus.text = "● Offline"
+                        binding.cardPairing.visibility = android.view.View.VISIBLE
                     }
                 }
                 val userId = getSharedPreferences("parent_prefs", MODE_PRIVATE).getLong("user_id", -1L)
@@ -137,22 +142,23 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun updateDeviceUI(device: com.gia.parentcontrol.model.DeviceResponse) {
+        binding.cardPairing.visibility = android.view.View.GONE
         binding.tvChildName.text = device.deviceName ?: "Child Device"
-        binding.tvBattery.text = "${device.batteryLevel}%"
-        binding.tvLockState.text = if (device.isLocked) "🔒 Locked" else "🔓 Unlocked"
+        binding.tvBattery.text = "🔋 ${device.batteryLevel}%"
+        binding.tvLockState.text = if (device.isLocked) "🔒" else "🔓"
 
         if (device.isOnline) {
             binding.tvChildStatus.text = "● Online"
             binding.tvChildStatus.setTextColor(getColor(android.R.color.holo_green_dark))
             binding.tvConnection.text = when (device.connectionType) {
                 "WIFI" -> "📶 WiFi"
-                "MOBILE_DATA" -> "📱 Mobile Data"
+                "MOBILE_DATA" -> "📱 Mobile"
                 else -> "🟢 Online"
             }
         } else {
             binding.tvChildStatus.text = "● Offline"
             binding.tvChildStatus.setTextColor(getColor(android.R.color.holo_red_dark))
-            binding.tvConnection.text = "❌ Offline"
+            binding.tvConnection.text = "Offline"
         }
 
         device.lastSeen?.let { binding.tvLastSeen.text = formatLastSeen(it) }
