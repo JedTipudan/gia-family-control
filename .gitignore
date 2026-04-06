@@ -11,7 +11,9 @@ backend/.mvn/
 
 # Android build
 !android-app/gradle/wrapper/gradle-wrapper.jar
+!parent-app/gradle/wrapper/gradle-wrapper.jar
 !android-app/app/src/main/res/mipmap-*/ic_launcher.png
+!parent-app/app/src/main/res/mipmap-*/ic_launcher.png
 android-app/.gradle/
 android-app/app/build/
 android-app/build/

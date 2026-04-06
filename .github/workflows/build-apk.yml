@@ -52,6 +52,13 @@ jobs:
       - name: Grant execute permission (Child)
         run: chmod +x android-app/gradlew
 
+      - name: Validate Child gradle wrapper
+        run: |
+          if [ ! -f android-app/gradle/wrapper/gradle-wrapper.jar ]; then
+            curl -Lo android-app/gradle/wrapper/gradle-wrapper.jar \
+              https://github.com/gradle/gradle/raw/v8.4.0/gradle/wrapper/gradle-wrapper.jar
+          fi
+
       - name: Build Release APK (Child)
         working-directory: android-app
         env:
@@ -95,6 +102,13 @@ jobs:
 
       - name: Grant execute permission (Parent)
         run: chmod +x parent-app/gradlew
+
+      - name: Validate Parent gradle wrapper
+        run: |
+          if [ ! -f parent-app/gradle/wrapper/gradle-wrapper.jar ]; then
+            curl -Lo parent-app/gradle/wrapper/gradle-wrapper.jar \
+              https://github.com/gradle/gradle/raw/v8.4.0/gradle/wrapper/gradle-wrapper.jar
+          fi
 
       - name: Build Release APK (Parent)
         working-directory: parent-app
