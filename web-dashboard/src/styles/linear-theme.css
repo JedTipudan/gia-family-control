@@ -4,10 +4,10 @@
 :root {
   /* Colors - Linear Dark Palette */
   --bg-primary: #0d0d0d;
-  --bg-secondary: #161616;
-  --bg-tertiary: #1a1a1a;
-  --bg-elevated: #1f1f1f;
-  --bg-overlay: #252525;
+  --bg-secondary: #111111;
+  --bg-tertiary: #161616;
+  --bg-elevated: #1a1a1a;
+  --bg-overlay: #202020;
   
   --border-primary: #2a2a2a;
   --border-secondary: #333333;
@@ -24,11 +24,15 @@
   --accent-subtle: rgba(94, 92, 230, 0.12);
   
   --success: #10b981;
+  --success-bg: rgba(16, 185, 129, 0.12);
   --success-subtle: rgba(16, 185, 129, 0.12);
   --danger: #ef4444;
+  --danger-bg: rgba(239, 68, 68, 0.12);
+  --danger-border: rgba(239,68,68,0.25);
   --danger-subtle: rgba(239, 68, 68, 0.12);
   --warning: #f59e0b;
   --warning-subtle: rgba(245, 158, 11, 0.12);
+  --shadow: rgba(0,0,0,0.5);
   
   /* Typography - Inter Variable with aggressive tracking */
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;

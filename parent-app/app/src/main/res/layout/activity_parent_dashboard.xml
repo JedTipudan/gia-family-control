@@ -1,0 +1,422 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F8F9FA">
+
+    <!-- Top Bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="20dp"
+        android:background="#1A73E8">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvParentName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hi, Parent"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"/>
+
+            <TextView
+                android:id="@+id/tvPairCode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Pair Code: —"
+                android:textSize="12sp"
+                android:textColor="#CCFFFFFF"/>
+
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnShowQr"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:text="QR"
+            android:textAllCaps="false"
+            android:textColor="#1A73E8"
+            app:backgroundTint="#FFFFFF"
+            app:cornerRadius="18dp"
+            android:layout_marginEnd="8dp"
+            style="@style/Widget.Material3.Button"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnLogout"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:text="Logout"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            app:backgroundTint="#33FFFFFF"
+            app:cornerRadius="18dp"
+            style="@style/Widget.Material3.Button"/>
+
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Child Status Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="#FFFFFF"
+                android:layout_marginBottom="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="16dp">
+
+                        <TextView
+                            android:id="@+id/tvChildName"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="No device paired"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:textColor="#202124"/>
+
+                        <TextView
+                            android:id="@+id/tvChildStatus"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="● Offline"
+                            android:textSize="13sp"
+                            android:textColor="#EA4335"
+                            android:textStyle="bold"/>
+
+                    </LinearLayout>
+
+                    <!-- Stats Row -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:background="#F8F9FA"
+                        android:padding="12dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center">
+
+                            <TextView
+                                android:id="@+id/tvBattery"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="—%"
+                                android:textSize="20sp"
+                                android:textStyle="bold"
+                                android:textColor="#202124"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Battery"
+                                android:textSize="11sp"
+                                android:textColor="#5F6368"/>
+
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="1dp"
+                            android:layout_height="40dp"
+                            android:background="#DADCE0"/>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center">
+
+                            <TextView
+                                android:id="@+id/tvConnection"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="❌ Offline"
+                                android:textSize="13sp"
+                                android:textColor="#202124"/>
+
+                            <TextView
+                                android:id="@+id/tvLastSeen"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Never"
+                                android:textSize="10sp"
+                                android:textColor="#5F6368"
+                                android:layout_marginTop="2dp"/>
+
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="1dp"
+                            android:layout_height="40dp"
+                            android:background="#DADCE0"/>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center">
+
+                            <TextView
+                                android:id="@+id/tvLockState"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="🔓 Unlocked"
+                                android:textSize="13sp"
+                                android:textColor="#202124"/>
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Live Location Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="#FFFFFF"
+                android:layout_marginBottom="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="📍 Live Location"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            android:textColor="#202124"/>
+
+                        <ImageView
+                            android:id="@+id/btnRefresh"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:src="@android:drawable/ic_popup_sync"
+                            android:padding="4dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="Refresh"/>
+
+                    </LinearLayout>
+
+                    <fragment
+                        android:id="@+id/map"
+                        android:name="com.google.android.gms.maps.SupportMapFragment"
+                        android:layout_width="match_parent"
+                        android:layout_height="220dp"/>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Device Controls Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="#FFFFFF"
+                android:layout_marginBottom="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Device Controls"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="#202124"
+                        android:layout_marginBottom="12dp"/>
+
+                    <!-- Lock / Unlock -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnLock"
+                            android:layout_width="0dp"
+                            android:layout_height="48dp"
+                            android:layout_weight="1"
+                            android:text="🔒 Lock"
+                            android:textAllCaps="false"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            app:backgroundTint="#FCE8E6"
+                            android:textColor="#EA4335"
+                            app:cornerRadius="12dp"
+                            android:layout_marginEnd="6dp"/>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnUnlock"
+                            android:layout_width="0dp"
+                            android:layout_height="48dp"
+                            android:layout_weight="1"
+                            android:text="🔓 Unlock"
+                            android:textAllCaps="false"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            app:backgroundTint="#E6F4EA"
+                            android:textColor="#34A853"
+                            app:cornerRadius="12dp"
+                            android:layout_marginStart="6dp"/>
+
+                    </LinearLayout>
+
+                    <!-- Launcher Mode -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnLauncherOn"
+                            android:layout_width="0dp"
+                            android:layout_height="48dp"
+                            android:layout_weight="1"
+                            android:text="🏠 Launcher ON"
+                            android:textAllCaps="false"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            app:backgroundTint="#FEF7E0"
+                            android:textColor="#F29900"
+                            app:cornerRadius="12dp"
+                            android:layout_marginEnd="6dp"/>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnLauncherOff"
+                            android:layout_width="0dp"
+                            android:layout_height="48dp"
+                            android:layout_weight="1"
+                            android:text="🏠 Launcher OFF"
+                            android:textAllCaps="false"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            app:strokeColor="#DADCE0"
+                            android:textColor="#5F6368"
+                            app:cornerRadius="12dp"
+                            android:layout_marginStart="6dp"/>
+
+                    </LinearLayout>
+
+                    <!-- Manage Apps -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnManageApps"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:text="📱 Manage Apps"
+                        android:textAllCaps="false"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        app:backgroundTint="#E8F0FE"
+                        android:textColor="#1A73E8"
+                        app:cornerRadius="12dp"
+                        android:layout_marginBottom="8dp"/>
+
+                    <!-- Temp Access / Set PIN -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnTempAccess"
+                            android:layout_width="0dp"
+                            android:layout_height="48dp"
+                            android:layout_weight="1"
+                            android:text="⏱ Temp Access"
+                            android:textAllCaps="false"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            app:backgroundTint="#E6F4EA"
+                            android:textColor="#34A853"
+                            app:cornerRadius="12dp"
+                            android:layout_marginEnd="6dp"/>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnSetPin"
+                            android:layout_width="0dp"
+                            android:layout_height="48dp"
+                            android:layout_weight="1"
+                            android:text="🔑 Set PIN"
+                            android:textAllCaps="false"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            app:backgroundTint="#E8F0FE"
+                            android:textColor="#1A73E8"
+                            app:cornerRadius="12dp"
+                            android:layout_marginStart="6dp"/>
+
+                    </LinearLayout>
+
+                    <!-- Unpair -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnUnpair"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:text="Unpair Device"
+                        android:textAllCaps="false"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        app:strokeColor="#DADCE0"
+                        android:textColor="#5F6368"
+                        app:cornerRadius="12dp"/>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

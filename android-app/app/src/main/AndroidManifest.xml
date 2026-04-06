@@ -52,6 +52,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- Child Launcher is also the app entry when used as home -->
         <activity android:name=".auth.LoginActivity"
             android:exported="false"/>
         <activity android:name=".auth.RegisterActivity" android:exported="false"/>
@@ -67,12 +68,13 @@
             android:screenOrientation="portrait"/>
         <activity android:name=".ui.child.DebugActivity" android:exported="false"/>
 
-        <!-- Child Launcher (Home App) — activated when launcher_mode = true -->
+        <!-- Child Launcher — always registered as Home app -->
         <activity
             android:name=".ui.child.ChildLauncherActivity"
             android:exported="true"
             android:launchMode="singleTask"
-            android:stateNotNeeded="true">
+            android:stateNotNeeded="true"
+            android:theme="@style/Theme.GiaFamilyControl.Launcher">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.HOME" />

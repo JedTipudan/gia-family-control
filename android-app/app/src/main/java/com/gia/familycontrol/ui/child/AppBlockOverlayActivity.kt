@@ -22,7 +22,7 @@ class AppBlockOverlayActivity : AppCompatActivity() {
         binding.tvBlockedApp.text = "\"$blockedPackage\" is blocked"
         binding.tvMessage.text = "This app has been restricted by your parent."
 
-        // Go to home screen instead of blocked app
+        // Go to child launcher instead of system home
         binding.btnGoHome.setOnClickListener {
             val homeIntent = Intent(Intent.ACTION_MAIN).apply {
                 addCategory(Intent.CATEGORY_HOME)
@@ -36,7 +36,6 @@ class AppBlockOverlayActivity : AppCompatActivity() {
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         return when (keyCode) {
             KeyEvent.KEYCODE_BACK -> {
-                // Send to home, not back to blocked app
                 val homeIntent = Intent(Intent.ACTION_MAIN).apply {
                     addCategory(Intent.CATEGORY_HOME)
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK

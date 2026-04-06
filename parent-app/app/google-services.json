@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "196796223725",
+    "firebase_url": "https://gia-family-control-default-rtdb.firebaseio.com",
+    "project_id": "gia-family-control",
+    "storage_bucket": "gia-family-control.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:196796223725:android:3f98ab9d60d8856983bce4",
+        "android_client_info": {
+          "package_name": "com.gia.familycontrol"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBcHuiG6Mvx5uD97ugZSqvqw7oDGGYJGks"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

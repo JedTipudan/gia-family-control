@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
@@ -17,12 +18,6 @@ import com.gia.familycontrol.R
 import com.gia.familycontrol.util.AppHideManager
 import com.gia.familycontrol.util.SecureAuthManager
 
-/**
- * Custom launcher for child device.
- * Shows only apps that are NOT blocked and NOT hidden.
- * Activated when launcher_mode = true in gia_prefs.
- * Prevents switching launcher without parent PIN.
- */
 class ChildLauncherActivity : AppCompatActivity() {
 
     private lateinit var recyclerView: RecyclerView
@@ -30,17 +25,24 @@ class ChildLauncherActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_child_launcher)
+
         recyclerView = findViewById(R.id.rvLauncherApps)
         recyclerView.layoutManager = GridLayoutManager(this, 4)
         loadAllowedApps()
 
-        findViewById<android.widget.ImageView>(R.id.ivParentSettings)
-            .setOnClickListener { showParentAuthDialog() }
+        // Make bottom dock settings icon rounded
+        val settingsBtn = findViewById<ImageView>(R.id.ivParentSettings)
+        settingsBtn.setOnClickListener { showParentAuthDialog() }
     }
 
     override fun onResume() {
         super.onResume()
         loadAllowedApps()
+        // Check if device is locked
+        val lockPrefs = getSharedPreferences("gia_lock", MODE_PRIVATE)
+        if (lockPrefs.getBoolean("is_locked", false)) {
+            startActivity(Intent(this, LockScreenActivity::class.java))
+        }
     }
 
     private fun loadAllowedApps() {
@@ -54,36 +56,27 @@ class ChildLauncherActivity : AppCompatActivity() {
 
         val allowed = allApps.filter { info ->
             val pkg = info.activityInfo.packageName
-            pkg != packageName &&           // exclude self
-            pkg !in hiddenPkgs &&
-            pkg !in blockedPkgs
-        }
+            pkg != packageName && pkg !in hiddenPkgs && pkg !in blockedPkgs
+        }.sortedBy { it.loadLabel(pm).toString().lowercase() }
 
         recyclerView.adapter = LauncherAppAdapter(allowed, pm) { info ->
-            val launchPkg = info.activityInfo.packageName
-            val launch = pm.getLaunchIntentForPackage(launchPkg) ?: return@LauncherAppAdapter
+            val launch = pm.getLaunchIntentForPackage(info.activityInfo.packageName) ?: return@LauncherAppAdapter
             launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(launch)
         }
     }
 
-    // Block back button — child cannot exit launcher without PIN
     @Deprecated("Deprecated in Java")
-    override fun onBackPressed() {
-        // Do nothing
-    }
+    override fun onBackPressed() { /* Block back — child cannot exit launcher */ }
 
-    // Intercept home button via onNewIntent (launcher receives it)
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         loadAllowedApps()
     }
 
-    /** Called from settings icon in launcher to authenticate parent. */
-    fun showParentAuthDialog() {
+    private fun showParentAuthDialog() {
         if (!SecureAuthManager.hasPin(this)) {
-            // No PIN set yet — allow access to set one
-            startActivity(Intent(this, ChildDashboardActivity::class.java))
+            Toast.makeText(this, "No PIN set. Contact parent.", Toast.LENGTH_SHORT).show()
             return
         }
         val input = android.widget.EditText(this).apply {
@@ -92,13 +85,13 @@ class ChildLauncherActivity : AppCompatActivity() {
             hint = "Enter parent PIN"
         }
         AlertDialog.Builder(this)
-            .setTitle("Parent Authentication")
+            .setTitle("Parent Access")
             .setView(input)
             .setPositiveButton("Unlock") { _, _ ->
                 if (SecureAuthManager.verifyPin(this, input.text.toString())) {
                     startActivity(Intent(this, ChildDashboardActivity::class.java))
                 } else {
-                    android.widget.Toast.makeText(this, "Incorrect PIN", android.widget.Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Incorrect PIN", Toast.LENGTH_SHORT).show()
                 }
             }
             .setNegativeButton("Cancel", null)

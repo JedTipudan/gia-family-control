@@ -1,42 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@color/bg_primary">
+    android:background="#FF0D1117">
 
+    <!-- Clock + Date -->
     <LinearLayout
+        android:id="@+id/layoutClock"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingHorizontal="16dp"
-        android:background="?attr/colorPrimary">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_marginTop="60dp"
+        android:layout_alignParentTop="true">
 
-        <TextView
-            android:layout_width="0dp"
+        <TextClock
+            android:id="@+id/tvClock"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Gia Family Control"
-            android:textColor="#FFFFFF"
-            android:textSize="18sp"
-            android:textStyle="bold"/>
+            android:format12Hour="h:mm"
+            android:format24Hour="HH:mm"
+            android:textSize="72sp"
+            android:textColor="#FFFFFFFF"
+            android:textStyle="bold"
+            android:letterSpacing="-0.03"/>
 
-        <ImageView
-            android:id="@+id/ivParentSettings"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@android:drawable/ic_menu_manage"
-            android:tint="#FFFFFF"
-            android:padding="8dp"
-            android:contentDescription="Parent Settings"/>
+        <TextClock
+            android:id="@+id/tvDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:format12Hour="EEEE, MMMM d"
+            android:format24Hour="EEEE, MMMM d"
+            android:textSize="16sp"
+            android:textColor="#CCFFFFFF"
+            android:layout_marginTop="4dp"/>
+
     </LinearLayout>
 
+    <!-- App Grid -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvLauncherApps"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="8dp"
+        android:layout_above="@+id/bottomDock"
+        android:layout_below="@+id/layoutClock"
+        android:paddingHorizontal="12dp"
+        android:paddingTop="24dp"
+        android:paddingBottom="8dp"
         android:clipToPadding="false"/>
 
-</LinearLayout>
+    <!-- Bottom Dock -->
+    <LinearLayout
+        android:id="@+id/bottomDock"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_alignParentBottom="true"
+        android:paddingHorizontal="24dp"
+        android:paddingBottom="16dp">
+
+        <!-- Settings (PIN-protected) -->
+        <ImageView
+            android:id="@+id/ivParentSettings"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@android:drawable/ic_menu_manage"
+            android:tint="#AAFFFFFF"
+            android:padding="10dp"
+            android:background="#33FFFFFF"
+            android:contentDescription="Parent Settings"/>
+
+    </LinearLayout>
+
+</RelativeLayout>
