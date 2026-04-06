@@ -51,5 +51,13 @@
         android:text="Block"
         android:textColor="#374151"/>
 
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/switchHide"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hide"
+        android:textColor="#374151"
+        android:layout_marginStart="8dp"/>
+
 </LinearLayout>
 </androidx.cardview.widget.CardView>

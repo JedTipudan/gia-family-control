@@ -88,7 +88,8 @@ data class InstalledApp(
     val packageName: String,
     val appName: String,
     val isSystem: Boolean,
-    var isBlocked: Boolean = false
+    var isBlocked: Boolean = false,
+    var isHidden: Boolean = false
 )
 
 data class UserProfileResponse(

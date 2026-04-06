@@ -9,7 +9,7 @@ android {
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.gia.familycontrol"
+        applicationId "com.gia.childcontrol"
         minSdk 26
         targetSdk 34
         versionCode 2

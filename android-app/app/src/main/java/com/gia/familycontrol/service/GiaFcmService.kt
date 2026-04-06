@@ -14,6 +14,9 @@ import com.google.firebase.messaging.RemoteMessage
 import com.gia.familycontrol.model.DeviceStatusUpdate
 import com.gia.familycontrol.network.RetrofitClient
 import com.gia.familycontrol.ui.child.LockScreenActivity
+import com.gia.familycontrol.util.AppHideManager
+import com.gia.familycontrol.util.SecureAuthManager
+import com.gia.familycontrol.util.ActionLogger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -37,6 +40,46 @@ class GiaFcmService : FirebaseMessagingService() {
             "UNBLOCK_APP" -> {
                 val pkg = message.data["packageName"] ?: return
                 updateAppBlock(pkg, false)
+            }
+            "HIDE_APP" -> {
+                val pkg = message.data["packageName"] ?: return
+                val result = AppHideManager.hideApp(this, pkg)
+                ActionLogger.log(this, "HIDE_APP", "$pkg result=$result")
+                android.util.Log.d("GiaFcmService", "HIDE_APP $pkg = $result")
+            }
+            "UNHIDE_APP" -> {
+                val pkg = message.data["packageName"] ?: return
+                val result = AppHideManager.unhideApp(this, pkg)
+                ActionLogger.log(this, "UNHIDE_APP", "$pkg result=$result")
+                android.util.Log.d("GiaFcmService", "UNHIDE_APP $pkg = $result")
+            }
+            "GRANT_TEMP_ACCESS" -> {
+                val minutes = message.data["minutes"]?.toIntOrNull() ?: 30
+                SecureAuthManager.grantTemporaryAccess(this, minutes)
+                ActionLogger.log(this, "GRANT_TEMP_ACCESS", "${minutes}min")
+                android.util.Log.d("GiaFcmService", "Temp access granted for $minutes min")
+            }
+            "REVOKE_TEMP_ACCESS" -> {
+                SecureAuthManager.revokeTemporaryAccess(this)
+                ActionLogger.log(this, "REVOKE_TEMP_ACCESS")
+            }
+            "SET_PIN" -> {
+                val pin = message.data["pin"] ?: return
+                SecureAuthManager.setPin(this, pin)
+                ActionLogger.log(this, "SET_PIN")
+                android.util.Log.d("GiaFcmService", "Parent PIN updated")
+            }
+            "ENABLE_LAUNCHER" -> {
+                getSharedPreferences("gia_prefs", MODE_PRIVATE)
+                    .edit().putBoolean("launcher_mode", true).apply()
+                ActionLogger.log(this, "ENABLE_LAUNCHER")
+                android.util.Log.d("GiaFcmService", "Launcher mode enabled")
+            }
+            "DISABLE_LAUNCHER" -> {
+                getSharedPreferences("gia_prefs", MODE_PRIVATE)
+                    .edit().putBoolean("launcher_mode", false).apply()
+                ActionLogger.log(this, "DISABLE_LAUNCHER")
+                android.util.Log.d("GiaFcmService", "Launcher mode disabled")
             }
             "GAME_ALERT" -> {
                 val appName = message.data["appName"] ?: "Unknown Game"
@@ -158,6 +201,7 @@ class GiaFcmService : FirebaseMessagingService() {
 
     private fun lockDevice() {
         android.util.Log.d("GiaFcmService", "LOCK command received")
+        ActionLogger.log(this, "LOCK")
         
         // Save lock state
         getSharedPreferences("gia_lock", MODE_PRIVATE)
@@ -236,6 +280,7 @@ class GiaFcmService : FirebaseMessagingService() {
     }
 
     private fun unlockDevice() {
+        ActionLogger.log(this, "UNLOCK")
         // Clear lock state
         getSharedPreferences("gia_lock", MODE_PRIVATE)
             .edit().putBoolean("is_locked", false).apply()

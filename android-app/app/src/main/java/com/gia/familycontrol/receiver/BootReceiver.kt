@@ -9,6 +9,7 @@ import com.gia.familycontrol.service.AppMonitorService
 import com.gia.familycontrol.service.LocationTrackingService
 import com.gia.familycontrol.service.LockMonitorService
 import com.gia.familycontrol.ui.child.LockScreenActivity
+import com.gia.familycontrol.util.AppHideManager
 
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -34,6 +35,8 @@ class BootReceiver : BroadcastReceiver() {
         // Start services for child devices that are paired
         if (role == "CHILD" && deviceId != -1L) {
             Log.d("BootReceiver", "Starting services after boot...")
+            // Reapply hidden apps via Device Owner
+            AppHideManager.reapplyOnBoot(context)
             
             try {
                 val locationIntent = Intent(context, LocationTrackingService::class.java)

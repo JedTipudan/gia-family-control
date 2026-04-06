@@ -14,7 +14,6 @@ import com.gia.familycontrol.network.JWT_TOKEN_KEY
 import com.gia.familycontrol.network.RetrofitClient
 import com.gia.familycontrol.network.dataStore
 import com.gia.familycontrol.ui.child.ChildDashboardActivity
-import com.gia.familycontrol.ui.parent.ParentDashboardActivity
 import kotlinx.coroutines.launch
 
 class LoginActivity : AppCompatActivity() {
@@ -54,6 +53,11 @@ class LoginActivity : AppCompatActivity() {
                 val response = api.login(LoginRequest(email, password))
                 if (response.isSuccessful && response.body() != null) {
                     val auth = response.body()!!
+                    if (auth.role != "CHILD") {
+                        setLoading(false)
+                        showError("This is the child app. Please use the Gia Parent Control app to sign in as a parent.")
+                        return@launch
+                    }
                     dataStore.edit { it[JWT_TOKEN_KEY] = auth.token }
                     getSharedPreferences("gia_prefs", MODE_PRIVATE).edit()
                         .putString("role", auth.role)
@@ -61,10 +65,7 @@ class LoginActivity : AppCompatActivity() {
                         .putString("full_name", auth.fullName)
                         .putString("email", email)
                         .apply()
-
-                    val dest = if (auth.role == "PARENT") ParentDashboardActivity::class.java
-                               else ChildDashboardActivity::class.java
-                    startActivity(Intent(this@LoginActivity, dest))
+                    startActivity(Intent(this@LoginActivity, ChildDashboardActivity::class.java))
                     overridePendingTransition(R.anim.fade_in, R.anim.fade_in)
                     finishAffinity()
                 } else {

@@ -16,6 +16,7 @@ import com.gia.familycontrol.R
 import com.gia.familycontrol.model.SendCommandRequest
 import com.gia.familycontrol.network.RetrofitClient
 import com.gia.familycontrol.ui.child.AppBlockOverlayActivity
+import com.gia.familycontrol.util.AppHideManager
 import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.*
 
@@ -138,8 +139,10 @@ class AppMonitorService : LifecycleService() {
                     }
                     
                     if (foregroundApp != null && foregroundApp != packageName) {
-                        // Check if blocked - ALWAYS block, no exceptions
-                        if (foregroundApp in blockedPackages) {
+                        // Skip auto-exit for hidden apps — they are handled by Device Owner hiding
+                        val isHidden = AppHideManager.isHidden(this@AppMonitorService, foregroundApp)
+                        // Check if blocked - ALWAYS block, no exceptions (unless hidden)
+                        if (!isHidden && foregroundApp in blockedPackages) {
                             consecutiveBlockCount++
                             Log.d("AppMonitorService", "⛔ BLOCKED APP DETECTED: $foregroundApp (attempt #$consecutiveBlockCount)")
                             forceCloseApp(foregroundApp)

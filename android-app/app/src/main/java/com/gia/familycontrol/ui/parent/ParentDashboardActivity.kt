@@ -223,6 +223,11 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback, Navigat
         }
         binding.btnUnpair.setOnClickListener { unpairDevice() }
         binding.btnRefresh.setOnClickListener { refreshDashboard() }
+
+        // Launcher mode toggle
+        binding.root.findViewById<android.view.View?>(
+            resources.getIdentifier("btnLauncherMode", "id", packageName)
+        )?.setOnClickListener { showLauncherModeDialog() }
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -376,6 +381,30 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback, Navigat
                 Toast.makeText(this@ParentDashboardActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    private fun showLauncherModeDialog() {
+        if (childDeviceId == -1L) {
+            Toast.makeText(this, "No child device paired", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val options = arrayOf("Enable Launcher Mode", "Disable Launcher Mode")
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Child Launcher Mode")
+            .setItems(options) { _, which ->
+                val command = if (which == 0) "ENABLE_LAUNCHER" else "DISABLE_LAUNCHER"
+                lifecycleScope.launch {
+                    try {
+                        api.sendCommand(SendCommandRequest(childDeviceId, command))
+                        Toast.makeText(this@ParentDashboardActivity,
+                            if (which == 0) "✅ Launcher mode enabled" else "✅ Launcher mode disabled",
+                            Toast.LENGTH_SHORT).show()
+                    } catch (e: Exception) {
+                        Toast.makeText(this@ParentDashboardActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            .show()
     }
 
     private fun unpairDevice() {

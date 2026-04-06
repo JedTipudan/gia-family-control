@@ -13,7 +13,6 @@ import com.gia.familycontrol.network.JWT_TOKEN_KEY
 import com.gia.familycontrol.network.RetrofitClient
 import com.gia.familycontrol.network.dataStore
 import com.gia.familycontrol.ui.child.ChildDashboardActivity
-import com.gia.familycontrol.ui.parent.ParentDashboardActivity
 import kotlinx.coroutines.launch
 
 class RegisterActivity : AppCompatActivity() {
@@ -34,7 +33,7 @@ class RegisterActivity : AppCompatActivity() {
         val name = binding.etFullName.text.toString().trim()
         val email = binding.etEmail.text.toString().trim()
         val password = binding.etPassword.text.toString()
-        val role = if (binding.rbParent.isChecked) "PARENT" else "CHILD"
+        val role = "CHILD" // Child app always registers as CHILD
 
         if (name.isEmpty() || email.isEmpty() || password.isEmpty()) {
             showError("Please fill in all fields")
@@ -59,8 +58,7 @@ class RegisterActivity : AppCompatActivity() {
                         .putString("full_name", auth.fullName)
                         .apply()
 
-                    val dest = if (auth.role == "PARENT") ParentDashboardActivity::class.java
-                               else ChildDashboardActivity::class.java
+                    val dest = ChildDashboardActivity::class.java
                     startActivity(Intent(this@RegisterActivity, dest))
                     finishAffinity()
                 } else {
