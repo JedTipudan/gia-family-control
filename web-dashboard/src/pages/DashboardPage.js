@@ -114,6 +114,8 @@ export default function DashboardPage() {
       setCmdError(typeof d === 'string' ? d : d?.message ?? 'Set PIN failed');
     }
   }, [childDeviceId]);
+
+  const isOnline  = deviceStatus?.isOnline      ?? false;
   const isLocked  = deviceStatus?.isLocked      ?? false;
   const battery   = deviceStatus?.batteryLevel  ?? '--';
   const connType  = deviceStatus?.connectionType ?? null;
