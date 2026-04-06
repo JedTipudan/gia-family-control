@@ -9,133 +9,163 @@ permissions:
   contents: write
 
 jobs:
-  build:
+
+  # ── Job 1: Child APK ──────────────────────────────────────
+  build-child:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+      - uses: gradle/actions/setup-gradle@v3
 
-      # ── Child App ──────────────────────────────────────────
-      - name: Add google-services.json (Child)
+      - name: Add google-services.json
         env:
           GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
         run: echo "$GOOGLE_SERVICES_JSON" | base64 -di > android-app/app/google-services.json
 
-      - name: Inject Maps API Key (Child)
+      - name: Inject Maps API Key
         run: sed -i 's/${MAPS_API_KEY}/${{ secrets.MAPS_API_KEY }}/g' android-app/app/src/main/AndroidManifest.xml
 
-      - name: Decode Keystore (Child)
+      - name: Decode Keystore
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: echo "$KEYSTORE_BASE64" | base64 -di > android-app/app/gia-release.keystore
 
-      - name: Convert launcher icons (Child)
+      - name: Convert launcher icons
         run: |
           sudo apt-get install -y imagemagick
           for dir in android-app/app/src/main/res/mipmap-*/; do
-            if [ -f "${dir}ic_launcher.png" ]; then
-              convert "${dir}ic_launcher.png" "${dir}ic_launcher_temp.png"
-              mv "${dir}ic_launcher_temp.png" "${dir}ic_launcher.png"
-            fi
+            [ -f "${dir}ic_launcher.png" ] && convert "${dir}ic_launcher.png" "${dir}ic_launcher_temp.png" && mv "${dir}ic_launcher_temp.png" "${dir}ic_launcher.png"
           done
 
-      - name: Grant execute permission (Child)
-        run: chmod +x android-app/gradlew
-
-      - name: Validate Child gradle wrapper
+      - name: Validate gradle wrapper
         run: |
-          if [ ! -f android-app/gradle/wrapper/gradle-wrapper.jar ]; then
+          [ -f android-app/gradle/wrapper/gradle-wrapper.jar ] || \
             curl -Lo android-app/gradle/wrapper/gradle-wrapper.jar \
               https://github.com/gradle/gradle/raw/v8.4.0/gradle/wrapper/gradle-wrapper.jar
-          fi
 
-      - name: Build Release APK (Child)
+      - name: Build Release APK
         working-directory: android-app
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-        run: ./gradlew assembleRelease --no-daemon
-
-      - name: Sign APK (Child)
+          GRADLE_OPTS: "-Xmx3g -XX:MaxMetaspaceSize=512m"
         run: |
-          APK_PATH=$(find android-app/app/build/outputs/apk/release/ -name "*.apk" | grep -v GiaFamilyControl | head -1)
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon --max-workers=2
+
+      - name: Sign APK
+        run: |
+          APK=$(find android-app/app/build/outputs/apk/release/ -name "*.apk" | grep -v GiaFamilyControl | head -1)
           $ANDROID_HOME/build-tools/34.0.0/apksigner sign \
             --ks android-app/app/gia-release.keystore \
             --ks-pass pass:${{ secrets.KEYSTORE_PASSWORD }} \
             --ks-key-alias ${{ secrets.KEY_ALIAS }} \
             --key-pass pass:${{ secrets.KEYSTORE_PASSWORD }} \
             --out android-app/app/build/outputs/apk/release/GiaFamilyControl-Child.apk \
-            "$APK_PATH"
+            "$APK"
 
-      # ── Parent App ─────────────────────────────────────────
-      - name: Add google-services.json (Parent)
+      - name: Upload child APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: child-apk
+          path: android-app/app/build/outputs/apk/release/GiaFamilyControl-Child.apk
+          retention-days: 1
+
+  # ── Job 2: Parent APK ─────────────────────────────────────
+  build-parent:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - uses: gradle/actions/setup-gradle@v3
+
+      - name: Add google-services.json
         env:
           PARENT_GOOGLE_SERVICES_JSON: ${{ secrets.PARENT_GOOGLE_SERVICES_JSON }}
         run: |
           if [ -n "$PARENT_GOOGLE_SERVICES_JSON" ]; then
             echo "$PARENT_GOOGLE_SERVICES_JSON" | base64 -di > parent-app/app/google-services.json
           fi
-          # Ensure package name matches com.gia.parentcontrol regardless of secret content
           sed -i 's/"com\.gia\.familycontrol"/"com.gia.parentcontrol"/g' parent-app/app/google-services.json
-          echo "Parent google-services.json package name:"
           grep package_name parent-app/app/google-services.json
 
-      - name: Inject Maps API Key (Parent)
+      - name: Inject Maps API Key
         run: sed -i 's/${MAPS_API_KEY}/${{ secrets.MAPS_API_KEY }}/g' parent-app/app/src/main/AndroidManifest.xml
 
-      - name: Decode Keystore (Parent)
+      - name: Decode Keystore
         env:
           PARENT_KEYSTORE_BASE64: ${{ secrets.PARENT_KEYSTORE_BASE64 }}
         run: echo "$PARENT_KEYSTORE_BASE64" | base64 -di > parent-app/parent-app-release.jks
 
-      - name: Convert launcher icons (Parent)
+      - name: Convert launcher icons
         run: |
+          sudo apt-get install -y imagemagick
           for dir in parent-app/app/src/main/res/mipmap-*/; do
-            if [ -f "${dir}ic_launcher.png" ]; then
-              convert "${dir}ic_launcher.png" "${dir}ic_launcher_temp.png"
-              mv "${dir}ic_launcher_temp.png" "${dir}ic_launcher.png"
-            fi
+            [ -f "${dir}ic_launcher.png" ] && convert "${dir}ic_launcher.png" "${dir}ic_launcher_temp.png" && mv "${dir}ic_launcher_temp.png" "${dir}ic_launcher.png"
           done
 
-      - name: Grant execute permission (Parent)
-        run: chmod +x parent-app/gradlew
-
-      - name: Validate Parent gradle wrapper
+      - name: Validate gradle wrapper
         run: |
-          if [ ! -f parent-app/gradle/wrapper/gradle-wrapper.jar ]; then
+          [ -f parent-app/gradle/wrapper/gradle-wrapper.jar ] || \
             curl -Lo parent-app/gradle/wrapper/gradle-wrapper.jar \
               https://github.com/gradle/gradle/raw/v8.4.0/gradle/wrapper/gradle-wrapper.jar
-          fi
 
-      - name: Build Release APK (Parent)
+      - name: Build Release APK
         working-directory: parent-app
         env:
           STORE_PASSWORD: ${{ secrets.PARENT_STORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.PARENT_KEY_PASSWORD }}
-        run: ./gradlew assembleRelease --no-daemon
-
-      - name: Sign APK (Parent)
+          GRADLE_OPTS: "-Xmx3g -XX:MaxMetaspaceSize=512m"
         run: |
-          APK_PATH=$(find parent-app/app/build/outputs/apk/release/ -name "*.apk" | grep -v GiaParentControl | head -1)
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon --max-workers=2
+
+      - name: Sign APK
+        run: |
+          APK=$(find parent-app/app/build/outputs/apk/release/ -name "*.apk" | grep -v GiaParentControl | head -1)
           $ANDROID_HOME/build-tools/34.0.0/apksigner sign \
             --ks parent-app/parent-app-release.jks \
             --ks-pass pass:${{ secrets.PARENT_STORE_PASSWORD }} \
             --ks-key-alias parent-app \
             --key-pass pass:${{ secrets.PARENT_KEY_PASSWORD }} \
             --out parent-app/app/build/outputs/apk/release/GiaParentControl.apk \
-            "$APK_PATH"
+            "$APK"
 
-      # ── Single Release with both APKs ──────────────────────
+      - name: Upload parent APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: parent-apk
+          path: parent-app/app/build/outputs/apk/release/GiaParentControl.apk
+          retention-days: 1
+
+  # ── Job 3: Release (needs both APKs) ──────────────────────
+  release:
+    runs-on: ubuntu-latest
+    needs: [ build-child, build-parent ]
+    steps:
+      - name: Download child APK
+        uses: actions/download-artifact@v4
+        with:
+          name: child-apk
+          path: apks/
+
+      - name: Download parent APK
+        uses: actions/download-artifact@v4
+        with:
+          name: parent-apk
+          path: apks/
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
@@ -157,11 +187,11 @@ jobs:
             4. Grant all permissions when asked
 
             ### First Time Setup:
-            - **Parent**: Register → Login → tap **QR Code** → share with child
-            - **Child**: Register → Login → scan QR or enter pair code → tap **Start Monitoring**
+            - **Parent**: Register → Login → go to **Pairing** tab → share QR or pair code
+            - **Child**: Install child APK → set as home launcher when prompted → login → enter pair code
           files: |
-            android-app/app/build/outputs/apk/release/GiaFamilyControl-Child.apk
-            parent-app/app/build/outputs/apk/release/GiaParentControl.apk
+            apks/GiaFamilyControl-Child.apk
+            apks/GiaParentControl.apk
           draft: false
           prerelease: false
         env:
