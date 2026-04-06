@@ -1,4 +1,4 @@
-name: Build & Release APK
+name: Build & Release APKs
 
 on:
   push:
@@ -22,26 +22,24 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Add google-services.json
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      # ── Child App ──────────────────────────────────────────
+      - name: Add google-services.json (Child)
         env:
           GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
-        run: |
-          echo "$GOOGLE_SERVICES_JSON" | base64 -di > android-app/app/google-services.json
-          echo "File size: $(wc -c < android-app/app/google-services.json)"
-          head -c 50 android-app/app/google-services.json
+        run: echo "$GOOGLE_SERVICES_JSON" | base64 -di > android-app/app/google-services.json
 
-      - name: Inject Maps API Key
-        run: |
-          sed -i 's/${MAPS_API_KEY}/${{ secrets.MAPS_API_KEY }}/g' android-app/app/src/main/AndroidManifest.xml
+      - name: Inject Maps API Key (Child)
+        run: sed -i 's/${MAPS_API_KEY}/${{ secrets.MAPS_API_KEY }}/g' android-app/app/src/main/AndroidManifest.xml
 
-      - name: Decode Keystore
+      - name: Decode Keystore (Child)
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-        run: |
-          echo "$KEYSTORE_BASE64" | base64 -di > android-app/app/gia-release.keystore
-          echo "Keystore size: $(wc -c < android-app/app/gia-release.keystore) bytes"
+        run: echo "$KEYSTORE_BASE64" | base64 -di > android-app/app/gia-release.keystore
 
-      - name: Convert launcher icons to proper PNG
+      - name: Convert launcher icons (Child)
         run: |
           sudo apt-get install -y imagemagick
           for dir in android-app/app/src/main/res/mipmap-*/; do
@@ -50,69 +48,99 @@ jobs:
               mv "${dir}ic_launcher_temp.png" "${dir}ic_launcher.png"
             fi
           done
-          echo "Icons converted successfully"
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-
-      - name: Grant execute permission for gradlew
+      - name: Grant execute permission (Child)
         run: chmod +x android-app/gradlew
 
-      - name: Build Release APK
+      - name: Build Release APK (Child)
         working-directory: android-app
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         run: ./gradlew assembleRelease --no-daemon
 
-      - name: Sign Release APK
+      - name: Sign APK (Child)
         run: |
-          echo "Looking for APK files:"
-          find android-app/app/build/outputs/apk/ -name "*.apk"
-          APK_PATH=$(find android-app/app/build/outputs/apk/release/ -name "*.apk" | head -1)
-          echo "Found APK: $APK_PATH"
+          APK_PATH=$(find android-app/app/build/outputs/apk/release/ -name "*.apk" | grep -v GiaFamilyControl | head -1)
           $ANDROID_HOME/build-tools/34.0.0/apksigner sign \
             --ks android-app/app/gia-release.keystore \
             --ks-pass pass:${{ secrets.KEYSTORE_PASSWORD }} \
             --ks-key-alias ${{ secrets.KEY_ALIAS }} \
             --key-pass pass:${{ secrets.KEYSTORE_PASSWORD }} \
-            --out android-app/app/build/outputs/apk/release/GiaFamilyControl.apk \
+            --out android-app/app/build/outputs/apk/release/GiaFamilyControl-Child.apk \
             "$APK_PATH"
 
-      - name: Verify APK signature
-        run: |
-          $ANDROID_HOME/build-tools/34.0.0/apksigner verify \
-            android-app/app/build/outputs/apk/release/GiaFamilyControl.apk && \
-          echo "APK signature verified successfully!"
+      # ── Parent App ─────────────────────────────────────────
+      - name: Add google-services.json (Parent)
+        env:
+          PARENT_GOOGLE_SERVICES_JSON: ${{ secrets.PARENT_GOOGLE_SERVICES_JSON }}
+        run: echo "$PARENT_GOOGLE_SERVICES_JSON" | base64 -di > parent-app/app/google-services.json
 
+      - name: Inject Maps API Key (Parent)
+        run: sed -i 's/${MAPS_API_KEY}/${{ secrets.MAPS_API_KEY }}/g' parent-app/app/src/main/AndroidManifest.xml
+
+      - name: Decode Keystore (Parent)
+        env:
+          PARENT_KEYSTORE_BASE64: ${{ secrets.PARENT_KEYSTORE_BASE64 }}
+        run: echo "$PARENT_KEYSTORE_BASE64" | base64 -di > parent-app/parent-app-release.jks
+
+      - name: Convert launcher icons (Parent)
+        run: |
+          for dir in parent-app/app/src/main/res/mipmap-*/; do
+            if [ -f "${dir}ic_launcher.png" ]; then
+              convert "${dir}ic_launcher.png" "${dir}ic_launcher_temp.png"
+              mv "${dir}ic_launcher_temp.png" "${dir}ic_launcher.png"
+            fi
+          done
+
+      - name: Grant execute permission (Parent)
+        run: chmod +x parent-app/gradlew
+
+      - name: Build Release APK (Parent)
+        working-directory: parent-app
+        env:
+          STORE_PASSWORD: ${{ secrets.PARENT_STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.PARENT_KEY_PASSWORD }}
+        run: ./gradlew assembleRelease --no-daemon
+
+      - name: Sign APK (Parent)
+        run: |
+          APK_PATH=$(find parent-app/app/build/outputs/apk/release/ -name "*.apk" | grep -v GiaParentControl | head -1)
+          $ANDROID_HOME/build-tools/34.0.0/apksigner sign \
+            --ks parent-app/parent-app-release.jks \
+            --ks-pass pass:${{ secrets.PARENT_STORE_PASSWORD }} \
+            --ks-key-alias parent-app \
+            --key-pass pass:${{ secrets.PARENT_KEY_PASSWORD }} \
+            --out parent-app/app/build/outputs/apk/release/GiaParentControl.apk \
+            "$APK_PATH"
+
+      # ── Single Release with both APKs ──────────────────────
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ github.run_number }}
           name: "Gia Family Control v${{ github.run_number }}"
           body: |
-            ## Gia Family Control - Official Release v${{ github.run_number }}
+            ## Gia Family Control v${{ github.run_number }}
 
-            ### How to Install on Android:
-            1. Download **GiaFamilyControl.apk** below
-            2. On your Android phone:
-               - Go to **Settings → Security** (or Privacy)
-               - Enable **Install unknown apps**
-               - Allow your browser or Files app to install
-            3. Open the downloaded APK
-            4. Tap **Install**
-            5. Grant all permissions when asked
+            ### 📥 Download the right APK:
+            | APK | Install on |
+            |-----|-----------|
+            | **GiaFamilyControl-Child.apk** | Child's phone |
+            | **GiaParentControl.apk** | Parent's phone |
+
+            ### How to Install:
+            1. Download the APK for your device
+            2. Go to **Settings → Security → Install unknown apps** and allow it
+            3. Open the APK and tap **Install**
+            4. Grant all permissions when asked
 
             ### First Time Setup:
-            - **Parent device**: Register → Login → share your pair code
-            - **Child device**: Register → Login → enter parent pair code
-
-            ### Permissions Required:
-            - Location (for GPS tracking)
-            - Usage Stats (for app monitoring)
-            - Draw over other apps (for lock screen)
-            - Device Admin (for tamper prevention)
-          files: android-app/app/build/outputs/apk/release/GiaFamilyControl.apk
+            - **Parent**: Register → Login → tap **QR Code** → share with child
+            - **Child**: Register → Login → scan QR or enter pair code → tap **Start Monitoring**
+          files: |
+            android-app/app/build/outputs/apk/release/GiaFamilyControl-Child.apk
+            parent-app/app/build/outputs/apk/release/GiaParentControl.apk
           draft: false
           prerelease: false
         env:

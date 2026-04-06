@@ -1,9 +1,7 @@
 name: Build & Release Parent APK
 
 on:
-  push:
-    branches: [ main ]
-  workflow_dispatch:
+  workflow_dispatch:  # manual only — child workflow handles releases
 
 permissions:
   contents: write
