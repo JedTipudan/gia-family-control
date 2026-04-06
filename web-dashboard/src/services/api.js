@@ -46,9 +46,10 @@ export const commandApi = {
 };
 
 export const appApi = {
-  getControls: (deviceId) => api.get(`/api/apps/controls/${deviceId}`),
-  setControl: (data) => api.post('/api/apps/control', data),
-  removeControl: (deviceId, packageName) => api.delete(`/api/apps/control/${deviceId}/${packageName}`),
+  getControls:  (deviceId) => api.get(`/api/apps/controls/${deviceId}`),
+  getInstalled: (deviceId) => api.get(`/api/apps/installed/${deviceId}`),
+  setControl:   (data)     => api.post('/api/apps/control', data),
+  removeControl:(deviceId, packageName) => api.delete(`/api/apps/control/${deviceId}/${packageName}`),
 };
 
 export default api;
