@@ -101,6 +101,13 @@
             android:taskAffinity=""
             android:theme="@style/Theme.GiaFamilyControl.Overlay"/>
 
+        <activity
+            android:name=".ui.child.TempAccessOverlayActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.GiaFamilyControl.Overlay"/>
+
         <!-- Background Services -->
         <service
             android:name=".service.LocationTrackingService"

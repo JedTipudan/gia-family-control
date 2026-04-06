@@ -64,6 +64,7 @@ class LoginActivity : AppCompatActivity() {
                         .putLong("user_id", auth.userId)
                         .putString("full_name", auth.fullName)
                         .putString("email", email)
+                        .putString("jwt_token", auth.token)
                         .apply()
                     startActivity(Intent(this@LoginActivity, ChildLauncherActivity::class.java))
                     overridePendingTransition(R.anim.fade_in, R.anim.fade_in)

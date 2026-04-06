@@ -53,8 +53,13 @@ public class AppControlService {
 
         appControlRepository.save(control);
 
-        boolean block = control.getControlType() == AppControl.ControlType.BLOCKED;
-        fcmService.sendAppBlockCommand(device.getFcmToken(), request.getPackageName(), block);
+        // Only send FCM for block/unblock — hide/unhide are sent separately via send-command
+        if (control.getControlType() == AppControl.ControlType.BLOCKED) {
+            fcmService.sendAppBlockCommand(device.getFcmToken(), request.getPackageName(), true);
+        } else if (control.getControlType() == AppControl.ControlType.ALLOWED) {
+            fcmService.sendAppBlockCommand(device.getFcmToken(), request.getPackageName(), false);
+        }
+        // HIDDEN/VISIBLE are handled by the /send-command endpoint directly
 
         return control;
     }

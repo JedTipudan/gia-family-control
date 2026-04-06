@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
-import { commandApi, locationApi } from '../services/api';
+import { commandApi, locationApi, pairApi } from '../services/api';
 import { subscribeToDeviceLocation, subscribeToDeviceStatus } from '../services/firebase';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -23,13 +23,25 @@ const NAV = [
 export default function DashboardPage() {
   const { user, logout } = useAuth();
   const { isDark, toggleTheme } = useTheme();
-  const [childDeviceId]                   = useState(() => Number(localStorage.getItem('child_device_id') || 1));
-  const [location, setLocation]           = useState(null);
-  const [deviceStatus, setDeviceStatus]   = useState({});
-  const [page, setPage]                   = useState('overview');
-  const [cmdLoading, setCmdLoading]       = useState(null);
-  const [sideCollapsed, setSideCollapsed] = useState(false);
-  const [showTempModal, setShowTempModal] = useState(false);
+  const [childDeviceId, setChildDeviceId]   = useState(() => Number(localStorage.getItem('child_device_id') || 0));
+  const [location, setLocation]             = useState(null);
+  const [deviceStatus, setDeviceStatus]     = useState({});
+  const [page, setPage]                     = useState('overview');
+  const [cmdLoading, setCmdLoading]         = useState(null);
+  const [sideCollapsed, setSideCollapsed]   = useState(false);
+  const [showTempModal, setShowTempModal]   = useState(false);
+  const [cmdError, setCmdError]             = useState(null);
+
+  // Load real child device ID from API on mount
+  useEffect(() => {
+    pairApi.getChildDevices().then(({ data }) => {
+      const id = data?.[0]?.id;
+      if (id) {
+        setChildDeviceId(id);
+        localStorage.setItem('child_device_id', id);
+      }
+    }).catch(() => {});
+  }, []);
 
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_KEY || '',
@@ -55,16 +67,18 @@ export default function DashboardPage() {
 
   const sendCommand = useCallback(async (type, value = null) => {
     setCmdLoading(type);
+    setCmdError(null);
     try {
-      // BLOCK_APP / UNBLOCK_APP use packageName field; everything else uses metadata
       if (type === 'BLOCK_APP' || type === 'UNBLOCK_APP') {
         await commandApi.sendApp(childDeviceId, type, value);
       } else {
         await commandApi.send(childDeviceId, type, value);
       }
     } catch (err) {
-      const msg = err?.response?.data?.message || err?.response?.data || err?.message || 'Unknown error';
-      alert(`Failed to send command: ${msg}`);
+      const data = err?.response?.data;
+      const msg = typeof data === 'string' ? data
+        : data?.message ?? data?.error ?? err?.message ?? 'Unknown error';
+      setCmdError(`${type}: ${msg}`);
     } finally {
       setCmdLoading(null);
     }
@@ -137,6 +151,11 @@ export default function DashboardPage() {
         <header style={s.topbar}>
           <h1 style={s.pageTitle}>{NAV.find(n => n.id === page)?.label}</h1>
           <div style={s.topbarRight}>
+            {cmdError && (
+              <span style={s.errorChip} onClick={() => setCmdError(null)} title="Click to dismiss">
+                ⚠️ {cmdError}
+              </span>
+            )}
             <span style={{ ...s.statusPill, background: isOnline ? '#0d2e1f' : '#2e0d0d', color: isOnline ? '#34d399' : '#f87171', border: `1px solid ${isOnline ? '#1a5c3a' : '#5c1a1a'}` }}>
               <span style={{ ...s.dot, background: isOnline ? '#34d399' : '#f87171' }} />
               {childName} · {isOnline ? 'Online' : 'Offline'}
@@ -383,6 +402,7 @@ const s = {
   statusPill:   { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderRadius: 980, fontSize: 13, fontWeight: 600 },
   dot:          { width: 7, height: 7, borderRadius: '50%' },
   statChip:     { padding: '4px 10px', borderRadius: 980, background: 'var(--bg-tertiary)', border: '1px solid var(--border-primary)', fontSize: 13, color: 'var(--text-secondary)' },
+  errorChip:    { padding: '4px 12px', borderRadius: 980, background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', fontSize: 12, color: '#f87171', cursor: 'pointer', maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
   content:      { flex: 1, overflow: 'auto', padding: 24 },
 
   overviewGrid: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gridTemplateRows: 'auto 1fr', gap: 16 },

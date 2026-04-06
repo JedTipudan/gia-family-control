@@ -72,7 +72,9 @@ object RetrofitClient {
 
     fun create(context: Context): ApiService {
         val authInterceptor = Interceptor { chain ->
-            val token = runBlocking { context.dataStore.data.first()[JWT_TOKEN_KEY] }
+            // Read token from plain SharedPreferences — avoids runBlocking deadlock on main thread
+            val token = context.getSharedPreferences("parent_prefs", Context.MODE_PRIVATE)
+                .getString("jwt_token_plain", null)
             val request = if (token != null) {
                 chain.request().newBuilder()
                     .addHeader("Authorization", "Bearer $token")

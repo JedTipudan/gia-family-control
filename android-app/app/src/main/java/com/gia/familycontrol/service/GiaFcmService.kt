@@ -64,10 +64,14 @@ class GiaFcmService : FirebaseMessagingService() {
                 android.util.Log.d("GiaFcmService", "UNHIDE_APP $pkg")
             }
             "GRANT_TEMP_ACCESS" -> {
-                val minutes = message.data["minutes"]?.toIntOrNull() ?: 30
+                val minutes = message.data["minutes"]?.toIntOrNull()
+                    ?: message.data["metadata"]?.toIntOrNull()
+                    ?: 30
                 SecureAuthManager.grantTemporaryAccess(this, minutes)
                 ActionLogger.log(this, "GRANT_TEMP_ACCESS", "${minutes}min")
                 android.util.Log.d("GiaFcmService", "Temp access granted for $minutes min")
+                // Show countdown overlay on child screen
+                com.gia.familycontrol.ui.child.TempAccessOverlayActivity.launch(this, minutes)
             }
             "REVOKE_TEMP_ACCESS" -> {
                 SecureAuthManager.revokeTemporaryAccess(this)

@@ -42,5 +42,5 @@ public class AppControl {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-    public enum ControlType { BLOCKED, ALLOWED, SCHEDULED }
+    public enum ControlType { BLOCKED, ALLOWED, SCHEDULED, HIDDEN, VISIBLE }
 }

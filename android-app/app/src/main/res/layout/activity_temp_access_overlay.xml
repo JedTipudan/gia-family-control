@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="#F20D1117"
+    android:padding="40dp">
+
+    <TextView
+        android:id="@+id/tvTempTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="⏱ Temporary Access"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="#FBBF24"
+        android:layout_marginBottom="24dp"/>
+
+    <!-- Big countdown -->
+    <TextView
+        android:id="@+id/tvTempTimer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="30:00"
+        android:textSize="80sp"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        android:fontFamily="sans-serif-light"
+        android:letterSpacing="-0.03"
+        android:layout_marginBottom="24dp"/>
+
+    <TextView
+        android:id="@+id/tvTempMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Your parent has granted temporary access."
+        android:textSize="14sp"
+        android:textColor="#9CA3AF"
+        android:gravity="center"
+        android:layout_marginBottom="40dp"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnTempOk"
+        android:layout_width="200dp"
+        android:layout_height="50dp"
+        android:text="OK, Got it"
+        android:textAllCaps="false"
+        android:textColor="#FFFFFF"
+        app:backgroundTint="#2E2412"
+        app:strokeColor="#5C4A1A"
+        app:strokeWidth="1dp"
+        app:cornerRadius="12dp"
+        style="@style/Widget.Material3.Button.OutlinedButton"/>
+
+</LinearLayout>

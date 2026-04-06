@@ -76,12 +76,10 @@ public class CommandService {
         
         log.info("Parent device found: ID {}, FCM token: {}", 
                 parentDevice.getId(), 
-                parentDevice.getFcmToken() != null ? "SET (" + parentDevice.getFcmToken().substring(0, 20) + "...)" : "NULL");
+                parentDevice.getFcmToken() != null ? "SET" : "NULL");
         
         // Validate parent FCM token
         if (parentDevice.getFcmToken() == null || parentDevice.getFcmToken().trim().isEmpty()) {
-            log.error("CRITICAL: Parent device has no FCM token!");
-            log.error("Parent must open the app and login to receive SOS alerts.");
             throw new RuntimeException("Parent device is not registered for notifications. Parent must login to their app first.");
         }
         
@@ -97,7 +95,6 @@ public class CommandService {
         
         // Send urgent FCM notification to parent
         log.info("Sending FCM SOS alert to parent device...");
-        log.info("FCM Token: {}...", parentDevice.getFcmToken().substring(0, 30));
         log.info("Child Name: {}", child.getFullName());
         log.info("Location: {}", request.getMetadata());
         
