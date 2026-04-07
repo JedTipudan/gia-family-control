@@ -45,6 +45,7 @@ public class CommandDto {
         private Integer batteryLevel;
         private Boolean isOnline;
         private String fcmToken;
+        private String connectionType;
     }
     
     @Data
