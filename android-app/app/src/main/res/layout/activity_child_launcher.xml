@@ -2,17 +2,18 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FF0A0A12">
+    android:background="#FF0A0A12"
+    android:fitsSystemWindows="false">
 
-    <!-- Clock -->
+    <!-- Clock — compact -->
     <LinearLayout
         android:id="@+id/layoutClock"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:gravity="center"
-        android:paddingTop="52dp"
-        android:paddingBottom="12dp"
+        android:paddingTop="28dp"
+        android:paddingBottom="8dp"
         android:layout_alignParentTop="true">
 
         <TextClock
@@ -20,7 +21,7 @@
             android:layout_height="wrap_content"
             android:format12Hour="h:mm"
             android:format24Hour="HH:mm"
-            android:textSize="72sp"
+            android:textSize="52sp"
             android:textColor="#FFFFFFFF"
             android:fontFamily="sans-serif-thin"
             android:letterSpacing="-0.04"
@@ -31,10 +32,10 @@
             android:layout_height="wrap_content"
             android:format12Hour="EEE, MMM d"
             android:format24Hour="EEE, MMM d"
-            android:textSize="13sp"
+            android:textSize="12sp"
             android:textColor="#77FFFFFF"
             android:letterSpacing="0.05"
-            android:layout_marginTop="4dp"/>
+            android:layout_marginTop="2dp"/>
 
     </LinearLayout>
 
@@ -48,18 +49,19 @@
         android:layout_below="@id/layoutClock"
         android:paddingLeft="20dp"
         android:paddingRight="20dp"
-        android:paddingBottom="8dp">
+        android:paddingBottom="6dp">
 
         <EditText
             android:id="@+id/etSearch"
             android:layout_width="match_parent"
-            android:layout_height="44dp"
+            android:layout_height="40dp"
             android:hint="Search apps…"
             android:textColorHint="#55FFFFFF"
             android:textColor="#FFFFFF"
-            android:textSize="14sp"
+            android:textSize="13sp"
             android:background="@drawable/search_bar_bg"
-            android:paddingHorizontal="16dp"
+            android:paddingLeft="14dp"
+            android:paddingRight="14dp"
             android:inputType="text"
             android:imeOptions="actionSearch"
             android:singleLine="true"
@@ -69,16 +71,18 @@
 
     </LinearLayout>
 
-    <!-- Bottom dock -->
+    <!-- Bottom dock — above nav bar -->
     <LinearLayout
         android:id="@+id/bottomDock"
         android:layout_width="match_parent"
-        android:layout_height="72dp"
+        android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center"
         android:layout_alignParentBottom="true"
-        android:paddingBottom="12dp"
-        android:paddingHorizontal="40dp">
+        android:paddingTop="10dp"
+        android:paddingBottom="24dp"
+        android:paddingLeft="40dp"
+        android:paddingRight="40dp">
 
         <FrameLayout
             android:id="@+id/ivParentSettings"
@@ -104,7 +108,8 @@
         android:layout_height="match_parent"
         android:layout_below="@id/layoutSearch"
         android:layout_above="@id/bottomDock"
-        android:paddingHorizontal="8dp"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
         android:paddingBottom="4dp"
         android:clipToPadding="false"
         android:overScrollMode="never"/>

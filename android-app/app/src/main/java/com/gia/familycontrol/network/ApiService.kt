@@ -16,10 +16,10 @@ interface ApiService {
     suspend fun pairDevice(@Body request: PairRequest): Response<DeviceResponse>
 
     @PUT("api/device/status")
-    suspend fun updateDeviceStatus(@Body update: DeviceStatusUpdate): Response<Unit>
+    suspend fun updateDeviceStatus(@Body update: DeviceStatusUpdate): Response<Void>
 
     @POST("api/location/update")
-    suspend fun updateLocation(@Body request: LocationUpdateRequest): Response<Unit>
+    suspend fun updateLocation(@Body request: LocationUpdateRequest): Response<Void>
 
     @GET("api/location/{deviceId}/latest")
     suspend fun getLatestLocation(@Path("deviceId") deviceId: Long): Response<LocationResponse>
@@ -34,7 +34,7 @@ interface ApiService {
     suspend fun sendCommand(@Body request: SendCommandRequest): Response<CommandResponse>
 
     @POST("api/unpair-device/{deviceId}")
-    suspend fun unpairDevice(@Path("deviceId") deviceId: Long): Response<Unit>
+    suspend fun unpairDevice(@Path("deviceId") deviceId: Long): Response<Void>
 
     @GET("api/apps/controls/{deviceId}")
     suspend fun getAppControls(@Path("deviceId") deviceId: Long): Response<List<AppControlResponse>>
@@ -46,17 +46,17 @@ interface ApiService {
     suspend fun removeAppControl(
         @Path("deviceId") deviceId: Long,
         @Path("packageName") packageName: String
-    ): Response<Unit>
+    ): Response<Void>
 
     @GET("api/apps/installed/{deviceId}")
     suspend fun getInstalledApps(@Path("deviceId") deviceId: Long): Response<List<AppResponse>>
-    
+
     @POST("api/apps/sync")
-    suspend fun syncApps(@Body apps: List<AppInfo>): Response<Unit>
+    suspend fun syncApps(@Body apps: List<AppInfo>): Response<Void>
 
     @GET("api/users/{userId}")
     suspend fun getUserProfile(@Path("userId") userId: Long): Response<UserProfileResponse>
-    
+
     @GET("api/child-devices")
     suspend fun getChildDevices(): Response<List<DeviceResponse>>
 }
