@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
-import { commandApi, locationApi, pairApi } from '../services/api';
-import { subscribeToDeviceLocation, subscribeToDeviceStatus } from '../services/firebase';
+import { commandApi, locationApi, pairApi, deviceApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import AppManagerPanel from '../components/AppManagerPanel';
@@ -71,9 +70,18 @@ export default function DashboardPage() {
   const { isLoaded } = useJsApiLoader({ googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_KEY || '' });
 
   useEffect(() => {
-    const u1 = subscribeToDeviceLocation(childDeviceId, setLocation);
-    const u2 = subscribeToDeviceStatus(childDeviceId, setDeviceStatus);
-    return () => { u1(); u2(); };
+    if (!childDeviceId) return;
+    // Poll device status from REST API every 5s (Firebase DB not used by child app)
+    const pollStatus = async () => {
+      try {
+        const { data } = await deviceApi.getStatus();
+        const device = data?.[0];
+        if (device) setDeviceStatus(device);
+      } catch {}
+    };
+    pollStatus();
+    const id = setInterval(pollStatus, 5000);
+    return () => clearInterval(id);
   }, [childDeviceId]);
 
   useEffect(() => {

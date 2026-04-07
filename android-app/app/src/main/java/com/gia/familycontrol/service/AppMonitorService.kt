@@ -29,6 +29,8 @@ class AppMonitorService : LifecycleService() {
     private val gameKeywords = listOf("game", "play", "arcade", "puzzle", "racing", "action", "adventure")
     private var lastForegroundApp: String? = null
     private var consecutiveBlockCount = 0
+    private var tempWasActive = false
+    private var tempWasActive = false  // track when temp access transitions from active -> expired
     
     private val refreshReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -139,21 +141,25 @@ class AppMonitorService : LifecycleService() {
                     }
                     
                     if (foregroundApp != null && foregroundApp != packageName) {
-                        // Skip auto-exit for hidden apps — they are handled by Device Owner hiding
                         val isHidden = AppHideManager.isHidden(this@AppMonitorService, foregroundApp)
-                        // Check if blocked - ALWAYS block, no exceptions (unless hidden)
                         if (!isHidden && foregroundApp in blockedPackages) {
                             consecutiveBlockCount++
                             Log.d("AppMonitorService", "⛔ BLOCKED APP DETECTED: $foregroundApp (attempt #$consecutiveBlockCount)")
                             forceCloseApp(foregroundApp)
                         }
-                        
-                        // Check if it's a game and notify parent (only once)
                         if (isGameApp(foregroundApp) && foregroundApp !in notifiedGames) {
                             notifiedGames.add(foregroundApp)
                             notifyParentAboutGame(foregroundApp)
                         }
                     }
+
+                    // Auto-lock when temp access expires
+                    val tempActive = com.gia.familycontrol.util.SecureAuthManager.isTemporaryAccessActive(this@AppMonitorService)
+                    if (tempWasActive && !tempActive) {
+                        Log.d("AppMonitorService", "⏱ Temp access expired — locking device")
+                        lockDeviceNow()
+                    }
+                    tempWasActive = tempActive
                 } catch (e: Exception) {
                     Log.e("AppMonitorService", "Error in monitoring loop", e)
                 }
@@ -163,6 +169,24 @@ class AppMonitorService : LifecycleService() {
         }
     }
     
+    private fun lockDeviceNow() {
+        // Save lock state
+        getSharedPreferences("gia_lock", MODE_PRIVATE)
+            .edit().putBoolean("is_locked", true).apply()
+        // Lock via Device Admin
+        try {
+            val dpm = getSystemService(android.app.admin.DevicePolicyManager::class.java)
+            val admin = android.content.ComponentName(this, com.gia.familycontrol.admin.GiaDeviceAdminReceiver::class.java)
+            if (dpm.isAdminActive(admin)) dpm.lockNow()
+        } catch (_: Exception) {}
+        // Show lock screen
+        try {
+            startActivity(Intent(this, com.gia.familycontrol.ui.child.LockScreenActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            })
+        } catch (_: Exception) {}
+    }
+
     private fun forceCloseApp(packageName: String) {
         try {
             Log.d("AppMonitorService", "🚫 FORCE CLOSING: $packageName")

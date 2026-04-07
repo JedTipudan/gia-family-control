@@ -32,6 +32,11 @@ export const pairApi = {
   unpair:          (deviceId) => api.post(`/api/unpair-device/${deviceId}`),
 };
 
+export const deviceApi = {
+  // Poll child device status directly from REST API
+  getStatus: () => api.get('/api/child-devices'),
+};
+
 export const locationApi = {
   getLatest: (deviceId) => api.get(`/api/location/${deviceId}/latest`),
   getHistory: (deviceId, limit = 100) => api.get(`/api/location/${deviceId}/history`, { params: { limit } }),
