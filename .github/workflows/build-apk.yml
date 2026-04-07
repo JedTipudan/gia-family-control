@@ -57,7 +57,7 @@ jobs:
           GRADLE_OPTS: "-Xmx3g -XX:MaxMetaspaceSize=512m"
         run: |
           chmod +x gradlew
-          ./gradlew assembleRelease --no-daemon --max-workers=2
+          ./gradlew assembleRelease --no-daemon --max-workers=2 --stacktrace 2>&1 | tail -100
 
       - name: Sign APK
         run: |
