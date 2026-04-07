@@ -56,10 +56,11 @@ class TempAccessOverlayActivity : AppCompatActivity() {
         // Revoke temp access
         SecureAuthManager.revokeTemporaryAccess(this)
 
-        // Lock the device
+        // Restore the lock state — device was locked before temp access
         getSharedPreferences("gia_lock", MODE_PRIVATE)
             .edit().putBoolean("is_locked", true).apply()
 
+        // Lock via Device Admin
         try {
             val dpm = getSystemService(DevicePolicyManager::class.java)
             val admin = ComponentName(this, GiaDeviceAdminReceiver::class.java)

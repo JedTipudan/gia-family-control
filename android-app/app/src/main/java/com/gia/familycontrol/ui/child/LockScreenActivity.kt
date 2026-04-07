@@ -65,8 +65,13 @@ class LockScreenActivity : AppCompatActivity() {
     }
 
     private fun isLocked(): Boolean {
-        return getSharedPreferences("gia_lock", MODE_PRIVATE)
+        // Not locked if is_locked is false OR temp access is currently active
+        val locked = getSharedPreferences("gia_lock", MODE_PRIVATE)
             .getBoolean("is_locked", false)
+        if (!locked) return false
+        // If temp access is active, treat as unlocked
+        if (com.gia.familycontrol.util.SecureAuthManager.isTemporaryAccessActive(this)) return false
+        return true
     }
 
     private fun startLockTaskMode() {

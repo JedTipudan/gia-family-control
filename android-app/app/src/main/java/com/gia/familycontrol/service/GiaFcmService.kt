@@ -71,8 +71,22 @@ class GiaFcmService : FirebaseMessagingService() {
                 val minutes = message.data["minutes"]?.toIntOrNull()
                     ?: message.data["metadata"]?.toIntOrNull()
                     ?: 30
+                // Grant temp access
                 SecureAuthManager.grantTemporaryAccess(this, minutes)
                 ActionLogger.log(this, "GRANT_TEMP_ACCESS", "${minutes}min")
+
+                // Temporarily clear the lock so LockScreenActivity dismisses itself
+                // The lock will be restored when temp access expires
+                getSharedPreferences("gia_lock", MODE_PRIVATE)
+                    .edit().putBoolean("is_locked", false).apply()
+
+                // Dismiss lock screen if showing
+                LockScreenActivity.dismiss()
+
+                // Cancel lock notification
+                getSystemService(NotificationManager::class.java).cancel(8888)
+
+                // Show countdown overlay
                 com.gia.familycontrol.ui.child.TempAccessOverlayActivity.launch(this, minutes)
             }
             "REVOKE_TEMP_ACCESS" -> {
