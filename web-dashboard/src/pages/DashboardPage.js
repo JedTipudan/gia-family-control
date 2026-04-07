@@ -55,8 +55,17 @@ export default function DashboardPage() {
   useEffect(() => {
     pairApi.getChildDevices().then(({ data }) => {
       const id = data?.[0]?.id;
-      if (id) { setChildDeviceId(id); localStorage.setItem('child_device_id', id); }
-    }).catch(() => {});
+      if (id) {
+        setChildDeviceId(id);
+        localStorage.setItem('child_device_id', String(id));
+      } else {
+        // No device paired yet — clear stale ID
+        setChildDeviceId(0);
+        localStorage.removeItem('child_device_id');
+      }
+    }).catch(() => {
+      // On error keep whatever was in localStorage
+    });
   }, []);
 
   const { isLoaded } = useJsApiLoader({ googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_KEY || '' });
@@ -80,6 +89,10 @@ export default function DashboardPage() {
   }, [childDeviceId]);
 
   const sendCommand = useCallback(async (type, value = null) => {
+    if (!childDeviceId) {
+      setCmdError('No child device paired. Go to Pairing tab first.');
+      return;
+    }
     setCmdLoading(type); setCmdError(null);
     try {
       if (type === 'BLOCK_APP' || type === 'UNBLOCK_APP')

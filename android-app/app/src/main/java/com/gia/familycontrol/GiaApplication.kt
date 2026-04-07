@@ -23,13 +23,16 @@ class GiaApplication : Application() {
     }
 
     private fun initDarkMode() {
-        val prefs = getSharedPreferences("gia_prefs", Context.MODE_PRIVATE)
-        val isDarkMode = prefs.getBoolean("dark_mode", false)
-        
-        if (isDarkMode) {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-        } else {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        try {
+            val prefs = getSharedPreferences("gia_prefs", Context.MODE_PRIVATE)
+            val isDarkMode = prefs.getBoolean("dark_mode", false)
+            if (isDarkMode) {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+            } else {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+            }
+        } catch (e: Exception) {
+            Log.e("GiaApplication", "Failed to init dark mode", e)
         }
     }
     

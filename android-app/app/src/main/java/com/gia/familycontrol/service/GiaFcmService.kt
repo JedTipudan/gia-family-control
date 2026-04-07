@@ -8,7 +8,6 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.gia.familycontrol.GiaApplication
 import com.gia.familycontrol.R
-import com.gia.familycontrol.ui.parent.ParentDashboardActivity
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.gia.familycontrol.model.DeviceStatusUpdate
@@ -25,13 +24,22 @@ class GiaFcmService : FirebaseMessagingService() {
 
     private val api by lazy { RetrofitClient.create(this) }
 
+    // Safe pending intent — opens the launcher (child app entry point)
+    private fun getMainPendingIntent(): PendingIntent {
+        val intent = packageManager.getLaunchIntentForPackage(packageName)
+            ?: Intent(Intent.ACTION_MAIN).apply { addCategory(Intent.CATEGORY_LAUNCHER) }
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        return PendingIntent.getActivity(this, 0, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+    }
+
     override fun onMessageReceived(message: RemoteMessage) {
         val command = message.data["command"] ?: return
 
         when (command) {
-            "LOCK" -> lockDevice()
-            "UNLOCK" -> unlockDevice()
-            "UNPAIR" -> unpairDevice()
+            "LOCK"    -> lockDevice()
+            "UNLOCK"  -> unlockDevice()
+            "UNPAIR"  -> unpairDevice()
             "CHILD_PAIRED" -> handleChildPaired(message.data)
             "BLOCK_APP" -> {
                 val pkg = message.data["packageName"] ?: return
@@ -43,15 +51,12 @@ class GiaFcmService : FirebaseMessagingService() {
             }
             "HIDE_APP" -> {
                 val pkg = message.data["packageName"] ?: return
-                // Store in hidden prefs — launcher filters these out
                 val prefs = getSharedPreferences("gia_hidden_apps", MODE_PRIVATE)
                 val hidden = prefs.getStringSet("hidden", mutableSetOf())!!.toMutableSet()
                 hidden.add(pkg)
                 prefs.edit().putStringSet("hidden", hidden).apply()
-                // Also try Device Owner hide if available
                 AppHideManager.hideApp(this, pkg)
                 ActionLogger.log(this, "HIDE_APP", pkg)
-                android.util.Log.d("GiaFcmService", "HIDE_APP $pkg")
             }
             "UNHIDE_APP" -> {
                 val pkg = message.data["packageName"] ?: return
@@ -61,7 +66,6 @@ class GiaFcmService : FirebaseMessagingService() {
                 prefs.edit().putStringSet("hidden", hidden).apply()
                 AppHideManager.unhideApp(this, pkg)
                 ActionLogger.log(this, "UNHIDE_APP", pkg)
-                android.util.Log.d("GiaFcmService", "UNHIDE_APP $pkg")
             }
             "GRANT_TEMP_ACCESS" -> {
                 val minutes = message.data["minutes"]?.toIntOrNull()
@@ -69,8 +73,6 @@ class GiaFcmService : FirebaseMessagingService() {
                     ?: 30
                 SecureAuthManager.grantTemporaryAccess(this, minutes)
                 ActionLogger.log(this, "GRANT_TEMP_ACCESS", "${minutes}min")
-                android.util.Log.d("GiaFcmService", "Temp access granted for $minutes min")
-                // Show countdown overlay on child screen
                 com.gia.familycontrol.ui.child.TempAccessOverlayActivity.launch(this, minutes)
             }
             "REVOKE_TEMP_ACCESS" -> {
@@ -84,480 +86,184 @@ class GiaFcmService : FirebaseMessagingService() {
                     ?: return
                 SecureAuthManager.setPin(this, pin)
                 ActionLogger.log(this, "SET_PIN")
-                android.util.Log.d("GiaFcmService", "Parent PIN updated")
             }
             "ENABLE_LAUNCHER" -> {
                 getSharedPreferences("gia_prefs", MODE_PRIVATE)
                     .edit().putBoolean("launcher_mode", true).apply()
                 ActionLogger.log(this, "ENABLE_LAUNCHER")
-                android.util.Log.d("GiaFcmService", "Launcher mode enabled")
             }
             "DISABLE_LAUNCHER" -> {
                 getSharedPreferences("gia_prefs", MODE_PRIVATE)
                     .edit().putBoolean("launcher_mode", false).apply()
                 ActionLogger.log(this, "DISABLE_LAUNCHER")
-                android.util.Log.d("GiaFcmService", "Launcher mode disabled")
             }
-            "GAME_ALERT" -> {
-                val appName = message.data["appName"] ?: "Unknown Game"
-                showGameNotification(appName, "opened")
-            }
-            "GAME_INSTALLED" -> {
-                val appName = message.data["appName"] ?: "Unknown Game"
-                showGameNotification(appName, "installed")
-            }
-            "NETWORK_CONNECTED" -> {
-                val connectionType = message.data["connectionType"] ?: "Internet"
-                showNetworkNotification(true, connectionType)
-            }
-            "NETWORK_DISCONNECTED" -> {
-                showNetworkNotification(false, "")
-            }
-            "EMERGENCY" -> handleEmergency(message.data["message"])
-            "SOS" -> handleSosAlert(message.data)
+            "GAME_ALERT"    -> showGameNotification(message.data["appName"] ?: "Unknown", "opened")
+            "GAME_INSTALLED"-> showGameNotification(message.data["appName"] ?: "Unknown", "installed")
+            "NETWORK_CONNECTED"    -> showNetworkNotification(true,  message.data["connectionType"] ?: "")
+            "NETWORK_DISCONNECTED" -> showNetworkNotification(false, "")
+            "EMERGENCY" -> { /* no-op */ }
+            "SOS"       -> handleSosAlert(message.data)
         }
     }
-    
+
     private fun handleSosAlert(data: Map<String, String>) {
-        android.util.Log.d("GiaFcmService", "=== SOS ALERT RECEIVED ===")
-        android.util.Log.d("GiaFcmService", "Data: $data")
-        
         val childName = data["childName"] ?: "Your child"
-        val location = data["location"] ?: "Unknown location"
-        
-        android.util.Log.d("GiaFcmService", "Child: $childName, Location: $location")
-        
-        val notificationManager = getSystemService(NotificationManager::class.java)
-        
-        // Create high priority channel for SOS
+        val location  = data["location"]  ?: "Unknown location"
+        val nm = getSystemService(NotificationManager::class.java)
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                "sos_alerts",
-                "SOS Emergency Alerts",
-                NotificationManager.IMPORTANCE_HIGH
+            nm.createNotificationChannel(NotificationChannel(
+                "sos_alerts", "SOS Emergency Alerts", NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = "Critical emergency alerts from your child"
                 enableVibration(true)
                 vibrationPattern = longArrayOf(0, 1000, 500, 1000, 500, 1000)
-                setSound(
-                    android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_ALARM),
-                    android.media.AudioAttributes.Builder()
-                        .setUsage(android.media.AudioAttributes.USAGE_ALARM)
-                        .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                        .build()
-                )
                 setBypassDnd(true)
                 lockscreenVisibility = android.app.Notification.VISIBILITY_PUBLIC
-            }
-            notificationManager.createNotificationChannel(channel)
+            })
         }
-        
-        // Create intent to open parent dashboard
-        val intent = Intent(this, ParentDashboardActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            putExtra("show_location", true)
-        }
-        val pendingIntent = PendingIntent.getActivity(
-            this, 0, intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        
-        // Build urgent notification
+
         val notification = NotificationCompat.Builder(this, "sos_alerts")
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle("🆘 EMERGENCY SOS ALERT")
             .setContentText("$childName needs help!")
             .setStyle(NotificationCompat.BigTextStyle()
-                .bigText("🆘 EMERGENCY SOS ALERT\n\n$childName has sent an SOS alert!\n\nLocation: $location\n\nTap to view their location immediately."))
+                .bigText("$childName sent an SOS!\n\nLocation: $location"))
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
-            .setAutoCancel(false)
-            .setOngoing(true)
-            .setContentIntent(pendingIntent)
+            .setAutoCancel(false).setOngoing(true)
+            .setContentIntent(getMainPendingIntent())
+            .setFullScreenIntent(getMainPendingIntent(), true)
             .setVibrate(longArrayOf(0, 1000, 500, 1000, 500, 1000))
-            .setSound(android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_ALARM))
-            .setFullScreenIntent(pendingIntent, true)
             .build()
-        
-        notificationManager.notify(7777, notification)
-        
-        // Play alarm sound
+
+        nm.notify(7777, notification)
+
         try {
-            val ringtone = android.media.RingtoneManager.getRingtone(
-                this,
-                android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_ALARM)
-            )
+            val ringtone = android.media.RingtoneManager.getRingtone(this,
+                android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_ALARM))
             ringtone.play()
-            
-            // Stop after 10 seconds
-            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-                ringtone.stop()
-            }, 10000)
-        } catch (e: Exception) {
-            android.util.Log.e("GiaFcmService", "Failed to play alarm", e)
-        }
-        
-        // Vibrate
-        try {
-            val vibrator = getSystemService(android.os.Vibrator::class.java)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                vibrator.vibrate(
-                    android.os.VibrationEffect.createWaveform(
-                        longArrayOf(0, 1000, 500, 1000, 500, 1000),
-                        -1
-                    )
-                )
-            } else {
-                @Suppress("DEPRECATION")
-                vibrator.vibrate(longArrayOf(0, 1000, 500, 1000, 500, 1000), -1)
-            }
-        } catch (e: Exception) {
-            android.util.Log.e("GiaFcmService", "Failed to vibrate", e)
-        }
+            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({ ringtone.stop() }, 10000)
+        } catch (_: Exception) {}
     }
 
     private fun lockDevice() {
-        android.util.Log.d("GiaFcmService", "LOCK command received")
         ActionLogger.log(this, "LOCK")
-        
-        // Save lock state
-        getSharedPreferences("gia_lock", MODE_PRIVATE)
-            .edit().putBoolean("is_locked", true).apply()
-        
-        android.util.Log.d("GiaFcmService", "Lock state saved")
-        
-        // Immediately lock device using Device Admin
+        getSharedPreferences("gia_lock", MODE_PRIVATE).edit().putBoolean("is_locked", true).apply()
         try {
             val dpm = getSystemService(android.app.admin.DevicePolicyManager::class.java)
-            val adminComponent = android.content.ComponentName(this, com.gia.familycontrol.admin.GiaDeviceAdminReceiver::class.java)
-            
-            if (dpm.isAdminActive(adminComponent)) {
-                dpm.lockNow()
-                android.util.Log.d("GiaFcmService", "Device locked using Device Admin")
-            } else {
-                android.util.Log.e("GiaFcmService", "Device Admin not active")
-            }
-        } catch (e: Exception) {
-            android.util.Log.e("GiaFcmService", "Failed to lock device", e)
-        }
-        
-        // Show lock overlay
-        val lockIntent = Intent(this, LockScreenActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or
-                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                    Intent.FLAG_ACTIVITY_NO_HISTORY or
-                    Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
-        }
-        
+            val admin = android.content.ComponentName(this, com.gia.familycontrol.admin.GiaDeviceAdminReceiver::class.java)
+            if (dpm.isAdminActive(admin)) dpm.lockNow()
+        } catch (_: Exception) {}
+
         try {
-            startActivity(lockIntent)
-        } catch (e: Exception) {
-            android.util.Log.e("GiaFcmService", "Failed to show lock screen", e)
-        }
-        
-        // Ensure LockMonitorService is running
-        val serviceIntent = Intent(this, LockMonitorService::class.java)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(serviceIntent)
-        } else {
-            startService(serviceIntent)
-        }
-        
-        // Show notification
-        showLockNotification()
-    }
-    
-    private fun showLockNotification() {
-        val notificationManager = getSystemService(NotificationManager::class.java)
-        
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                "device_lock",
-                "Device Lock",
-                NotificationManager.IMPORTANCE_HIGH
-            ).apply {
-                description = "Notifications when device is locked by parent"
-                setSound(null, null)
-            }
-            notificationManager.createNotificationChannel(channel)
-        }
-        
-        val notification = NotificationCompat.Builder(this, "device_lock")
+            startActivity(Intent(this, LockScreenActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                        Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
+            })
+        } catch (_: Exception) {}
+
+        val svc = Intent(this, LockMonitorService::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) startForegroundService(svc) else startService(svc)
+
+        val nm = getSystemService(NotificationManager::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            nm.createNotificationChannel(NotificationChannel("device_lock", "Device Lock", NotificationManager.IMPORTANCE_HIGH).apply { setSound(null, null) })
+        nm.notify(8888, NotificationCompat.Builder(this, "device_lock")
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle("🔒 Device Locked")
             .setContentText("This device is locked by your parent")
-            .setStyle(NotificationCompat.BigTextStyle()
-                .bigText("This device has been locked by your parent. You cannot use it until they unlock it."))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setOngoing(true)
-            .setAutoCancel(false)
-            .build()
-        
-        notificationManager.notify(8888, notification)
+            .setOngoing(true).setAutoCancel(false).build())
     }
 
     private fun unlockDevice() {
         ActionLogger.log(this, "UNLOCK")
-        // Clear lock state
-        getSharedPreferences("gia_lock", MODE_PRIVATE)
-            .edit().putBoolean("is_locked", false).apply()
+        getSharedPreferences("gia_lock", MODE_PRIVATE).edit().putBoolean("is_locked", false).apply()
         LockScreenActivity.dismiss()
-        
-        // Stop LockMonitorService
         stopService(Intent(this, LockMonitorService::class.java))
-        
-        // Cancel lock notification
-        val notificationManager = getSystemService(NotificationManager::class.java)
-        notificationManager.cancel(8888)
+        getSystemService(NotificationManager::class.java).cancel(8888)
     }
 
     private fun updateAppBlock(packageName: String, block: Boolean) {
-        android.util.Log.d("GiaFcmService", "=== APP BLOCK UPDATE ===")
-        android.util.Log.d("GiaFcmService", "Package: $packageName, Block: $block")
-        
-        // Update SharedPreferences for immediate effect
-        val prefs = getSharedPreferences("gia_blocked_apps", MODE_PRIVATE)
+        val prefs   = getSharedPreferences("gia_blocked_apps", MODE_PRIVATE)
         val blocked = prefs.getStringSet("blocked", mutableSetOf())!!.toMutableSet()
-        
-        if (block) {
-            blocked.add(packageName)
-            android.util.Log.d("GiaFcmService", "Added $packageName to blocked list. Total blocked: ${blocked.size}")
-        } else {
-            blocked.remove(packageName)
-            android.util.Log.d("GiaFcmService", "Removed $packageName from blocked list. Total blocked: ${blocked.size}")
-        }
-        
+        if (block) blocked.add(packageName) else blocked.remove(packageName)
         prefs.edit().putStringSet("blocked", blocked).apply()
-        android.util.Log.d("GiaFcmService", "SharedPreferences updated")
-        
-        // Notify AppMonitorService to refresh immediately
-        val intent = Intent("com.gia.familycontrol.REFRESH_BLOCKED_APPS")
-        sendBroadcast(intent)
-        android.util.Log.d("GiaFcmService", "Broadcast sent to refresh services")
-        
-        // If blocking, IMMEDIATELY close the app if it's running
+        sendBroadcast(Intent("com.gia.familycontrol.REFRESH_BLOCKED_APPS"))
         if (block) {
-            android.util.Log.d("GiaFcmService", "Blocking app - checking if currently running...")
-            
-            // Check if this app is currently in foreground
-            val usm = getSystemService(android.app.usage.UsageStatsManager::class.java)
-            val now = System.currentTimeMillis()
-            val stats = usm?.queryUsageStats(android.app.usage.UsageStatsManager.INTERVAL_DAILY, now - 3000, now)
-            val foregroundApp = stats?.maxByOrNull { it.lastTimeUsed }?.packageName
-            
-            android.util.Log.d("GiaFcmService", "Current foreground app: $foregroundApp")
-            
-            if (foregroundApp == packageName) {
-                android.util.Log.d("GiaFcmService", "Target app IS running - force closing NOW")
-            }
-            
-            // Send to home screen regardless (will close if running)
-            val homeIntent = Intent(Intent.ACTION_MAIN).apply {
+            startActivity(Intent(Intent.ACTION_MAIN).apply {
                 addCategory(Intent.CATEGORY_HOME)
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or 
-                        Intent.FLAG_ACTIVITY_CLEAR_TASK or
-                        Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
-            }
-            startActivity(homeIntent)
-            android.util.Log.d("GiaFcmService", "Sent to home screen - app closed")
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
+            })
         }
-        
-        android.util.Log.d("GiaFcmService", "=== APP BLOCK UPDATE COMPLETE ===")
     }
 
     private fun unpairDevice() {
-        // Clear pairing data
-        val prefs = getSharedPreferences("gia_prefs", MODE_PRIVATE)
-        prefs.edit()
-            .remove("device_id")
-            .apply()
-        
-        // Stop all services
+        getSharedPreferences("gia_prefs", MODE_PRIVATE).edit().remove("device_id").apply()
         stopService(Intent(this, LocationTrackingService::class.java))
         stopService(Intent(this, AppMonitorService::class.java))
-        
-        // Show notification
-        val notificationManager = getSystemService(NotificationManager::class.java)
-        val notification = NotificationCompat.Builder(this, GiaApplication.CHANNEL_COMMANDS)
-            .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentTitle("Device Unpaired")
-            .setContentText("Your parent has unpaired this device. You can now uninstall the app.")
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setAutoCancel(true)
-            .build()
-        notificationManager.notify(9999, notification)
+        getSystemService(NotificationManager::class.java).notify(9999,
+            NotificationCompat.Builder(this, GiaApplication.CHANNEL_COMMANDS)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle("Device Unpaired")
+                .setContentText("Your parent has unpaired this device.")
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true).build())
     }
 
     private fun showGameNotification(appName: String, action: String) {
-        val notificationManager = getSystemService(NotificationManager::class.java)
-        
-        // Create notification channel for Android O+
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                "game_alerts",
-                "Game Alerts",
-                NotificationManager.IMPORTANCE_HIGH
-            ).apply {
-                description = "Alerts when child opens or installs games"
-                enableVibration(true)
-            }
-            notificationManager.createNotificationChannel(channel)
-        }
-
-        // Create intent to open parent dashboard
-        val intent = Intent(this, ParentDashboardActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-        }
-        val pendingIntent = PendingIntent.getActivity(
-            this, 0, intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
+        val nm = getSystemService(NotificationManager::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            nm.createNotificationChannel(NotificationChannel("game_alerts", "Game Alerts", NotificationManager.IMPORTANCE_HIGH))
         val title = if (action == "installed") "📥 Game Installed" else "🎮 Game Opened"
-        val text = if (action == "installed") 
-            "Your child installed: $appName" 
-        else 
-            "Your child opened: $appName"
-        val bigText = if (action == "installed")
-            "Your child just installed the game: $appName. Tap to manage apps."
-        else
-            "Your child just opened the game: $appName. Tap to view dashboard."
-
-        // Build notification
-        val notification = NotificationCompat.Builder(this, "game_alerts")
-            .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentTitle(title)
-            .setContentText(text)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(bigText))
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setAutoCancel(true)
-            .setContentIntent(pendingIntent)
-            .setVibrate(longArrayOf(0, 500, 200, 500))
-            .build()
-
-        notificationManager.notify(System.currentTimeMillis().toInt(), notification)
+        val text  = if (action == "installed") "Your child installed: $appName" else "Your child opened: $appName"
+        nm.notify(System.currentTimeMillis().toInt(),
+            NotificationCompat.Builder(this, "game_alerts")
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle(title).setContentText(text)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true)
+                .setContentIntent(getMainPendingIntent()).build())
     }
 
     private fun showNetworkNotification(isConnected: Boolean, connectionType: String) {
-        val notificationManager = getSystemService(NotificationManager::class.java)
-        
-        // Create notification channel
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                "network_alerts",
-                "Network Alerts",
-                NotificationManager.IMPORTANCE_DEFAULT
-            ).apply {
-                description = "Alerts when child connects/disconnects from internet"
-            }
-            notificationManager.createNotificationChannel(channel)
-        }
-
-        val intent = Intent(this, ParentDashboardActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-        }
-        val pendingIntent = PendingIntent.getActivity(
-            this, 0, intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
+        val nm = getSystemService(NotificationManager::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            nm.createNotificationChannel(NotificationChannel("network_alerts", "Network Alerts", NotificationManager.IMPORTANCE_DEFAULT))
         val title = if (isConnected) "📶 Child Connected" else "📵 Child Disconnected"
-        val text = if (isConnected) 
-            "Your child connected to $connectionType" 
-        else 
-            "Your child disconnected from internet"
-
-        val notification = NotificationCompat.Builder(this, "network_alerts")
-            .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentTitle(title)
-            .setContentText(text)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .setAutoCancel(true)
-            .setContentIntent(pendingIntent)
-            .build()
-
-        notificationManager.notify(System.currentTimeMillis().toInt(), notification)
+        val text  = if (isConnected) "Connected to $connectionType" else "Disconnected from internet"
+        nm.notify(System.currentTimeMillis().toInt(),
+            NotificationCompat.Builder(this, "network_alerts")
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle(title).setContentText(text)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setAutoCancel(true)
+                .setContentIntent(getMainPendingIntent()).build())
     }
 
-    private fun handleEmergency(message: String?) {
-        // Show high-priority notification to parent
-    }
-    
     private fun handleChildPaired(data: Map<String, String>) {
-        try {
-            val childDeviceId = data["childDeviceId"]?.toLongOrNull()
-            val deviceName = data["deviceName"] ?: "Child Device"
-            val deviceModel = data["deviceModel"] ?: ""
-            
-            android.util.Log.d("GiaFcmService", "CHILD_PAIRED received: deviceId=$childDeviceId, name=$deviceName")
-            
-            if (childDeviceId == null) {
-                android.util.Log.e("GiaFcmService", "Invalid child device ID")
-                return
-            }
-            
-            // Save child device ID
-            getSharedPreferences("gia_prefs", MODE_PRIVATE)
-                .edit()
-                .putLong("child_device_id", childDeviceId)
-                .apply()
-            
-            android.util.Log.d("GiaFcmService", "Child device ID saved: $childDeviceId")
-            
-            // Show notification
-            val notificationManager = getSystemService(NotificationManager::class.java)
-            
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                val channel = NotificationChannel(
-                    "pairing_alerts",
-                    "Pairing Alerts",
-                    NotificationManager.IMPORTANCE_HIGH
-                ).apply {
-                    description = "Alerts when child device pairs"
-                    enableVibration(true)
-                }
-                notificationManager.createNotificationChannel(channel)
-            }
-            
-            val intent = Intent(this, ParentDashboardActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            }
-            val pendingIntent = PendingIntent.getActivity(
-                this, 0, intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-            
-            val notification = NotificationCompat.Builder(this, "pairing_alerts")
+        val childDeviceId = data["childDeviceId"]?.toLongOrNull() ?: return
+        val deviceName    = data["deviceName"] ?: "Child Device"
+        val deviceModel   = data["deviceModel"] ?: ""
+        getSharedPreferences("gia_prefs", MODE_PRIVATE).edit().putLong("child_device_id", childDeviceId).apply()
+        val nm = getSystemService(NotificationManager::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            nm.createNotificationChannel(NotificationChannel("pairing_alerts", "Pairing Alerts", NotificationManager.IMPORTANCE_HIGH))
+        nm.notify(System.currentTimeMillis().toInt(),
+            NotificationCompat.Builder(this, "pairing_alerts")
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle("✅ Child Device Paired")
                 .setContentText("$deviceName ($deviceModel) is now connected")
-                .setStyle(NotificationCompat.BigTextStyle()
-                    .bigText("$deviceName ($deviceModel) has been successfully paired with your account. Tap to view dashboard."))
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true)
-                .setContentIntent(pendingIntent)
-                .setVibrate(longArrayOf(0, 500, 200, 500))
-                .build()
-            
-            notificationManager.notify(System.currentTimeMillis().toInt(), notification)
-            android.util.Log.d("GiaFcmService", "Pairing notification shown")
-        } catch (e: Exception) {
-            android.util.Log.e("GiaFcmService", "Error handling CHILD_PAIRED", e)
-        }
+                .setContentIntent(getMainPendingIntent()).build())
     }
 
     override fun onNewToken(token: String) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                api.updateDeviceStatus(
-                    DeviceStatusUpdate(
-                        batteryLevel = null,
-                        isOnline = true,
-                        fcmToken = token,
-                        connectionType = null
-                    )
-                )
-            } catch (e: Exception) { /* retry on next launch */ }
+                api.updateDeviceStatus(DeviceStatusUpdate(null, true, token, null))
+            } catch (_: Exception) {}
         }
     }
 }
