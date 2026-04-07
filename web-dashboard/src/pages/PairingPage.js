@@ -35,7 +35,7 @@ export default function PairingPage() {
     QRCode.toCanvas(canvasRef.current, me.pairCode, {
       width: 200,
       margin: 2,
-      color: { dark: '#ffffff', light: '#111111' },
+      color: { dark: '#000000', light: '#ffffff' },
     });
   }, [me?.pairCode]);
 

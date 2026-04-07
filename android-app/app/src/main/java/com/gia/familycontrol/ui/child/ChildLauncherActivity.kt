@@ -108,16 +108,15 @@ class ChildLauncherActivity : AppCompatActivity() {
     private fun loadAppsAsync() {
         executor.execute {
             val pm = packageManager
-            val hiddenPkgs  = AppHideManager.getHiddenPackages(this)
-            val blockedPkgs = getSharedPreferences("gia_blocked_apps", MODE_PRIVATE)
-                .getStringSet("blocked", emptySet()) ?: emptySet()
+            // Only filter HIDDEN apps from launcher — blocked apps still show but can't be opened
+            val hiddenPkgs = AppHideManager.getHiddenPackages(this)
 
             val newApps = pm.queryIntentActivities(
                 Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER),
                 PackageManager.GET_META_DATA
             ).filter {
                 val pkg = it.activityInfo.packageName
-                pkg != packageName && pkg !in hiddenPkgs && pkg !in blockedPkgs
+                pkg != packageName && pkg !in hiddenPkgs  // only filter hidden, NOT blocked
             }.map {
                 AppItem(
                     packageName = it.activityInfo.packageName,

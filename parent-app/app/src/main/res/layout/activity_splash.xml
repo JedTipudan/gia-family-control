@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
-    android:background="#0D0D0D">
+    android:background="#F8F9FA">
 
     <ImageView
         android:layout_width="80dp"
@@ -18,14 +18,14 @@
         android:text="Gia Parent Control"
         android:textSize="22sp"
         android:textStyle="bold"
-        android:textColor="#FFFFFF"/>
+        android:textColor="#202124"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Admin &amp; Parent Dashboard"
         android:textSize="13sp"
-        android:textColor="#6B7280"
+        android:textColor="#80868B"
         android:layout_marginTop="6dp"/>
 
 </LinearLayout>

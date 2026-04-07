@@ -78,7 +78,10 @@ class GiaFcmService : FirebaseMessagingService() {
                 ActionLogger.log(this, "REVOKE_TEMP_ACCESS")
             }
             "SET_PIN" -> {
-                val pin = message.data["pin"] ?: return
+                val pin = message.data["pin"]
+                    ?: message.data["metadata"]
+                    ?: message.data["packageName"]
+                    ?: return
                 SecureAuthManager.setPin(this, pin)
                 ActionLogger.log(this, "SET_PIN")
                 android.util.Log.d("GiaFcmService", "Parent PIN updated")

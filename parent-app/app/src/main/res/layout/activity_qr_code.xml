@@ -6,7 +6,7 @@
     android:orientation="vertical"
     android:gravity="center"
     android:padding="28dp"
-    android:background="#0D0D0D">
+    android:background="#F8F9FA">
 
     <TextView
         android:layout_width="wrap_content"
@@ -14,7 +14,7 @@
         android:text="Connect Child Device"
         android:textSize="20sp"
         android:textStyle="bold"
-        android:textColor="#FFFFFF"
+        android:textColor="#202124"
         android:layout_marginBottom="6dp"/>
 
     <TextView
@@ -22,18 +22,17 @@
         android:layout_height="wrap_content"
         android:text="Scan QR or enter the pair code in the child app"
         android:textSize="13sp"
-        android:textColor="#6B7280"
+        android:textColor="#80868B"
         android:gravity="center"
-        android:layout_marginBottom="28dp"/>
+        android:layout_marginBottom="24dp"/>
 
-    <!-- QR Code card -->
     <com.google.android.material.card.MaterialCardView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:cardCornerRadius="16dp"
         app:cardElevation="0dp"
-        app:cardBackgroundColor="#111111"
-        app:strokeColor="#1F1F1F"
+        app:cardBackgroundColor="#FFFFFF"
+        app:strokeColor="#E0E0E0"
         app:strokeWidth="1dp"
         android:layout_marginBottom="20dp">
 
@@ -45,14 +44,13 @@
 
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- Pair code -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="PAIR CODE"
         android:textSize="10sp"
         android:textStyle="bold"
-        android:textColor="#6B7280"
+        android:textColor="#80868B"
         android:letterSpacing="0.12"
         android:layout_marginBottom="6dp"/>
 
@@ -62,7 +60,7 @@
         android:layout_height="wrap_content"
         android:textSize="26sp"
         android:textStyle="bold"
-        android:textColor="#818CF8"
+        android:textColor="#5E5CE6"
         android:letterSpacing="0.1"
         android:layout_marginBottom="28dp"/>
 

@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.GiaParentControl" parent="Theme.Material3.Dark.NoActionBar">
+    <!-- Light theme — default -->
+    <style name="Theme.GiaParentControl" parent="Theme.Material3.Light.NoActionBar">
         <item name="colorPrimary">#5E5CE6</item>
         <item name="colorOnPrimary">#FFFFFF</item>
-        <item name="android:windowBackground">#0D0D0D</item>
-        <item name="android:statusBarColor">#111111</item>
-        <item name="android:navigationBarColor">#111111</item>
-        <item name="android:textColorPrimary">#FFFFFF</item>
-        <item name="android:textColorSecondary">#9CA3AF</item>
+        <item name="android:windowBackground">#F8F9FA</item>
+        <item name="android:statusBarColor">#FFFFFF</item>
+        <item name="android:navigationBarColor">#FFFFFF</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:textColorPrimary">#202124</item>
+        <item name="android:textColorSecondary">#5F6368</item>
     </style>
 
-    <style name="Theme.GiaParentControl.Splash" parent="Theme.Material3.Dark.NoActionBar">
-        <item name="android:windowBackground">#0D0D0D</item>
+    <style name="Theme.GiaParentControl.Splash" parent="Theme.Material3.Light.NoActionBar">
+        <item name="android:windowBackground">#F8F9FA</item>
         <item name="android:windowFullscreen">true</item>
     </style>
 </resources>

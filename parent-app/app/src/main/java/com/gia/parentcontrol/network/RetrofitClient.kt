@@ -20,7 +20,7 @@ interface ApiService {
     suspend fun register(@Body request: RegisterRequest): Response<AuthResponse>
 
     @PUT("api/device/status")
-    suspend fun updateDeviceStatus(@Body update: DeviceStatusUpdate): Response<Unit>
+    suspend fun updateDeviceStatus(@Body update: DeviceStatusUpdate): Response<Void>
 
     @GET("api/location/{deviceId}/latest")
     suspend fun getLatestLocation(@Path("deviceId") deviceId: Long): Response<LocationResponse>
@@ -29,7 +29,7 @@ interface ApiService {
     suspend fun sendCommand(@Body request: SendCommandRequest): Response<CommandResponse>
 
     @POST("api/unpair-device/{deviceId}")
-    suspend fun unpairDevice(@Path("deviceId") deviceId: Long): Response<Unit>
+    suspend fun unpairDevice(@Path("deviceId") deviceId: Long): Response<Void>
 
     @GET("api/apps/controls/{deviceId}")
     suspend fun getAppControls(@Path("deviceId") deviceId: Long): Response<List<AppControlResponse>>
@@ -41,7 +41,7 @@ interface ApiService {
     suspend fun removeAppControl(
         @Path("deviceId") deviceId: Long,
         @Path("packageName") packageName: String
-    ): Response<Unit>
+    ): Response<Void>
 
     @GET("api/apps/installed/{deviceId}")
     suspend fun getInstalledApps(@Path("deviceId") deviceId: Long): Response<List<AppResponse>>
@@ -64,22 +64,15 @@ object RetrofitClient {
             val token = appContext
                 .getSharedPreferences("parent_prefs", Context.MODE_PRIVATE)
                 .getString("jwt_token_plain", null)
-
-            val request = if (token != null) {
-                chain.request().newBuilder()
-                    .addHeader("Authorization", "Bearer $token")
-                    .build()
-            } else {
-                chain.request()
-            }
+            val request = if (token != null)
+                chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+            else chain.request()
             chain.proceed(request)
         }
 
         val client = OkHttpClient.Builder()
             .addInterceptor(authInterceptor)
-            .addInterceptor(HttpLoggingInterceptor().apply {
-                level = HttpLoggingInterceptor.Level.BASIC
-            })
+            .addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BASIC })
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)

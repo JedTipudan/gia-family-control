@@ -116,7 +116,13 @@ public class CommandService {
         Command command = new Command();
         command.setSenderId(parent.getId());
         command.setTargetDeviceId(device.getId());
-        command.setCommandType(Command.CommandType.valueOf(request.getCommandType()));
+        try {
+            command.setCommandType(Command.CommandType.valueOf(request.getCommandType()));
+        } catch (IllegalArgumentException e) {
+            // Unknown command type — store as a generic command, still send via FCM
+            command.setCommandType(Command.CommandType.LOCK); // placeholder, overridden below
+            log.warn("Unknown command type: {}, sending via FCM anyway", request.getCommandType());
+        }
         command.setStatus(Command.Status.PENDING);
         commandRepository.save(command);
 
@@ -135,15 +141,17 @@ public class CommandService {
             case BLOCK_APP -> fcmService.sendAppBlockCommand(device.getFcmToken(), request.getPackageName(), true);
             case UNBLOCK_APP -> fcmService.sendAppBlockCommand(device.getFcmToken(), request.getPackageName(), false);
             default -> {
-                // Build metadata map — include packageName and metadata if present
                 java.util.Map<String, String> data = new java.util.HashMap<>();
                 if (request.getPackageName() != null) data.put("packageName", request.getPackageName());
                 if (request.getMetadata()    != null) data.put("metadata",    request.getMetadata());
-                // For GRANT_TEMP_ACCESS the minutes come in metadata field
                 if ("GRANT_TEMP_ACCESS".equals(request.getCommandType()) && request.getMetadata() != null) {
                     data.put("minutes", request.getMetadata());
                 }
-                fcmService.sendCommand(device.getFcmToken(), command.getCommandType().name(),
+                if ("SET_PIN".equals(request.getCommandType()) && request.getMetadata() != null) {
+                    data.put("pin", request.getMetadata());
+                }
+                // Always use the original request commandType string for FCM (not the enum name)
+                fcmService.sendCommand(device.getFcmToken(), request.getCommandType(),
                         data.isEmpty() ? null : data);
             }
         }

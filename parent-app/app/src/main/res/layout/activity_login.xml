@@ -5,15 +5,14 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
-    android:background="#0D0D0D"
+    android:background="#F8F9FA"
     android:padding="28dp">
 
-    <!-- Logo -->
     <ImageView
-        android:layout_width="64dp"
-        android:layout_height="64dp"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
         android:src="@mipmap/ic_launcher"
-        android:layout_marginBottom="20dp"/>
+        android:layout_marginBottom="16dp"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -21,7 +20,7 @@
         android:text="Gia Parent Control"
         android:textSize="22sp"
         android:textStyle="bold"
-        android:textColor="#FFFFFF"
+        android:textColor="#202124"
         android:layout_marginBottom="4dp"/>
 
     <TextView
@@ -29,17 +28,16 @@
         android:layout_height="wrap_content"
         android:text="Admin &amp; Parent Dashboard"
         android:textSize="13sp"
-        android:textColor="#6B7280"
-        android:layout_marginBottom="36dp"/>
+        android:textColor="#80868B"
+        android:layout_marginBottom="32dp"/>
 
-    <!-- Card -->
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:cardCornerRadius="16dp"
         app:cardElevation="0dp"
-        app:cardBackgroundColor="#111111"
-        app:strokeColor="#1F1F1F"
+        app:cardBackgroundColor="#FFFFFF"
+        app:strokeColor="#E0E0E0"
         app:strokeWidth="1dp">
 
         <LinearLayout
@@ -54,59 +52,55 @@
                 android:text="Sign In"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                android:textColor="#FFFFFF"
+                android:textColor="#202124"
                 android:layout_marginBottom="20dp"/>
 
-            <!-- Email -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Email"
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                app:boxStrokeColor="#2A2A2A"
-                app:boxBackgroundColor="#1A1A1A"
-                app:hintTextColor="#6B7280"
+                app:boxCornerRadiusTopStart="10dp"
+                app:boxCornerRadiusTopEnd="10dp"
+                app:boxCornerRadiusBottomStart="10dp"
+                app:boxCornerRadiusBottomEnd="10dp"
                 android:layout_marginBottom="14dp">
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etEmail"
                     android:layout_width="match_parent"
                     android:layout_height="52dp"
                     android:inputType="textEmailAddress"
-                    android:textColor="#FFFFFF"
-                    android:textColorHint="#6B7280"/>
+                    android:textColor="#202124"/>
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Password -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Password"
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 app:endIconMode="password_toggle"
-                app:boxStrokeColor="#2A2A2A"
-                app:boxBackgroundColor="#1A1A1A"
-                app:hintTextColor="#6B7280"
+                app:boxCornerRadiusTopStart="10dp"
+                app:boxCornerRadiusTopEnd="10dp"
+                app:boxCornerRadiusBottomStart="10dp"
+                app:boxCornerRadiusBottomEnd="10dp"
                 android:layout_marginBottom="8dp">
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etPassword"
                     android:layout_width="match_parent"
                     android:layout_height="52dp"
                     android:inputType="textPassword"
-                    android:textColor="#FFFFFF"
-                    android:textColorHint="#6B7280"/>
+                    android:textColor="#202124"/>
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Error -->
             <TextView
                 android:id="@+id/tvError"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="#F87171"
+                android:textColor="#C5221F"
                 android:textSize="13sp"
                 android:visibility="gone"
                 android:layout_marginBottom="8dp"/>
 
-            <!-- Sign In Button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnLogin"
                 android:layout_width="match_parent"
@@ -120,7 +114,6 @@
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="16dp"/>
 
-            <!-- Register link -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -131,7 +124,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="No account? "
-                    android:textColor="#6B7280"
+                    android:textColor="#80868B"
                     android:textSize="14sp"/>
 
                 <TextView
@@ -139,7 +132,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Register as Parent"
-                    android:textColor="#818CF8"
+                    android:textColor="#5E5CE6"
                     android:textStyle="bold"
                     android:textSize="14sp"
                     android:padding="4dp"/>
@@ -154,7 +147,7 @@
         android:layout_height="wrap_content"
         android:text="Parent accounts only. Child devices use the child app."
         android:textSize="12sp"
-        android:textColor="#4B5563"
+        android:textColor="#BDC1C6"
         android:gravity="center"
         android:layout_marginTop="20dp"/>
 

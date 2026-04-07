@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#0D0D0D">
+    android:background="#F8F9FA">
 
     <!-- Top Bar -->
     <LinearLayout
@@ -13,11 +13,12 @@
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:paddingHorizontal="16dp"
-        android:background="#111111">
+        android:background="#FFFFFF"
+        android:elevation="2dp">
 
         <ImageView
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
             android:src="@mipmap/ic_launcher"
             android:layout_marginEnd="10dp"/>
 
@@ -32,9 +33,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Gia Control"
-                android:textSize="16sp"
+                android:textSize="15sp"
                 android:textStyle="bold"
-                android:textColor="#FFFFFF"/>
+                android:textColor="#202124"/>
 
             <TextView
                 android:id="@+id/tvPairCode"
@@ -42,7 +43,7 @@
                 android:layout_height="wrap_content"
                 android:text="Pair Code: —"
                 android:textSize="11sp"
-                android:textColor="#6B7280"/>
+                android:textColor="#5E5CE6"/>
 
         </LinearLayout>
 
@@ -54,12 +55,10 @@
             android:textAllCaps="false"
             android:textSize="12sp"
             android:textColor="#5E5CE6"
-            app:backgroundTint="#1A1A2E"
-            app:strokeColor="#2A2A4E"
-            app:strokeWidth="1dp"
+            app:backgroundTint="#EEF0FF"
             app:cornerRadius="17dp"
             android:layout_marginEnd="8dp"
-            style="@style/Widget.Material3.Button.OutlinedButton"/>
+            style="@style/Widget.Material3.Button.TonalButton"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnLogout"
@@ -68,23 +67,21 @@
             android:text="Logout"
             android:textAllCaps="false"
             android:textSize="12sp"
-            android:textColor="#9CA3AF"
-            app:backgroundTint="#1A1A1A"
-            app:strokeColor="#2A2A2A"
-            app:strokeWidth="1dp"
+            android:textColor="#80868B"
+            app:backgroundTint="#F1F3F4"
             app:cornerRadius="17dp"
-            style="@style/Widget.Material3.Button.OutlinedButton"/>
+            style="@style/Widget.Material3.Button.TonalButton"/>
 
     </LinearLayout>
 
-    <!-- Status Bar -->
+    <!-- Status strip -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="44dp"
+        android:layout_height="42dp"
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:paddingHorizontal="16dp"
-        android:background="#111111">
+        android:background="#FFFFFF">
 
         <TextView
             android:id="@+id/tvChildName"
@@ -94,7 +91,7 @@
             android:text="No device paired"
             android:textSize="13sp"
             android:textStyle="bold"
-            android:textColor="#FFFFFF"/>
+            android:textColor="#202124"/>
 
         <TextView
             android:id="@+id/tvChildStatus"
@@ -102,7 +99,7 @@
             android:layout_height="wrap_content"
             android:text="● Offline"
             android:textSize="12sp"
-            android:textColor="#EF4444"
+            android:textColor="#C5221F"
             android:layout_marginEnd="12dp"/>
 
         <TextView
@@ -111,7 +108,7 @@
             android:layout_height="wrap_content"
             android:text="🔋 —"
             android:textSize="12sp"
-            android:textColor="#9CA3AF"
+            android:textColor="#5F6368"
             android:layout_marginEnd="12dp"/>
 
         <TextView
@@ -120,7 +117,7 @@
             android:layout_height="wrap_content"
             android:text="🔓"
             android:textSize="12sp"
-            android:textColor="#9CA3AF"
+            android:textColor="#5F6368"
             android:layout_marginEnd="8dp"/>
 
         <ImageView
@@ -137,7 +134,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#1F1F1F"/>
+        android:background="#E0E0E0"/>
 
     <ScrollView
         android:layout_width="match_parent"
@@ -149,15 +146,15 @@
             android:orientation="vertical"
             android:padding="12dp">
 
-            <!-- Connect Child Banner (shown when no device paired) -->
+            <!-- Pairing banner -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardPairing"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="14dp"
                 app:cardElevation="0dp"
-                app:cardBackgroundColor="#12203B"
-                app:strokeColor="#1A2E5C"
+                app:cardBackgroundColor="#EEF0FF"
+                app:strokeColor="#C5CAF9"
                 app:strokeWidth="1dp"
                 android:layout_marginBottom="10dp"
                 android:visibility="gone">
@@ -166,15 +163,15 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="20dp">
+                    android:padding="18dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="🔗 No Child Device Connected"
-                        android:textSize="15sp"
+                        android:textSize="14sp"
                         android:textStyle="bold"
-                        android:textColor="#818CF8"
+                        android:textColor="#4845D2"
                         android:layout_marginBottom="6dp"/>
 
                     <TextView
@@ -182,19 +179,19 @@
                         android:layout_height="wrap_content"
                         android:text="Tap QR to show your pair code. On the child device: open the child app → login → enter the pair code."
                         android:textSize="13sp"
-                        android:textColor="#9CA3AF"
-                        android:layout_marginBottom="14dp"/>
+                        android:textColor="#5F6368"
+                        android:layout_marginBottom="12dp"/>
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnShowQrBanner"
                         android:layout_width="wrap_content"
-                        android:layout_height="44dp"
-                        android:text="Show QR Code &amp; Pair Code"
+                        android:layout_height="40dp"
+                        android:text="Show QR Code"
                         android:textAllCaps="false"
                         android:textSize="13sp"
-                        android:textColor="#818CF8"
-                        app:backgroundTint="#1A2E5C"
-                        app:strokeColor="#2A3E6C"
+                        android:textColor="#5E5CE6"
+                        app:backgroundTint="#FFFFFF"
+                        app:strokeColor="#C5CAF9"
                         app:strokeWidth="1dp"
                         app:cornerRadius="10dp"
                         style="@style/Widget.Material3.Button.OutlinedButton"/>
@@ -208,8 +205,8 @@
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="14dp"
                 app:cardElevation="0dp"
-                app:cardBackgroundColor="#111111"
-                app:strokeColor="#1F1F1F"
+                app:cardBackgroundColor="#FFFFFF"
+                app:strokeColor="#E0E0E0"
                 app:strokeWidth="1dp"
                 android:layout_marginBottom="10dp">
 
@@ -232,7 +229,7 @@
                             android:text="📍 Live Location"
                             android:textSize="13sp"
                             android:textStyle="bold"
-                            android:textColor="#FFFFFF"/>
+                            android:textColor="#202124"/>
 
                         <TextView
                             android:id="@+id/tvConnection"
@@ -240,7 +237,7 @@
                             android:layout_height="wrap_content"
                             android:text="Offline"
                             android:textSize="11sp"
-                            android:textColor="#6B7280"/>
+                            android:textColor="#80868B"/>
 
                     </LinearLayout>
 
@@ -256,7 +253,7 @@
                         android:layout_height="wrap_content"
                         android:text="Never connected"
                         android:textSize="11sp"
-                        android:textColor="#6B7280"
+                        android:textColor="#80868B"
                         android:padding="10dp"/>
 
                 </LinearLayout>
@@ -268,8 +265,8 @@
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="14dp"
                 app:cardElevation="0dp"
-                app:cardBackgroundColor="#111111"
-                app:strokeColor="#1F1F1F"
+                app:cardBackgroundColor="#FFFFFF"
+                app:strokeColor="#E0E0E0"
                 app:strokeWidth="1dp"
                 android:layout_marginBottom="10dp">
 
@@ -285,7 +282,7 @@
                         android:text="DEVICE CONTROLS"
                         android:textSize="10sp"
                         android:textStyle="bold"
-                        android:textColor="#6B7280"
+                        android:textColor="#80868B"
                         android:letterSpacing="0.1"
                         android:layout_marginBottom="12dp"/>
 
@@ -304,13 +301,11 @@
                             android:text="🔒 Lock"
                             android:textAllCaps="false"
                             android:textSize="13sp"
-                            android:textColor="#F87171"
-                            app:backgroundTint="#3B1212"
-                            app:strokeColor="#5C1A1A"
-                            app:strokeWidth="1dp"
+                            android:textColor="#C5221F"
+                            app:backgroundTint="#FCE8E6"
                             app:cornerRadius="10dp"
                             android:layout_marginEnd="6dp"
-                            style="@style/Widget.Material3.Button.OutlinedButton"/>
+                            style="@style/Widget.Material3.Button.TonalButton"/>
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnUnlock"
@@ -320,13 +315,11 @@
                             android:text="🔓 Unlock"
                             android:textAllCaps="false"
                             android:textSize="13sp"
-                            android:textColor="#34D399"
-                            app:backgroundTint="#0D2E1F"
-                            app:strokeColor="#1A5C3A"
-                            app:strokeWidth="1dp"
+                            android:textColor="#137333"
+                            app:backgroundTint="#E6F4EA"
                             app:cornerRadius="10dp"
                             android:layout_marginStart="6dp"
-                            style="@style/Widget.Material3.Button.OutlinedButton"/>
+                            style="@style/Widget.Material3.Button.TonalButton"/>
 
                     </LinearLayout>
 
@@ -345,13 +338,11 @@
                             android:text="🏠 Launcher ON"
                             android:textAllCaps="false"
                             android:textSize="12sp"
-                            android:textColor="#FBBF24"
-                            app:backgroundTint="#2E2412"
-                            app:strokeColor="#5C4A1A"
-                            app:strokeWidth="1dp"
+                            android:textColor="#B06000"
+                            app:backgroundTint="#FEF7E0"
                             app:cornerRadius="10dp"
                             android:layout_marginEnd="6dp"
-                            style="@style/Widget.Material3.Button.OutlinedButton"/>
+                            style="@style/Widget.Material3.Button.TonalButton"/>
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnLauncherOff"
@@ -361,13 +352,11 @@
                             android:text="🏠 Launcher OFF"
                             android:textAllCaps="false"
                             android:textSize="12sp"
-                            android:textColor="#9CA3AF"
-                            app:backgroundTint="#1A1A1A"
-                            app:strokeColor="#2A2A2A"
-                            app:strokeWidth="1dp"
+                            android:textColor="#5F6368"
+                            app:backgroundTint="#F1F3F4"
                             app:cornerRadius="10dp"
                             android:layout_marginStart="6dp"
-                            style="@style/Widget.Material3.Button.OutlinedButton"/>
+                            style="@style/Widget.Material3.Button.TonalButton"/>
 
                     </LinearLayout>
 
@@ -379,13 +368,11 @@
                         android:text="📱 Manage Apps"
                         android:textAllCaps="false"
                         android:textSize="13sp"
-                        android:textColor="#818CF8"
-                        app:backgroundTint="#12203B"
-                        app:strokeColor="#1A2E5C"
-                        app:strokeWidth="1dp"
+                        android:textColor="#1A73E8"
+                        app:backgroundTint="#E8F0FE"
                         app:cornerRadius="10dp"
                         android:layout_marginBottom="8dp"
-                        style="@style/Widget.Material3.Button.OutlinedButton"/>
+                        style="@style/Widget.Material3.Button.TonalButton"/>
 
                     <!-- Temp Access / Set PIN -->
                     <LinearLayout
@@ -402,13 +389,11 @@
                             android:text="⏱ Temp Access"
                             android:textAllCaps="false"
                             android:textSize="12sp"
-                            android:textColor="#34D399"
-                            app:backgroundTint="#0D2E1F"
-                            app:strokeColor="#1A5C3A"
-                            app:strokeWidth="1dp"
+                            android:textColor="#137333"
+                            app:backgroundTint="#E6F4EA"
                             app:cornerRadius="10dp"
                             android:layout_marginEnd="6dp"
-                            style="@style/Widget.Material3.Button.OutlinedButton"/>
+                            style="@style/Widget.Material3.Button.TonalButton"/>
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnSetPin"
@@ -418,13 +403,11 @@
                             android:text="🔑 Set PIN"
                             android:textAllCaps="false"
                             android:textSize="12sp"
-                            android:textColor="#818CF8"
-                            app:backgroundTint="#12203B"
-                            app:strokeColor="#1A2E5C"
-                            app:strokeWidth="1dp"
+                            android:textColor="#1A73E8"
+                            app:backgroundTint="#E8F0FE"
                             app:cornerRadius="10dp"
                             android:layout_marginStart="6dp"
-                            style="@style/Widget.Material3.Button.OutlinedButton"/>
+                            style="@style/Widget.Material3.Button.TonalButton"/>
 
                     </LinearLayout>
 
@@ -436,12 +419,10 @@
                         android:text="Unpair Device"
                         android:textAllCaps="false"
                         android:textSize="13sp"
-                        android:textColor="#6B7280"
-                        app:backgroundTint="#1A1A1A"
-                        app:strokeColor="#2A2A2A"
-                        app:strokeWidth="1dp"
+                        android:textColor="#80868B"
+                        app:backgroundTint="#F1F3F4"
                         app:cornerRadius="10dp"
-                        style="@style/Widget.Material3.Button.OutlinedButton"/>
+                        style="@style/Widget.Material3.Button.TonalButton"/>
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
