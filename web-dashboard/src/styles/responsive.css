@@ -1,0 +1,95 @@
+/* ── Responsive overrides ── */
+
+/* Mobile: ≤ 768px */
+@media (max-width: 768px) {
+
+  /* Dashboard shell — stack vertically */
+  div[data-shell] {
+    flex-direction: column !important;
+  }
+
+  /* Sidebar becomes a bottom nav bar */
+  aside[data-sidebar] {
+    width: 100% !important;
+    height: 56px !important;
+    flex-direction: row !important;
+    border-right: none !important;
+    border-top: 1px solid var(--border-primary) !important;
+    order: 2;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+  }
+
+  /* Main content takes full height */
+  main[data-main] {
+    flex: 1 !important;
+    order: 1;
+    overflow: hidden !important;
+  }
+
+  /* Overview grid: 2 columns on mobile */
+  div[data-overview-grid] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Map and controls cards: full width */
+  div[data-overview-map],
+  div[data-controls-card] {
+    grid-column: 1 / -1 !important;
+  }
+
+  /* Login card: full width with padding */
+  div[data-login-card] {
+    width: calc(100vw - 32px) !important;
+    max-width: 400px !important;
+    padding: 24px 20px !important;
+  }
+
+  /* Pairing row: stack vertically */
+  div[data-pairing-row] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Device row: wrap on small screens */
+  div[data-device-row] {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  div[data-device-stats] {
+    flex-wrap: wrap !important;
+  }
+
+  /* App table: horizontal scroll */
+  div[data-app-table] {
+    overflow-x: auto !important;
+  }
+
+  /* Topbar: smaller */
+  header[data-topbar] {
+    padding: 0 12px !important;
+    height: 48px !important;
+  }
+
+  /* Content padding: smaller */
+  div[data-content] {
+    padding: 12px !important;
+  }
+
+  /* Stat chips: hide some on very small */
+  span[data-stat-chip]:nth-child(n+4) {
+    display: none !important;
+  }
+}
+
+/* Tablet: 769px – 1024px */
+@media (min-width: 769px) and (max-width: 1024px) {
+  div[data-overview-grid] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  div[data-overview-map],
+  div[data-controls-card] {
+    grid-column: 1 / -1 !important;
+  }
+}
