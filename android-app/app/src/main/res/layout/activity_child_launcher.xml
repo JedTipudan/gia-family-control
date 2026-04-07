@@ -12,7 +12,7 @@
         android:orientation="vertical"
         android:gravity="center"
         android:paddingTop="52dp"
-        android:paddingBottom="16dp"
+        android:paddingBottom="12dp"
         android:layout_alignParentTop="true">
 
         <TextClock
@@ -35,6 +35,37 @@
             android:textColor="#77FFFFFF"
             android:letterSpacing="0.05"
             android:layout_marginTop="4dp"/>
+
+    </LinearLayout>
+
+    <!-- Search bar -->
+    <LinearLayout
+        android:id="@+id/layoutSearch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_below="@id/layoutClock"
+        android:marginHorizontal="20dp"
+        android:paddingHorizontal="20dp"
+        android:paddingBottom="8dp">
+
+        <EditText
+            android:id="@+id/etSearch"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:hint="Search apps…"
+            android:textColorHint="#55FFFFFF"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:background="@drawable/search_bar_bg"
+            android:paddingHorizontal="16dp"
+            android:inputType="text"
+            android:imeOptions="actionSearch"
+            android:singleLine="true"
+            android:drawableStart="@android:drawable/ic_menu_search"
+            android:drawableTint="#77FFFFFF"
+            android:drawablePadding="8dp"/>
 
     </LinearLayout>
 
@@ -71,7 +102,7 @@
         android:id="@+id/rvLauncherApps"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/layoutClock"
+        android:layout_below="@id/layoutSearch"
         android:layout_above="@id/bottomDock"
         android:paddingHorizontal="8dp"
         android:paddingBottom="4dp"

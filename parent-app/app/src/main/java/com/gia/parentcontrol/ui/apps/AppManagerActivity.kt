@@ -77,14 +77,24 @@ class AppManagerActivity : AppCompatActivity() {
                 ))
                 if (resp.isSuccessful) {
                     app.isBlocked = block
+                    // Send FCM command to child
+                    api.sendCommand(SendCommandRequest(
+                        targetDeviceId = childDeviceId,
+                        commandType = if (block) "BLOCK_APP" else "UNBLOCK_APP",
+                        packageName = app.packageName
+                    ))
                     binding.rvApps.adapter?.notifyDataSetChanged()
                     Toast.makeText(this@AppManagerActivity,
-                        if (block) "🚫 ${app.appName} blocked" else "✅ ${app.appName} allowed",
+                        if (block) "🚫 ${app.appName} blocked" else "✅ ${app.appName} unblocked",
                         Toast.LENGTH_SHORT).show()
                 } else {
                     binding.rvApps.adapter?.notifyDataSetChanged()
+                    Toast.makeText(this@AppManagerActivity, "Failed: ${resp.message()}", Toast.LENGTH_SHORT).show()
                 }
-            } catch (_: Exception) { binding.rvApps.adapter?.notifyDataSetChanged() }
+            } catch (e: Exception) {
+                binding.rvApps.adapter?.notifyDataSetChanged()
+                Toast.makeText(this@AppManagerActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 

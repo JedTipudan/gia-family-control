@@ -109,9 +109,11 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun loadChildDevice() {
+        if (!::binding.isInitialized || isFinishing || isDestroyed) return
         lifecycleScope.launch {
             try {
                 val response = api.getChildDevices()
+                if (!::binding.isInitialized) return@launch
                 if (response.isSuccessful) {
                     val device = response.body()?.firstOrNull()
                     if (device != null) {
@@ -132,11 +134,11 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback {
                     profileResp.body()?.pairCode?.let { code ->
                         getSharedPreferences("parent_prefs", MODE_PRIVATE)
                             .edit().putString("pair_code", code).apply()
-                        binding.tvPairCode.text = "Pair Code: $code"
+                        if (::binding.isInitialized) binding.tvPairCode.text = "Pair Code: $code"
                     }
                 }
             } catch (e: Exception) {
-                binding.tvChildStatus.text = "Connection error"
+                if (::binding.isInitialized) binding.tvChildStatus.text = "Connection error"
             }
         }
     }
@@ -293,8 +295,11 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun grantTempAccess(minutes: Int) {
         lifecycleScope.launch {
             try {
-                api.sendCommand(SendCommandRequest(childDeviceId, "GRANT_TEMP_ACCESS", minutes.toString()))
-                val label = if (minutes < 60) "$minutes minutes" else "${minutes / 60}h ${minutes % 60}m".trimEnd('m').trimEnd(' ')
+                api.sendCommand(SendCommandRequest(
+                    targetDeviceId = childDeviceId,
+                    commandType = "GRANT_TEMP_ACCESS",
+                    metadata = minutes.toString()
+                ))
                 Toast.makeText(this@ParentDashboardActivity, "✅ Access granted: $minutes min", Toast.LENGTH_SHORT).show()
             } catch (_: Exception) {
                 Toast.makeText(this@ParentDashboardActivity, "Failed to grant access", Toast.LENGTH_SHORT).show()
@@ -320,7 +325,13 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback {
                     SecureAuthManager.setPin(this, pin)
                     if (childDeviceId != -1L) {
                         lifecycleScope.launch {
-                            try { api.sendCommand(SendCommandRequest(childDeviceId, "SET_PIN", pin)) } catch (_: Exception) {}
+                            try {
+                                api.sendCommand(SendCommandRequest(
+                                    targetDeviceId = childDeviceId,
+                                    commandType = "SET_PIN",
+                                    metadata = pin
+                                ))
+                            } catch (_: Exception) {}
                         }
                     }
                     Toast.makeText(this, "✅ PIN set", Toast.LENGTH_SHORT).show()
