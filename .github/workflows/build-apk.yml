@@ -57,11 +57,12 @@ jobs:
           GRADLE_OPTS: "-Xmx3g -XX:MaxMetaspaceSize=512m"
         run: |
           chmod +x gradlew
-          ./gradlew assembleRelease --no-daemon --max-workers=2 --stacktrace 2>&1 | tail -100
+          ./gradlew assembleRelease --no-daemon --max-workers=2
 
       - name: Sign APK
         run: |
-          APK=$(find android-app/app/build/outputs/apk/release/ -name "*.apk" | grep -v GiaFamilyControl | head -1)
+          APK=$(find android-app/app/build/outputs/apk/release/ -name "*.apk" | head -1)
+          echo "Signing: $APK"
           $ANDROID_HOME/build-tools/34.0.0/apksigner sign \
             --ks android-app/app/gia-release.keystore \
             --ks-pass pass:${{ secrets.KEYSTORE_PASSWORD }} \
@@ -133,7 +134,8 @@ jobs:
 
       - name: Sign APK
         run: |
-          APK=$(find parent-app/app/build/outputs/apk/release/ -name "*.apk" | grep -v GiaParentControl | head -1)
+          APK=$(find parent-app/app/build/outputs/apk/release/ -name "*.apk" | head -1)
+          echo "Signing: $APK"
           $ANDROID_HOME/build-tools/34.0.0/apksigner sign \
             --ks parent-app/parent-app-release.jks \
             --ks-pass pass:${{ secrets.PARENT_STORE_PASSWORD }} \
