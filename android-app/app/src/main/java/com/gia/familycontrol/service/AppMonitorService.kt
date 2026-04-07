@@ -29,7 +29,6 @@ class AppMonitorService : LifecycleService() {
     private val gameKeywords = listOf("game", "play", "arcade", "puzzle", "racing", "action", "adventure")
     private var lastForegroundApp: String? = null
     private var consecutiveBlockCount = 0
-    private var tempWasActive = false
     private var tempWasActive = false  // track when temp access transitions from active -> expired
     
     private val refreshReceiver = object : BroadcastReceiver() {
