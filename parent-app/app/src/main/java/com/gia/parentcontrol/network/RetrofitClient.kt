@@ -1,6 +1,8 @@
 package com.gia.parentcontrol.network
 
 import android.content.Context
+import com.google.gson.GsonBuilder
+import com.google.gson.reflect.TypeToken
 import com.gia.parentcontrol.model.*
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -57,6 +59,31 @@ object RetrofitClient {
 
     private const val BASE_URL = "https://gia-family-control-production.up.railway.app/"
 
+    // Build Gson with explicit type adapters to avoid ParameterizedType cast errors
+    private val gson = GsonBuilder()
+        .registerTypeAdapter(
+            object : TypeToken<List<DeviceResponse>>() {}.type,
+            com.google.gson.JsonDeserializer { json, _, ctx ->
+                val arr = json.asJsonArray
+                arr.map { ctx.deserialize<DeviceResponse>(it, DeviceResponse::class.java) }
+            }
+        )
+        .registerTypeAdapter(
+            object : TypeToken<List<AppControlResponse>>() {}.type,
+            com.google.gson.JsonDeserializer { json, _, ctx ->
+                val arr = json.asJsonArray
+                arr.map { ctx.deserialize<AppControlResponse>(it, AppControlResponse::class.java) }
+            }
+        )
+        .registerTypeAdapter(
+            object : TypeToken<List<AppResponse>>() {}.type,
+            com.google.gson.JsonDeserializer { json, _, ctx ->
+                val arr = json.asJsonArray
+                arr.map { ctx.deserialize<AppResponse>(it, AppResponse::class.java) }
+            }
+        )
+        .create()
+
     fun create(context: Context): ApiService {
         val appContext = context.applicationContext
 
@@ -65,14 +92,18 @@ object RetrofitClient {
                 .getSharedPreferences("parent_prefs", Context.MODE_PRIVATE)
                 .getString("jwt_token_plain", null)
             val request = if (token != null)
-                chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                chain.request().newBuilder()
+                    .addHeader("Authorization", "Bearer $token")
+                    .build()
             else chain.request()
             chain.proceed(request)
         }
 
         val client = OkHttpClient.Builder()
             .addInterceptor(authInterceptor)
-            .addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BASIC })
+            .addInterceptor(HttpLoggingInterceptor().apply {
+                level = HttpLoggingInterceptor.Level.BASIC
+            })
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
@@ -81,7 +112,7 @@ object RetrofitClient {
         return Retrofit.Builder()
             .baseUrl(BASE_URL)
             .client(client)
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
             .create(ApiService::class.java)
     }
