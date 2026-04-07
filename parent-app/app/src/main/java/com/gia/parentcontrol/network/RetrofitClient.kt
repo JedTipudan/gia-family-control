@@ -2,6 +2,9 @@ package com.gia.parentcontrol.network
 
 import android.content.Context
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonDeserializationContext
+import com.google.gson.JsonDeserializer
+import com.google.gson.JsonElement
 import com.google.gson.reflect.TypeToken
 import com.gia.parentcontrol.model.*
 import okhttp3.Interceptor
@@ -11,6 +14,7 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.*
+import java.lang.reflect.Type
 import java.util.concurrent.TimeUnit
 
 interface ApiService {
@@ -59,27 +63,26 @@ object RetrofitClient {
 
     private const val BASE_URL = "https://gia-family-control-production.up.railway.app/"
 
-    // Build Gson with explicit type adapters to avoid ParameterizedType cast errors
     private val gson = GsonBuilder()
         .registerTypeAdapter(
             object : TypeToken<List<DeviceResponse>>() {}.type,
-            com.google.gson.JsonDeserializer { json, _, ctx ->
-                val arr = json.asJsonArray
-                arr.map { ctx.deserialize<DeviceResponse>(it, DeviceResponse::class.java) }
+            object : JsonDeserializer<List<DeviceResponse>> {
+                override fun deserialize(json: JsonElement, t: Type, ctx: JsonDeserializationContext) =
+                    json.asJsonArray.map { ctx.deserialize<DeviceResponse>(it, DeviceResponse::class.java) }
             }
         )
         .registerTypeAdapter(
             object : TypeToken<List<AppControlResponse>>() {}.type,
-            com.google.gson.JsonDeserializer { json, _, ctx ->
-                val arr = json.asJsonArray
-                arr.map { ctx.deserialize<AppControlResponse>(it, AppControlResponse::class.java) }
+            object : JsonDeserializer<List<AppControlResponse>> {
+                override fun deserialize(json: JsonElement, t: Type, ctx: JsonDeserializationContext) =
+                    json.asJsonArray.map { ctx.deserialize<AppControlResponse>(it, AppControlResponse::class.java) }
             }
         )
         .registerTypeAdapter(
             object : TypeToken<List<AppResponse>>() {}.type,
-            com.google.gson.JsonDeserializer { json, _, ctx ->
-                val arr = json.asJsonArray
-                arr.map { ctx.deserialize<AppResponse>(it, AppResponse::class.java) }
+            object : JsonDeserializer<List<AppResponse>> {
+                override fun deserialize(json: JsonElement, t: Type, ctx: JsonDeserializationContext) =
+                    json.asJsonArray.map { ctx.deserialize<AppResponse>(it, AppResponse::class.java) }
             }
         )
         .create()
