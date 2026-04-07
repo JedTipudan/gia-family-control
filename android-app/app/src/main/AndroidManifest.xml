@@ -61,7 +61,9 @@
         <activity android:name=".ui.parent.GeofenceActivity" android:exported="false"/>
 
         <!-- Child Activities -->
-        <activity android:name=".ui.child.ChildDashboardActivity" android:exported="false"/>
+        <activity android:name=".ui.child.ChildDashboardActivity"
+            android:exported="false"
+            android:configChanges="uiMode|orientation|screenSize"/>
         <activity android:name=".ui.child.QRScannerActivity" android:exported="false"
             android:screenOrientation="portrait"/>
         <activity android:name=".ui.child.DebugActivity" android:exported="false"/>

@@ -38,14 +38,19 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityParentDashboardBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
-        loadPrefs()
-        setupButtons()
-        setupMap()
-        registerFcmToken()
-        loadChildDevice()
+        try {
+            binding = ActivityParentDashboardBinding.inflate(layoutInflater)
+            setContentView(binding.root)
+            loadPrefs()
+            setupButtons()
+            setupMap()
+            registerFcmToken()
+            loadChildDevice()
+        } catch (e: Exception) {
+            android.util.Log.e("ParentDashboard", "onCreate crash", e)
+            // Show error toast and go back to login
+            android.widget.Toast.makeText(this, "Error: ${e.message}", android.widget.Toast.LENGTH_LONG).show()
+        }
     }
 
     private fun loadPrefs() {
@@ -80,14 +85,25 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun setupMap() {
-        val mapFragment = supportFragmentManager
-            .findFragmentById(com.gia.parentcontrol.R.id.map) as? SupportMapFragment
-        mapFragment?.getMapAsync(this)
+        try {
+            val mapFragment = SupportMapFragment.newInstance()
+            supportFragmentManager.beginTransaction()
+                .replace(com.gia.parentcontrol.R.id.map, mapFragment)
+                .commitAllowingStateLoss()
+            mapFragment.getMapAsync(this)
+        } catch (e: Exception) {
+            android.util.Log.e("ParentDashboard", "Map init failed", e)
+            // Map failed to load — app continues without map
+        }
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
-        map = googleMap
-        if (childDeviceId != -1L) startPolling()
+        try {
+            map = googleMap
+            if (childDeviceId != -1L) startPolling()
+        } catch (e: Exception) {
+            android.util.Log.e("ParentDashboard", "onMapReady crash", e)
+        }
     }
 
     override fun onResume() {

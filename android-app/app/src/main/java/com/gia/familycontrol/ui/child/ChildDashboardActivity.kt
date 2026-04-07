@@ -15,7 +15,6 @@ import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
@@ -74,18 +73,12 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
 
     private fun setupNavigationDrawer() {
         binding.navigationView.setNavigationItemSelectedListener(this)
-        
         val toggle = ActionBarDrawerToggle(
             this, binding.drawerLayout, binding.toolbar,
             R.string.navigation_drawer_open, R.string.navigation_drawer_close
         )
         binding.drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
-
-        // Load dark mode preference
-        val prefs = getSharedPreferences("gia_prefs", MODE_PRIVATE)
-        val isDarkMode = prefs.getBoolean("dark_mode", false)
-        binding.navigationView.menu.findItem(R.id.nav_dark_mode).isChecked = isDarkMode
     }
 
     private fun loadUserData() {
@@ -567,9 +560,6 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
             R.id.nav_debug -> {
                 startActivity(Intent(this, DebugActivity::class.java))
             }
-            R.id.nav_dark_mode -> {
-                toggleDarkMode(item)
-            }
             R.id.nav_permissions -> {
                 requestPermissionsIfNeeded()
             }
@@ -579,21 +569,6 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
         }
         binding.drawerLayout.closeDrawer(GravityCompat.START)
         return true
-    }
-
-    private fun toggleDarkMode(item: MenuItem) {
-        val prefs = getSharedPreferences("gia_prefs", MODE_PRIVATE)
-        val currentMode = prefs.getBoolean("dark_mode", false)
-        val newMode = !currentMode
-        
-        prefs.edit().putBoolean("dark_mode", newMode).apply()
-        item.isChecked = newMode
-        
-        if (newMode) {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-        } else {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-        }
     }
 
     private fun logout() {
