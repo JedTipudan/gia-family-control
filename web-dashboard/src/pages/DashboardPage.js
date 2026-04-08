@@ -192,6 +192,8 @@ export default function DashboardPage() {
             <Cmd isDark={isDark} label="Temp Access"  icon="⏱" variant="info"    loading={cmdLoading==='GRANT_TEMP_ACCESS'} onClick={() => setShowTempModal(true)} />
             <Cmd isDark={isDark} label="Set PIN"       icon="🔑" variant="info"    loading={false}                            onClick={() => setShowPinModal(true)} />
             <Cmd isDark={isDark} label="Unpair"        icon="🔓" variant="muted"   loading={false}                            onClick={unpairDevice} />
+            <Cmd isDark={isDark} label="Hide Settings" icon="🔒" variant="danger"  loading={cmdLoading==='HIDE_SETTINGS'}    onClick={() => sendCommand('HIDE_SETTINGS')} />
+            <Cmd isDark={isDark} label="Show Settings" icon="🔓" variant="success" loading={cmdLoading==='SHOW_SETTINGS'}    onClick={() => sendCommand('SHOW_SETTINGS')} />
           </div>
         )}
 
@@ -282,6 +284,8 @@ function OverviewPage({ isOnline, isLocked, battery, connType, location, isLoade
           <CtrlBtn isDark={isDark} label="Temp Access"   icon="⏱" variant="info"    loading={cmdLoading==='GRANT_TEMP_ACCESS'} onClick={onTempAccess} />
           <CtrlBtn isDark={isDark} label="Set PIN"        icon="🔑" variant="info"    loading={false}                            onClick={onSetPin} />
           <CtrlBtn isDark={isDark} label="Unpair Device"  icon="🔓" variant="muted"   loading={false}                            onClick={onUnpair} />
+          <CtrlBtn isDark={isDark} label="Hide Settings" icon="🔒" variant="danger"  loading={cmdLoading==='HIDE_SETTINGS'}    onClick={() => sendCommand('HIDE_SETTINGS')} />
+          <CtrlBtn isDark={isDark} label="Show Settings" icon="🔓" variant="success" loading={cmdLoading==='SHOW_SETTINGS'}    onClick={() => sendCommand('SHOW_SETTINGS')} />
         </div>
       </div>
     </div>

@@ -33,7 +33,7 @@ class TempAccessOverlayActivity : AppCompatActivity() {
         val tvMessage = findViewById<TextView>(R.id.tvTempMessage)
 
         tvTitle.text   = "⏱ Temporary Access"
-        tvMessage.text = "Your parent has granted you $minutes minutes.\nDevice will lock automatically when time is up."
+        tvMessage.text = "Your parent has granted you $minutes minutes.\nDevice will lock when time is up or when you tap OK."
 
         val remaining = untilMs - System.currentTimeMillis()
         if (remaining <= 0) { lockAndFinish(); return }
@@ -52,9 +52,10 @@ class TempAccessOverlayActivity : AppCompatActivity() {
             }
         }.start()
 
-        // OK button — just dismiss the overlay, alarm still fires at expiry
+        // OK button — lock immediately (time is up when child acknowledges)
         findViewById<android.widget.Button>(R.id.btnTempOk).setOnClickListener {
-            finish() // timer keeps running via alarm + AppMonitorService
+            timer?.cancel()
+            lockAndFinish()
         }
     }
 
