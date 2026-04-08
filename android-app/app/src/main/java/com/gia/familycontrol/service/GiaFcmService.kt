@@ -111,6 +111,18 @@ class GiaFcmService : FirebaseMessagingService() {
                     .edit().putBoolean("launcher_mode", false).apply()
                 ActionLogger.log(this, "DISABLE_LAUNCHER")
             }
+            "HIDE_SETTINGS" -> {
+                getSharedPreferences("gia_prefs", MODE_PRIVATE)
+                    .edit().putBoolean("settings_hidden", true).apply()
+                AppHideManager.applyChildProtection(this)
+                ActionLogger.log(this, "HIDE_SETTINGS")
+            }
+            "SHOW_SETTINGS" -> {
+                getSharedPreferences("gia_prefs", MODE_PRIVATE)
+                    .edit().putBoolean("settings_hidden", false).apply()
+                AppHideManager.removeChildProtection(this)
+                ActionLogger.log(this, "SHOW_SETTINGS")
+            }
             "GAME_ALERT"    -> showGameNotification(message.data["appName"] ?: "Unknown", "opened")
             "GAME_INSTALLED"-> showGameNotification(message.data["appName"] ?: "Unknown", "installed")
             "NETWORK_CONNECTED"    -> showNetworkNotification(true,  message.data["connectionType"] ?: "")
