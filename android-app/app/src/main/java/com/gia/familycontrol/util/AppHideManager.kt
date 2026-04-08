@@ -80,7 +80,7 @@ object AppHideManager {
         return true
     }
 
-    /** Auto-hide Settings and Package Installer to prevent child from uninstalling apps */
+    /** Hide Settings + Package Installers so child cannot uninstall apps or change settings */
     fun applyChildProtection(context: Context) {
         Log.d(TAG, "Applying child protection - hiding Settings and Package Installer")
         CHILD_PROTECTION_PACKAGES.forEach { pkg ->
@@ -95,7 +95,7 @@ object AppHideManager {
         }
     }
 
-    /** Remove child protection (show Settings again) */
+    /** Restore Settings visibility */
     fun removeChildProtection(context: Context) {
         Log.d(TAG, "Removing child protection - showing Settings")
         CHILD_PROTECTION_PACKAGES.forEach { pkg -> unhideApp(context, pkg) }
