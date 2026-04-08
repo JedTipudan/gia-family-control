@@ -110,6 +110,10 @@
             android:launchMode="singleTask"
             android:theme="@style/Theme.GiaFamilyControl.Overlay"/>
 
+        <receiver
+            android:name=".ui.child.TempExpiredReceiver"
+            android:exported="false"/>
+
         <!-- Background Services -->
         <service
             android:name=".service.LocationTrackingService"
