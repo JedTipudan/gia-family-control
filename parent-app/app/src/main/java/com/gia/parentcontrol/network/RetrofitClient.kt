@@ -61,7 +61,7 @@ interface ApiService {
 
 object RetrofitClient {
 
-    private const val BASE_URL = "https://gia-family-control-production.up.railway.app/"
+    private const val BASE_URL = "https://gia-family-control-backend.onrender.com/"
 
     private val gson = GsonBuilder()
         .registerTypeAdapter(
