@@ -6,31 +6,35 @@ import android.content.Context
 import android.util.Log
 import com.gia.familycontrol.admin.GiaDeviceAdminReceiver
 
-/**
- * Manages app hiding via Device Owner API (setApplicationHidden).
- * Completely separate from the blocked-apps auto-exit system.
- * Hidden apps are invisible in the launcher; blocked apps use auto-exit.
- */
 object AppHideManager {
 
     private const val TAG = "AppHideManager"
     private const val PREFS = "gia_hidden_apps"
     private const val KEY_HIDDEN = "hidden"
 
-    // Apps that must NEVER be hidden — system-critical
+    // Apps that are TRULY critical and must never be hidden (would break the device)
     private val PROTECTED_PACKAGES = setOf(
         "com.android.launcher",
         "com.android.launcher2",
         "com.android.launcher3",
         "com.google.android.apps.nexuslauncher",
-        "com.sec.android.app.launcher",       // Samsung
-        "com.miui.home",                       // Xiaomi
-        "com.huawei.android.launcher",         // Huawei
-        "com.android.settings",
+        "com.sec.android.app.launcher",
+        "com.miui.home",
+        "com.huawei.android.launcher",
         "com.android.systemui",
-        "com.android.phone",
-        "com.android.dialer",
-        "com.google.android.dialer"
+        "com.android.phone"
+    )
+
+    // Apps automatically hidden from launcher when child protection is enabled
+    // These prevent the child from uninstalling apps or changing device settings
+    val CHILD_PROTECTION_PACKAGES = setOf(
+        "com.android.settings",                    // Android Settings
+        "com.android.packageinstaller",            // Package Installer
+        "com.google.android.packageinstaller",     // Google Package Installer
+        "com.miui.packageinstaller",               // Xiaomi Package Installer
+        "com.samsung.android.packageinstaller",    // Samsung Package Installer
+        "com.android.vending",                     // Play Store (optional)
+        "com.sec.android.app.samsungapps"          // Samsung Galaxy Store
     )
 
     fun isDeviceOwner(context: Context): Boolean {
@@ -38,41 +42,63 @@ object AppHideManager {
         return dpm.isDeviceOwnerApp(context.packageName)
     }
 
+    /** Hide a specific app from the launcher */
     fun hideApp(context: Context, packageName: String): Boolean {
         if (packageName in PROTECTED_PACKAGES) {
             Log.w(TAG, "Refused to hide protected package: $packageName")
             return false
         }
-        if (!isDeviceOwner(context)) {
-            Log.w(TAG, "Not device owner — cannot hide apps")
-            return false
+        // Always persist to prefs (launcher filters by prefs)
+        persistHidden(context, packageName, true)
+        // Also try Device Owner hide if available
+        if (isDeviceOwner(context)) {
+            try {
+                val dpm = context.getSystemService(DevicePolicyManager::class.java)
+                val admin = ComponentName(context, GiaDeviceAdminReceiver::class.java)
+                dpm.setApplicationHidden(admin, packageName, true)
+            } catch (e: Exception) {
+                Log.w(TAG, "Device Owner hide failed for $packageName: ${e.message}")
+            }
         }
-        return try {
-            val dpm = context.getSystemService(DevicePolicyManager::class.java)
-            val admin = ComponentName(context, GiaDeviceAdminReceiver::class.java)
-            val result = dpm.setApplicationHidden(admin, packageName, true)
-            if (result) persistHidden(context, packageName, true)
-            Log.d(TAG, "hideApp $packageName = $result")
-            result
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to hide $packageName", e)
-            false
+        Log.d(TAG, "hideApp $packageName")
+        return true
+    }
+
+    /** Unhide a specific app */
+    fun unhideApp(context: Context, packageName: String): Boolean {
+        persistHidden(context, packageName, false)
+        if (isDeviceOwner(context)) {
+            try {
+                val dpm = context.getSystemService(DevicePolicyManager::class.java)
+                val admin = ComponentName(context, GiaDeviceAdminReceiver::class.java)
+                dpm.setApplicationHidden(admin, packageName, false)
+            } catch (e: Exception) {
+                Log.w(TAG, "Device Owner unhide failed for $packageName: ${e.message}")
+            }
+        }
+        Log.d(TAG, "unhideApp $packageName")
+        return true
+    }
+
+    /** Auto-hide Settings and Package Installer to prevent child from uninstalling apps */
+    fun applyChildProtection(context: Context) {
+        Log.d(TAG, "Applying child protection - hiding Settings and Package Installer")
+        CHILD_PROTECTION_PACKAGES.forEach { pkg ->
+            // Only hide if the package is actually installed
+            try {
+                context.packageManager.getPackageInfo(pkg, 0)
+                hideApp(context, pkg)
+                Log.d(TAG, "Child protection: hidden $pkg")
+            } catch (_: Exception) {
+                // Package not installed on this device, skip
+            }
         }
     }
 
-    fun unhideApp(context: Context, packageName: String): Boolean {
-        if (!isDeviceOwner(context)) return false
-        return try {
-            val dpm = context.getSystemService(DevicePolicyManager::class.java)
-            val admin = ComponentName(context, GiaDeviceAdminReceiver::class.java)
-            val result = dpm.setApplicationHidden(admin, packageName, false)
-            if (result) persistHidden(context, packageName, false)
-            Log.d(TAG, "unhideApp $packageName = $result")
-            result
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to unhide $packageName", e)
-            false
-        }
+    /** Remove child protection (show Settings again) */
+    fun removeChildProtection(context: Context) {
+        Log.d(TAG, "Removing child protection - showing Settings")
+        CHILD_PROTECTION_PACKAGES.forEach { pkg -> unhideApp(context, pkg) }
     }
 
     fun isHidden(context: Context, packageName: String): Boolean =
@@ -82,9 +108,7 @@ object AppHideManager {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
             .getStringSet(KEY_HIDDEN, emptySet()) ?: emptySet()
 
-    /** Called on BOOT_COMPLETED to reapply hidden state (Device Owner persists it, but we sync). */
     fun reapplyOnBoot(context: Context) {
-        if (!isDeviceOwner(context)) return
         val hidden = getHiddenPackages(context)
         Log.d(TAG, "Reapplying ${hidden.size} hidden apps on boot")
         hidden.forEach { pkg -> hideApp(context, pkg) }
