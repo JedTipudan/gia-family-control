@@ -4,32 +4,46 @@ import { authApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 export default function LoginPage() {
+  const [tab, setTab]           = useState('login');
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
   const [error, setError]       = useState('');
+  const [success, setSuccess]   = useState('');
   const [loading, setLoading]   = useState(false);
   const { login } = useAuth();
   const navigate  = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const switchTab = (t) => { setTab(t); setError(''); setSuccess(''); };
+
+  const handleLogin = async (e) => {
     e.preventDefault();
-    setError('');
-    setLoading(true);
+    setError(''); setLoading(true);
     try {
       const { data } = await authApi.login(email, password);
       login(data);
       navigate('/dashboard');
     } catch {
       setError('Invalid email or password');
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
+  };
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setError(''); setLoading(true);
+    try {
+      await authApi.register({ fullName, email, password, role: 'PARENT' });
+      setSuccess('Account created! You can now sign in.');
+      setTab('login');
+    } catch (err) {
+      const d = err?.response?.data;
+      setError(typeof d === 'string' ? d : d?.message ?? 'Registration failed');
+    } finally { setLoading(false); }
   };
 
   return (
     <div style={s.page}>
       <div style={s.card}>
-        {/* Logo */}
         <div style={s.logoRow}>
           <div style={s.logoWrap}>
             <img src="/logo.jpg" alt="Gia" style={s.logo} />
@@ -37,47 +51,56 @@ export default function LoginPage() {
         </div>
 
         <h1 style={s.title}>Gia Family Control</h1>
-        <p style={s.sub}>Admin &amp; Parent Control Panel</p>
+        <p style={s.sub}>Parent Control Panel</p>
 
-        <form onSubmit={handleSubmit} style={s.form}>
-          <div style={s.field}>
-            <label style={s.label}>Email</label>
-            <input
-              style={s.input}
-              type="email"
-              placeholder="parent@example.com"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div style={s.field}>
-            <label style={s.label}>Password</label>
-            <input
-              style={s.input}
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              required
-            />
-          </div>
+        {/* Tabs */}
+        <div style={s.tabs}>
+          <button style={{ ...s.tabBtn, ...(tab === 'login' ? s.tabActive : {}) }} onClick={() => switchTab('login')}>Sign In</button>
+          <button style={{ ...s.tabBtn, ...(tab === 'register' ? s.tabActive : {}) }} onClick={() => switchTab('register')}>Create Account</button>
+        </div>
 
-          {error && (
-            <div style={s.errorBox}>
-              <span style={s.errorDot} />
-              {error}
+        {success && <div style={s.successBox}>{success}</div>}
+
+        {tab === 'login' ? (
+          <form onSubmit={handleLogin} style={s.form}>
+            <div style={s.field}>
+              <label style={s.label}>Email</label>
+              <input style={s.input} type="email" placeholder="parent@example.com"
+                value={email} onChange={e => setEmail(e.target.value)} required />
             </div>
-          )}
-
-          <button
-            style={{ ...s.btn, opacity: loading ? 0.6 : 1 }}
-            type="submit"
-            disabled={loading}
-          >
-            {loading ? 'Signing in…' : 'Sign in to Dashboard'}
-          </button>
-        </form>
+            <div style={s.field}>
+              <label style={s.label}>Password</label>
+              <input style={s.input} type="password" placeholder="••••••••"
+                value={password} onChange={e => setPassword(e.target.value)} required />
+            </div>
+            {error && <div style={s.errorBox}><span style={s.errorDot} />{error}</div>}
+            <button style={{ ...s.btn, opacity: loading ? 0.6 : 1 }} type="submit" disabled={loading}>
+              {loading ? 'Signing in…' : 'Sign in to Dashboard'}
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleRegister} style={s.form}>
+            <div style={s.field}>
+              <label style={s.label}>Full Name</label>
+              <input style={s.input} type="text" placeholder="Your name"
+                value={fullName} onChange={e => setFullName(e.target.value)} required />
+            </div>
+            <div style={s.field}>
+              <label style={s.label}>Email</label>
+              <input style={s.input} type="email" placeholder="parent@example.com"
+                value={email} onChange={e => setEmail(e.target.value)} required />
+            </div>
+            <div style={s.field}>
+              <label style={s.label}>Password</label>
+              <input style={s.input} type="password" placeholder="Min 6 characters"
+                value={password} onChange={e => setPassword(e.target.value)} required minLength={6} />
+            </div>
+            {error && <div style={s.errorBox}><span style={s.errorDot} />{error}</div>}
+            <button style={{ ...s.btn, opacity: loading ? 0.6 : 1 }} type="submit" disabled={loading}>
+              {loading ? 'Creating account…' : 'Create Parent Account'}
+            </button>
+          </form>
+        )}
 
         <p style={s.hint}>Parent accounts only. Child devices use the Android app.</p>
       </div>
@@ -127,4 +150,8 @@ const s = {
     transition: 'opacity 0.15s',
   },
   hint: { marginTop: 20, textAlign: 'center', fontSize: 12, color: 'var(--text-tertiary)', lineHeight: 1.5 },
+  tabs: { display: 'flex', gap: 4, marginBottom: 24, background: 'var(--bg-tertiary)', borderRadius: 10, padding: 4 },
+  tabBtn: { flex: 1, padding: '8px 0', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', background: 'none', color: 'var(--text-tertiary)', transition: 'all 0.15s' },
+  tabActive: { background: 'var(--bg-secondary)', color: 'var(--text-primary)', boxShadow: '0 1px 4px rgba(0,0,0,0.15)' },
+  successBox: { padding: '10px 14px', background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: 8, fontSize: 13, color: '#34d399', marginBottom: 8 },
 };
