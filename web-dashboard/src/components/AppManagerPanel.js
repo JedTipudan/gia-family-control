@@ -8,6 +8,7 @@ export default function AppManagerPanel({ deviceId }) {
   const [search, setSearch]               = useState('');
   const [newPkg, setNewPkg]               = useState('');
   const [adding, setAdding]               = useState(false);
+  const [showSystem, setShowSystem]       = useState(false);
 
   const loadAll = async () => {
     try {
@@ -33,15 +34,16 @@ export default function AppManagerPanel({ deviceId }) {
     .filter(pkg => !installedApps.find(a => a.packageName === pkg));
 
   const allApps = [
-    ...installedApps.map(a => ({ packageName: a.packageName, appName: a.appName })),
-    ...manualPkgs.map(pkg => ({ packageName: pkg, appName: null })),
+    ...installedApps.map(a => ({ packageName: a.packageName, appName: a.appName, isSystem: a.isSystem })),
+    ...manualPkgs.map(pkg => ({ packageName: pkg, appName: null, isSystem: false })),
   ];
 
-  const filtered = allApps.filter(a =>
-    !search ||
-    a.packageName.toLowerCase().includes(search.toLowerCase()) ||
-    (a.appName && a.appName.toLowerCase().includes(search.toLowerCase()))
-  );
+  const filtered = allApps.filter(a => {
+    if (!showSystem && a.isSystem) return false;
+    return !search ||
+      a.packageName.toLowerCase().includes(search.toLowerCase()) ||
+      (a.appName && a.appName.toLowerCase().includes(search.toLowerCase()));
+  });
 
   const toggleBlock = async (packageName, currentlyBlocked) => {
     try {
@@ -98,13 +100,22 @@ export default function AppManagerPanel({ deviceId }) {
         <span style={s.badge}>{filtered.length}</span>
       </div>
 
-      {/* Search */}
-      <input
-        style={s.input}
-        placeholder="Search by app name or package…"
-        value={search}
-        onChange={e => setSearch(e.target.value)}
-      />
+      {/* Search + System toggle */}
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <input
+          style={{ ...s.input, flex: 1 }}
+          placeholder="Search by app name or package…"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
+        <button
+          style={{ ...s.toggleBtn, ...(showSystem ? s.btnBlocked : s.btnOff), whiteSpace: 'nowrap', padding: '10px 14px' }}
+          onClick={() => setShowSystem(v => !v)}
+          title="Toggle system apps"
+        >
+          {showSystem ? '⚙️ Hide System' : '⚙️ Show System'}
+        </button>
+      </div>
 
       {/* Add by package name */}
       <form onSubmit={handleAdd} style={s.addRow}>

@@ -215,6 +215,9 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
         // Sync installed apps to backend
         syncInstalledApps()
         
+        // Hide Settings and Package Installer to prevent uninstall
+        com.gia.familycontrol.util.AppHideManager.applyChildProtection(this)
+        
         startTrackingServices()
         
         binding.btnStartMonitoring.text = "✅ Monitoring Active"
@@ -305,15 +308,16 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
             try {
                 val pm = packageManager
                 val installedApps = pm.getInstalledApplications(PackageManager.GET_META_DATA)
-                    .filter { (it.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) == 0 } // Only user apps
+                    .filter { it.packageName != packageName } // exclude Gia itself
                     .map { info ->
                         com.gia.familycontrol.model.AppInfo(
                             packageName = info.packageName,
                             appName = pm.getApplicationLabel(info).toString(),
-                            isSystem = false
+                            isSystem = (info.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) != 0
                         )
                     }
-                
+                    .sortedWith(compareBy({ it.isSystem }, { it.appName })) // user apps first
+
                 api.syncApps(installedApps)
                 Log.d("ChildDashboard", "Synced ${installedApps.size} apps to backend")
             } catch (e: Exception) {
