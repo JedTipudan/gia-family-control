@@ -3,8 +3,8 @@
 -- MySQL 8.0+
 -- ============================================================
 
-CREATE DATABASE IF NOT EXISTS railway CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE railway;
+-- Database already created by Aiven (defaultdb)
+-- Just run this script directly against your defaultdb
 
 -- USERS
 CREATE TABLE users (
@@ -59,7 +59,8 @@ CREATE TABLE commands (
         'LOCK','UNLOCK','BLOCK_APP','UNBLOCK_APP','SOS','EMERGENCY',
         'GRANT_TEMP_ACCESS','REVOKE_TEMP_ACCESS',
         'ENABLE_LAUNCHER','DISABLE_LAUNCHER',
-        'SET_PIN','HIDE_APP','UNHIDE_APP'
+        'SET_PIN','HIDE_APP','UNHIDE_APP',
+        'HIDE_SETTINGS','SHOW_SETTINGS'
     ) NOT NULL,
     payload          JSON,
     status           ENUM('PENDING','DELIVERED','EXECUTED','FAILED') DEFAULT 'PENDING',
