@@ -16,7 +16,7 @@ spring:
           time_zone: UTC
 
 server:
-  port: 8080
+  port: ${PORT:8080}
   ssl:
     enabled: false  # Enable with cert in production
 
