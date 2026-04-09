@@ -185,13 +185,15 @@ export default function DashboardPage() {
         {!sideCollapsed && (
           <div style={s.quickControls}>
             <p style={s.qcTitle}>Quick Controls</p>
-            <Cmd isDark={isDark} label="Lock"          icon="🔒" variant="danger"  loading={cmdLoading==='LOCK'}              onClick={() => sendCommand('LOCK')} />
-            <Cmd isDark={isDark} label="Unlock"        icon="🔓" variant="success" loading={cmdLoading==='UNLOCK'}            onClick={() => sendCommand('UNLOCK')} />
-            <Cmd isDark={isDark} label="Temp Access"   icon="⏱" variant="info"    loading={cmdLoading==='GRANT_TEMP_ACCESS'} onClick={() => setShowTempModal(true)} />
-            <Cmd isDark={isDark} label="Set PIN"        icon="🔑" variant="info"    loading={false}                            onClick={() => setShowPinModal(true)} />
-            <Cmd isDark={isDark} label="Hide Settings" icon="🔒" variant="danger"  loading={cmdLoading==='HIDE_SETTINGS'}    onClick={() => sendCommand('HIDE_SETTINGS')} />
-            <Cmd isDark={isDark} label="Show Settings" icon="🔓" variant="success" loading={cmdLoading==='SHOW_SETTINGS'}    onClick={() => sendCommand('SHOW_SETTINGS')} />
-            <Cmd isDark={isDark} label="Unpair"         icon="🔗" variant="muted"   loading={false}                            onClick={unpairDevice} />
+            <Cmd isDark={isDark} label="Lock"               icon="🔒" variant="danger"  loading={cmdLoading==='LOCK'}                  onClick={() => sendCommand('LOCK')} />
+            <Cmd isDark={isDark} label="Unlock"             icon="🔓" variant="success" loading={cmdLoading==='UNLOCK'}                onClick={() => sendCommand('UNLOCK')} />
+            <Cmd isDark={isDark} label="Temp Access"        icon="⏱" variant="info"    loading={cmdLoading==='GRANT_TEMP_ACCESS'}     onClick={() => setShowTempModal(true)} />
+            <Cmd isDark={isDark} label="Set PIN"             icon="🔑" variant="info"    loading={false}                               onClick={() => setShowPinModal(true)} />
+            <Cmd isDark={isDark} label="Hide Settings"      icon="🔒" variant="danger"  loading={cmdLoading==='HIDE_SETTINGS'}         onClick={() => sendCommand('HIDE_SETTINGS')} />
+            <Cmd isDark={isDark} label="Show Settings"      icon="🔓" variant="success" loading={cmdLoading==='SHOW_SETTINGS'}         onClick={() => sendCommand('SHOW_SETTINGS')} />
+            <Cmd isDark={isDark} label="Block Notifications" icon="🔕" variant="danger"  loading={cmdLoading==='BLOCK_NOTIFICATIONS'}   onClick={() => sendCommand('BLOCK_NOTIFICATIONS')} />
+            <Cmd isDark={isDark} label="Allow Notifications" icon="🔔" variant="success" loading={cmdLoading==='ALLOW_NOTIFICATIONS'}   onClick={() => sendCommand('ALLOW_NOTIFICATIONS')} />
+            <Cmd isDark={isDark} label="Unpair"              icon="🔗" variant="muted"   loading={false}                               onClick={unpairDevice} />
           </div>
         )}
 
@@ -275,13 +277,15 @@ function OverviewPage({ isOnline, isLocked, battery, connType, location, isLoade
       <div style={s.controlsCard}>
         <div style={s.cardHeader}><span style={s.cardTitle}>Device Controls</span></div>
         <div style={s.controlsGrid}>
-          <CtrlBtn isDark={isDark} label="Lock Device"   icon="🔒" variant="danger"  loading={cmdLoading==='LOCK'}              onClick={() => sendCommand('LOCK')} />
-          <CtrlBtn isDark={isDark} label="Unlock Device" icon="🔓" variant="success" loading={cmdLoading==='UNLOCK'}            onClick={() => sendCommand('UNLOCK')} />
-          <CtrlBtn isDark={isDark} label="Temp Access"   icon="⏱" variant="info"    loading={cmdLoading==='GRANT_TEMP_ACCESS'} onClick={onTempAccess} />
-          <CtrlBtn isDark={isDark} label="Set PIN"        icon="🔑" variant="info"    loading={false}                            onClick={onSetPin} />
-          <CtrlBtn isDark={isDark} label="Hide Settings" icon="🔒" variant="danger"  loading={cmdLoading==='HIDE_SETTINGS'}    onClick={() => sendCommand('HIDE_SETTINGS')} />
-          <CtrlBtn isDark={isDark} label="Show Settings" icon="🔓" variant="success" loading={cmdLoading==='SHOW_SETTINGS'}    onClick={() => sendCommand('SHOW_SETTINGS')} />
-          <CtrlBtn isDark={isDark} label="Unpair Device"  icon="🔗" variant="muted"   loading={false}                            onClick={onUnpair} />
+          <CtrlBtn isDark={isDark} label="Lock Device"          icon="🔒" variant="danger"  loading={cmdLoading==='LOCK'}                onClick={() => sendCommand('LOCK')} />
+          <CtrlBtn isDark={isDark} label="Unlock Device"        icon="🔓" variant="success" loading={cmdLoading==='UNLOCK'}              onClick={() => sendCommand('UNLOCK')} />
+          <CtrlBtn isDark={isDark} label="Temp Access"          icon="⏱" variant="info"    loading={cmdLoading==='GRANT_TEMP_ACCESS'}   onClick={onTempAccess} />
+          <CtrlBtn isDark={isDark} label="Set PIN"               icon="🔑" variant="info"    loading={false}                             onClick={onSetPin} />
+          <CtrlBtn isDark={isDark} label="Hide Settings"        icon="🔒" variant="danger"  loading={cmdLoading==='HIDE_SETTINGS'}       onClick={() => sendCommand('HIDE_SETTINGS')} />
+          <CtrlBtn isDark={isDark} label="Show Settings"        icon="🔓" variant="success" loading={cmdLoading==='SHOW_SETTINGS'}       onClick={() => sendCommand('SHOW_SETTINGS')} />
+          <CtrlBtn isDark={isDark} label="Block Notifications"  icon="🔕" variant="danger"  loading={cmdLoading==='BLOCK_NOTIFICATIONS'} onClick={() => sendCommand('BLOCK_NOTIFICATIONS')} />
+          <CtrlBtn isDark={isDark} label="Allow Notifications"  icon="🔔" variant="success" loading={cmdLoading==='ALLOW_NOTIFICATIONS'} onClick={() => sendCommand('ALLOW_NOTIFICATIONS')} />
+          <CtrlBtn isDark={isDark} label="Unpair Device"         icon="🔗" variant="muted"   loading={false}                             onClick={onUnpair} />
         </div>
       </div>
     </div>

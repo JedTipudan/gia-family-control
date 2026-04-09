@@ -40,37 +40,40 @@ class GiaAccessibilityService : AccessibilityService() {
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event == null) return
 
-        val settingsHidden = getSharedPreferences("gia_prefs", Context.MODE_PRIVATE)
-            .getBoolean("settings_hidden", false)
+        val prefs = getSharedPreferences("gia_prefs", Context.MODE_PRIVATE)
+        val settingsHidden = prefs.getBoolean("settings_hidden", false)
+        val notifBlocked   = prefs.getBoolean("notifications_blocked", false)
+        val pkg = event.packageName?.toString() ?: ""
+
+        // Block notification panel / quick settings pull-down (separate toggle)
+        if (notifBlocked || settingsHidden) {
+            if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED ||
+                event.eventType == AccessibilityEvent.TYPE_WINDOWS_CHANGED) {
+                val className = event.className?.toString() ?: ""
+                if (pkg == "com.android.systemui" ||
+                    className.contains("NotificationShade", ignoreCase = true) ||
+                    className.contains("QuickSettings", ignoreCase = true) ||
+                    className.contains("StatusBar", ignoreCase = true)) {
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                        performGlobalAction(GLOBAL_ACTION_DISMISS_NOTIFICATION_SHADE)
+                    } else {
+                        performGlobalAction(GLOBAL_ACTION_HOME)
+                    }
+                    return
+                }
+            }
+        }
 
         if (settingsHidden) {
             // Block Settings app from opening
-            val pkg = event.packageName?.toString() ?: ""
             if (pkg in BLOCKED_SYSTEM_PACKAGES) {
                 performGlobalAction(GLOBAL_ACTION_HOME)
                 return
             }
 
-            // Block notification panel / quick settings pull-down
-            if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED ||
-                event.eventType == AccessibilityEvent.TYPE_WINDOWS_CHANGED) {
-                val className = event.className?.toString() ?: ""
-                // Detect quick settings / notification shade
-                if (className.contains("StatusBar", ignoreCase = true) ||
-                    className.contains("NotificationShade", ignoreCase = true) ||
-                    className.contains("QuickSettings", ignoreCase = true) ||
-                    pkg == "com.android.systemui") {
-                    // Collapse notification panel immediately
-                    performGlobalAction(GLOBAL_ACTION_HOME)
-                    return
-                }
-            }
-
             // Block long press on launcher (prevents uninstall context menu)
             if (event.eventType == AccessibilityEvent.TYPE_VIEW_LONG_CLICKED) {
-                val className = event.className?.toString() ?: ""
-                if (className.contains("Launcher", ignoreCase = true) ||
-                    pkg.contains("launcher", ignoreCase = true) ||
+                if (pkg.contains("launcher", ignoreCase = true) ||
                     pkg == "com.google.android.apps.nexuslauncher" ||
                     pkg == "com.sec.android.app.launcher" ||
                     pkg == "com.miui.home") {

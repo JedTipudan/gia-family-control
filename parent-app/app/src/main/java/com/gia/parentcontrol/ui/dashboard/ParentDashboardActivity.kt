@@ -97,6 +97,24 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback {
                 } catch (_: Exception) { Toast.makeText(this@ParentDashboardActivity, "Failed", Toast.LENGTH_SHORT).show() }
             }
         }
+        binding.btnBlockNotifications.setOnClickListener {
+            if (childDeviceId == -1L) { Toast.makeText(this, "No child device paired", Toast.LENGTH_SHORT).show(); return@setOnClickListener }
+            lifecycleScope.launch {
+                try {
+                    api.sendCommand(SendCommandRequest(childDeviceId, "BLOCK_NOTIFICATIONS"))
+                    Toast.makeText(this@ParentDashboardActivity, "🔕 Notifications blocked", Toast.LENGTH_SHORT).show()
+                } catch (_: Exception) { Toast.makeText(this@ParentDashboardActivity, "Failed", Toast.LENGTH_SHORT).show() }
+            }
+        }
+        binding.btnAllowNotifications.setOnClickListener {
+            if (childDeviceId == -1L) { Toast.makeText(this, "No child device paired", Toast.LENGTH_SHORT).show(); return@setOnClickListener }
+            lifecycleScope.launch {
+                try {
+                    api.sendCommand(SendCommandRequest(childDeviceId, "ALLOW_NOTIFICATIONS"))
+                    Toast.makeText(this@ParentDashboardActivity, "🔔 Notifications allowed", Toast.LENGTH_SHORT).show()
+                } catch (_: Exception) { Toast.makeText(this@ParentDashboardActivity, "Failed", Toast.LENGTH_SHORT).show() }
+            }
+        }
     }
 
     private fun setupMap() {
