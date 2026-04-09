@@ -28,13 +28,15 @@ object AppHideManager {
     // Apps automatically hidden from launcher when child protection is enabled
     // These prevent the child from uninstalling apps or changing device settings
     val CHILD_PROTECTION_PACKAGES = setOf(
-        "com.android.settings",                    // Android Settings
-        "com.android.packageinstaller",            // Package Installer
-        "com.google.android.packageinstaller",     // Google Package Installer
-        "com.miui.packageinstaller",               // Xiaomi Package Installer
-        "com.samsung.android.packageinstaller",    // Samsung Package Installer
-        "com.android.vending",                     // Play Store (optional)
-        "com.sec.android.app.samsungapps"          // Samsung Galaxy Store
+        "com.android.settings",
+        "com.samsung.android.settings",
+        "com.miui.securitycenter",
+        "com.android.packageinstaller",
+        "com.google.android.packageinstaller",
+        "com.miui.packageinstaller",
+        "com.samsung.android.packageinstaller",
+        "com.android.vending",
+        "com.sec.android.app.samsungapps"
     )
 
     fun isDeviceOwner(context: Context): Boolean {

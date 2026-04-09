@@ -112,15 +112,25 @@ class GiaFcmService : FirebaseMessagingService() {
                 ActionLogger.log(this, "DISABLE_LAUNCHER")
             }
             "HIDE_SETTINGS" -> {
+                // Block settings packages exactly like blocked apps
+                val prefs = getSharedPreferences("gia_blocked_apps", MODE_PRIVATE)
+                val blocked = prefs.getStringSet("blocked", mutableSetOf())!!.toMutableSet()
+                blocked.addAll(AppHideManager.CHILD_PROTECTION_PACKAGES)
+                prefs.edit().putStringSet("blocked", blocked).apply()
                 getSharedPreferences("gia_prefs", MODE_PRIVATE)
                     .edit().putBoolean("settings_hidden", true).apply()
-                AppHideManager.applyChildProtection(this)
+                sendBroadcast(Intent("com.gia.familycontrol.REFRESH_BLOCKED_APPS"))
                 ActionLogger.log(this, "HIDE_SETTINGS")
             }
             "SHOW_SETTINGS" -> {
+                // Remove settings packages from blocked list
+                val prefs = getSharedPreferences("gia_blocked_apps", MODE_PRIVATE)
+                val blocked = prefs.getStringSet("blocked", mutableSetOf())!!.toMutableSet()
+                blocked.removeAll(AppHideManager.CHILD_PROTECTION_PACKAGES)
+                prefs.edit().putStringSet("blocked", blocked).apply()
                 getSharedPreferences("gia_prefs", MODE_PRIVATE)
                     .edit().putBoolean("settings_hidden", false).apply()
-                AppHideManager.removeChildProtection(this)
+                sendBroadcast(Intent("com.gia.familycontrol.REFRESH_BLOCKED_APPS"))
                 ActionLogger.log(this, "SHOW_SETTINGS")
             }
             "GAME_ALERT"    -> showGameNotification(message.data["appName"] ?: "Unknown", "opened")
