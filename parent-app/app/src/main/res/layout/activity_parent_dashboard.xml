@@ -322,43 +322,6 @@
 
                     </LinearLayout>
 
-                    <!-- Launcher ON / OFF -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginBottom="8dp">
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnLauncherOn"
-                            android:layout_width="0dp"
-                            android:layout_height="46dp"
-                            android:layout_weight="1"
-                            android:text="🏠 Launcher ON"
-                            android:textAllCaps="false"
-                            android:textSize="12sp"
-                            android:textColor="#B06000"
-                            app:backgroundTint="#FEF7E0"
-                            app:cornerRadius="10dp"
-                            android:layout_marginEnd="6dp"
-                            style="@style/Widget.Material3.Button.TonalButton"/>
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnLauncherOff"
-                            android:layout_width="0dp"
-                            android:layout_height="46dp"
-                            android:layout_weight="1"
-                            android:text="🏠 Launcher OFF"
-                            android:textAllCaps="false"
-                            android:textSize="12sp"
-                            android:textColor="#5F6368"
-                            app:backgroundTint="#F1F3F4"
-                            app:cornerRadius="10dp"
-                            android:layout_marginStart="6dp"
-                            style="@style/Widget.Material3.Button.TonalButton"/>
-
-                    </LinearLayout>
-
                     <!-- Manage Apps -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnManageApps"

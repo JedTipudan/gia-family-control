@@ -71,16 +71,31 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback {
         binding.btnShowQr.setOnClickListener {
             startActivity(Intent(this, QRCodeActivity::class.java))
         }
-        binding.btnLauncherOn.setOnClickListener { sendCommand("ENABLE_LAUNCHER") }
-        binding.btnLauncherOff.setOnClickListener { sendCommand("DISABLE_LAUNCHER") }
         binding.btnTempAccess.setOnClickListener { showTempAccessDialog() }
         binding.btnSetPin.setOnClickListener { showSetPinDialog() }
         binding.btnUnpair.setOnClickListener { confirmUnpair() }
         binding.btnLogout.setOnClickListener { logout() }
         binding.btnRefresh.setOnClickListener { loadChildDevice() }
-        // Pairing banner button
         binding.btnShowQrBanner.setOnClickListener {
             startActivity(Intent(this, QRCodeActivity::class.java))
+        }
+        binding.btnHideSettings.setOnClickListener {
+            if (childDeviceId == -1L) { Toast.makeText(this, "No child device paired", Toast.LENGTH_SHORT).show(); return@setOnClickListener }
+            lifecycleScope.launch {
+                try {
+                    api.sendCommand(SendCommandRequest(childDeviceId, "HIDE_SETTINGS"))
+                    Toast.makeText(this@ParentDashboardActivity, "✅ Settings hidden from child", Toast.LENGTH_SHORT).show()
+                } catch (_: Exception) { Toast.makeText(this@ParentDashboardActivity, "Failed", Toast.LENGTH_SHORT).show() }
+            }
+        }
+        binding.btnShowSettings.setOnClickListener {
+            if (childDeviceId == -1L) { Toast.makeText(this, "No child device paired", Toast.LENGTH_SHORT).show(); return@setOnClickListener }
+            lifecycleScope.launch {
+                try {
+                    api.sendCommand(SendCommandRequest(childDeviceId, "SHOW_SETTINGS"))
+                    Toast.makeText(this@ParentDashboardActivity, "✅ Settings visible on child", Toast.LENGTH_SHORT).show()
+                } catch (_: Exception) { Toast.makeText(this@ParentDashboardActivity, "Failed", Toast.LENGTH_SHORT).show() }
+            }
         }
     }
 
