@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.gia.familycontrol.databinding.ActivitySplashBinding
 import com.gia.familycontrol.ui.child.ChildLauncherActivity
+import com.gia.familycontrol.util.UpdateChecker
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -30,6 +31,8 @@ class SplashActivity : AppCompatActivity() {
             }
             startActivity(Intent(this@SplashActivity, dest))
             finish()
+            // Check for updates in background (versionCode from build.gradle)
+            UpdateChecker.check(this@SplashActivity, 2)
         }
     }
 }

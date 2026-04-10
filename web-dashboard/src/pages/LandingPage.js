@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const GITHUB_RELEASE = 'https://github.com/JedTipudan/gia-family-control/releases/latest';
+const GITHUB_API     = 'https://api.github.com/repos/JedTipudan/gia-family-control/releases/latest';
 const GCASH_NUMBER   = '0975-591-8109'; // Jed Tipudan
 
 const STEPS = [
@@ -49,6 +50,18 @@ const FEATURES = [
 export default function LandingPage() {
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
+  const [latestVersion, setLatestVersion] = useState(null);
+  const [releaseNotes, setReleaseNotes] = useState('');
+
+  useEffect(() => {
+    fetch(GITHUB_API)
+      .then(r => r.json())
+      .then(data => {
+        setLatestVersion(data.tag_name);
+        setReleaseNotes(data.body || '');
+      })
+      .catch(() => {});
+  }, []);
 
   const copyGcash = () => {
     navigator.clipboard.writeText(GCASH_NUMBER);
@@ -111,6 +124,12 @@ export default function LandingPage() {
       <section id="download" style={{ ...s.section, background: 'var(--bg-secondary)' }}>
         <h2 style={s.sectionTitle}>Download</h2>
         <p style={s.sectionSub}>Two apps — one for the parent, one for the child. Both are free.</p>
+        {latestVersion && (
+          <div style={s.versionBadge}>
+            🆕 Latest Version: <strong>{latestVersion}</strong>
+            {releaseNotes && <span style={s.releaseNotes}> — {releaseNotes.split('\n')[0]}</span>}
+          </div>
+        )}
         <div style={s.dlGrid}>
           <div style={s.dlCard}>
             <span style={s.dlIcon}>👨‍👩‍👧</span>
@@ -249,6 +268,8 @@ const s = {
   dlDesc:     { fontSize: 14, color: 'var(--text-secondary)', marginBottom: 24, lineHeight: 1.5 },
   dlBtn:      { display: 'inline-block', padding: '12px 24px', background: 'rgba(129,140,248,0.15)', color: '#818cf8', border: '1px solid rgba(129,140,248,0.3)', borderRadius: 10, fontSize: 15, fontWeight: 700, textDecoration: 'none' },
   dlNote:     { textAlign: 'center', fontSize: 13, color: 'var(--text-tertiary)', marginTop: 16 },
+  versionBadge: { textAlign: 'center', padding: '10px 20px', background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: 8, fontSize: 14, color: '#34d399', marginBottom: 24 },
+  releaseNotes: { color: 'var(--text-tertiary)', fontSize: 13 },
   stepsGrid:  { display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 700, margin: '0 auto 40px' },
   stepCard:   { display: 'flex', alignItems: 'flex-start', gap: 16, padding: 20, background: 'var(--bg-secondary)', border: '1px solid var(--border-primary)', borderRadius: 12 },
   stepNum:    { fontSize: 28, flexShrink: 0 },

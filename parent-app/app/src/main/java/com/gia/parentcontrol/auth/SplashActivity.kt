@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.gia.parentcontrol.ui.dashboard.ParentDashboardActivity
+import com.gia.parentcontrol.util.UpdateChecker
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -19,6 +20,8 @@ class SplashActivity : AppCompatActivity() {
                        else LoginActivity::class.java
             startActivity(Intent(this@SplashActivity, dest))
             finish()
+            // Check for updates (versionCode from build.gradle)
+            UpdateChecker.check(this@SplashActivity, 1)
         }
     }
 }
