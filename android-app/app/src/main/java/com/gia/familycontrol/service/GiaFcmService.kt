@@ -140,12 +140,30 @@ class GiaFcmService : FirebaseMessagingService() {
                 if (android.provider.Settings.canDrawOverlays(this)) {
                     StatusBarBlockerService.start(this)
                 }
+                // Also lock the device so child can't access WiFi/settings via lock screen
+                getSharedPreferences("gia_lock", MODE_PRIVATE)
+                    .edit().putBoolean("is_locked", true).apply()
+                try {
+                    val dpm = getSystemService(android.app.admin.DevicePolicyManager::class.java)
+                    val admin = android.content.ComponentName(this, com.gia.familycontrol.admin.GiaDeviceAdminReceiver::class.java)
+                    if (dpm.isAdminActive(admin)) dpm.lockNow()
+                } catch (_: Exception) {}
+                try {
+                    startActivity(Intent(this, LockScreenActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                                Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
+                    })
+                } catch (_: Exception) {}
                 ActionLogger.log(this, "BLOCK_NOTIFICATIONS")
             }
             "ALLOW_NOTIFICATIONS" -> {
                 getSharedPreferences("gia_prefs", MODE_PRIVATE)
                     .edit().putBoolean("notifications_blocked", false).apply()
                 StatusBarBlockerService.stop(this)
+                // Unlock device when notifications are allowed again
+                getSharedPreferences("gia_lock", MODE_PRIVATE)
+                    .edit().putBoolean("is_locked", false).apply()
+                LockScreenActivity.dismiss()
                 ActionLogger.log(this, "ALLOW_NOTIFICATIONS")
             }
             "GAME_ALERT"    -> showGameNotification(message.data["appName"] ?: "Unknown", "opened")

@@ -7,12 +7,14 @@
     android:background="#F8F9FA">
 
     <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:background="#1A73E8"
         app:title="Manage Apps"
         app:titleTextColor="#FFFFFF"
-        app:navigationIcon="@android:drawable/ic_menu_close_clear_cancel"/>
+        app:navigationIcon="@android:drawable/ic_menu_close_clear_cancel"
+        app:navigationIconTint="#FFFFFF"/>
 
     <!-- Search + System toggle row -->
     <LinearLayout

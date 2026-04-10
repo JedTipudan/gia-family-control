@@ -31,6 +31,9 @@ class AppManagerActivity : AppCompatActivity() {
             finish(); return
         }
 
+        // Wire X button to just close this screen
+        binding.toolbar.setNavigationOnClickListener { finish() }
+
         binding.btnToggleSystem.setOnClickListener {
             showSystem = !showSystem
             binding.btnToggleSystem.text = if (showSystem) "System: ON" else "System: OFF"
@@ -47,6 +50,16 @@ class AppManagerActivity : AppCompatActivity() {
         })
 
         loadApps()
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        finish()
+        return true
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+        finish()
     }
 
     private fun applyFilter() {
