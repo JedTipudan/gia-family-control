@@ -31,7 +31,6 @@
             android:hint="Search apps..."
             android:textSize="13sp"
             android:paddingHorizontal="10dp"
-            android:background="@drawable/search_bar_bg"
             android:inputType="text"
             android:imeOptions="actionSearch"
             android:singleLine="true"
