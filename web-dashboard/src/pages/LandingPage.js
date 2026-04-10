@@ -7,7 +7,7 @@ const DOWNLOAD_PARENT = 'https://github.com/JedTipudan/gia-family-control/releas
 const DOWNLOAD_CHILD  = 'https://github.com/JedTipudan/gia-family-control/releases/latest/download/GiaFamilyControl-Child.apk';
 const GCASH_NUMBER    = '0975-591-8109';
 const FB_GROUP        = 'https://www.facebook.com/groups/2466290300469414';
-const INSTALL_VIDEO   = 'https://web.facebook.com/groups/2466290300469414/permalink/2466337697131341/';
+const INSTALL_VIDEO   = 'https://www.youtube.com/watch?v=I-hzPOM08f4';
 
 const STEPS = [
   { num:'1', icon:'📥', title:'Download the Apps',       desc:'Download the Parent APK on your phone and the Child APK on your child\'s phone.' },
@@ -186,6 +186,20 @@ export default function LandingPage() {
       <section id="setup" style={{ ...r.section, padding: isMobile ? '48px 20px' : '80px 40px' }}>
         <h2 style={r.sectionTitle}>Setup Guide</h2>
         <p style={r.sectionSub}>Follow these steps to get started in under 10 minutes.</p>
+
+        {/* Video Tutorial */}
+        <div style={{ maxWidth:700, margin:'0 auto 40px', borderRadius:14, overflow:'hidden', border:'1px solid var(--border-primary)' }}>
+          <div style={{ position:'relative', paddingBottom:'56.25%', height:0 }}>
+            <iframe
+              src="https://www.youtube.com/embed/I-hzPOM08f4"
+              title="Gia Family Control Installation Tutorial"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              style={{ position:'absolute', top:0, left:0, width:'100%', height:'100%' }}
+            />
+          </div>
+        </div>
         <div style={r.stepsGrid}>
           {STEPS.map(step => (
             <div key={step.num} style={r.stepCard}>
