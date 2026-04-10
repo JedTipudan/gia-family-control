@@ -8,6 +8,7 @@ import android.util.Log
 import com.gia.familycontrol.service.AppMonitorService
 import com.gia.familycontrol.service.LocationTrackingService
 import com.gia.familycontrol.service.LockMonitorService
+import com.gia.familycontrol.service.StatusBarBlockerService
 import com.gia.familycontrol.ui.child.LockScreenActivity
 import com.gia.familycontrol.util.AppHideManager
 
@@ -37,6 +38,12 @@ class BootReceiver : BroadcastReceiver() {
             Log.d("BootReceiver", "Starting services after boot...")
             // Reapply hidden apps via Device Owner
             AppHideManager.reapplyOnBoot(context)
+
+            // Reapply notification blocker if it was active
+            val notifBlocked = prefs.getBoolean("notifications_blocked", false)
+            if (notifBlocked && android.provider.Settings.canDrawOverlays(context)) {
+                StatusBarBlockerService.start(context)
+            }
             
             try {
                 val locationIntent = Intent(context, LocationTrackingService::class.java)

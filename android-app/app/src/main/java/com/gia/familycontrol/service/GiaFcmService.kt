@@ -57,6 +57,7 @@ class GiaFcmService : FirebaseMessagingService() {
                 prefs.edit().putStringSet("hidden", hidden).apply()
                 AppHideManager.hideApp(this, pkg)
                 ActionLogger.log(this, "HIDE_APP", pkg)
+                sendBroadcast(Intent("com.gia.familycontrol.REFRESH_LAUNCHER"))
             }
             "UNHIDE_APP" -> {
                 val pkg = message.data["packageName"] ?: return
@@ -66,6 +67,7 @@ class GiaFcmService : FirebaseMessagingService() {
                 prefs.edit().putStringSet("hidden", hidden).apply()
                 AppHideManager.unhideApp(this, pkg)
                 ActionLogger.log(this, "UNHIDE_APP", pkg)
+                sendBroadcast(Intent("com.gia.familycontrol.REFRESH_LAUNCHER"))
             }
             "GRANT_TEMP_ACCESS" -> {
                 val minutes = message.data["minutes"]?.toIntOrNull()
@@ -134,11 +136,16 @@ class GiaFcmService : FirebaseMessagingService() {
             "BLOCK_NOTIFICATIONS" -> {
                 getSharedPreferences("gia_prefs", MODE_PRIVATE)
                     .edit().putBoolean("notifications_blocked", true).apply()
+                // Start overlay that physically blocks status bar touch
+                if (android.provider.Settings.canDrawOverlays(this)) {
+                    StatusBarBlockerService.start(this)
+                }
                 ActionLogger.log(this, "BLOCK_NOTIFICATIONS")
             }
             "ALLOW_NOTIFICATIONS" -> {
                 getSharedPreferences("gia_prefs", MODE_PRIVATE)
                     .edit().putBoolean("notifications_blocked", false).apply()
+                StatusBarBlockerService.stop(this)
                 ActionLogger.log(this, "ALLOW_NOTIFICATIONS")
             }
             "GAME_ALERT"    -> showGameNotification(message.data["appName"] ?: "Unknown", "opened")

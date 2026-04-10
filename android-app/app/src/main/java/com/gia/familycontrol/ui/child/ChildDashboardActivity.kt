@@ -208,6 +208,13 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
             showAccessibilityPrompt()
             return
         }
+
+        // Request overlay permission for notification blocking
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M &&
+            !android.provider.Settings.canDrawOverlays(this)) {
+            showOverlayPermissionPrompt()
+            return
+        }
         
         binding.btnStartMonitoring.isEnabled = false
         binding.btnStartMonitoring.text = "Starting..."
@@ -278,6 +285,26 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
         return enabledServices?.contains(service) == true
     }
     
+    private fun showOverlayPermissionPrompt() {
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Allow Display Over Other Apps")
+            .setMessage("This permission is required to block the notification panel when your parent enables it.\n\nTap Allow → find Gia Family Control → enable it.")
+            .setPositiveButton("Open Settings") { _, _ ->
+                try {
+                    val intent = android.content.Intent(
+                        android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        android.net.Uri.parse("package:$packageName")
+                    )
+                    startActivityForResult(intent, 201)
+                } catch (_: Exception) {
+                    startMonitoringServices()
+                }
+            }
+            .setNegativeButton("Skip") { _, _ -> startMonitoringServices() }
+            .setCancelable(false)
+            .show()
+    }
+
     private fun showAccessibilityPrompt() {
         AlertDialog.Builder(this)
             .setTitle("Enable Accessibility Service")

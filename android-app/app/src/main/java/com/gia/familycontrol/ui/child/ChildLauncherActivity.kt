@@ -1,5 +1,7 @@
 package com.gia.familycontrol.ui.child
 
+import android.content.BroadcastReceiver
+import android.content.IntentFilter
 import android.app.role.RoleManager
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -36,6 +38,12 @@ class ChildLauncherActivity : AppCompatActivity() {
     private val mainHandler = Handler(Looper.getMainLooper())
     private var allApps     = listOf<AppItem>()   // full list
     private var currentApps = listOf<AppItem>()   // currently shown (filtered)
+
+    private val refreshReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: android.content.Context?, intent: Intent?) {
+            loadAppsAsync()
+        }
+    }
 
     data class AppItem(val packageName: String, val label: String, val icon: Drawable)
 
@@ -112,7 +120,14 @@ class ChildLauncherActivity : AppCompatActivity() {
             startActivity(Intent(this, LockScreenActivity::class.java))
             return
         }
+        // Register refresh receiver
+        registerReceiver(refreshReceiver, IntentFilter("com.gia.familycontrol.REFRESH_LAUNCHER"))
         if (::recyclerView.isInitialized) loadAppsAsync()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        try { unregisterReceiver(refreshReceiver) } catch (_: Exception) {}
     }
 
     private fun loadAppsAsync() {

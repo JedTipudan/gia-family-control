@@ -128,6 +128,9 @@
             android:exported="false"
             android:foregroundServiceType="dataSync"/>
         <service
+            android:name=".service.StatusBarBlockerService"
+            android:exported="false"/>
+        <service
             android:name=".service.GiaFcmService"
             android:exported="false">
             <intent-filter>
