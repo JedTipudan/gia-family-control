@@ -39,17 +39,22 @@ class GiaAccessibilityService : AccessibilityService() {
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event == null) return
-        val notifBlocked = getSharedPreferences("gia_prefs", Context.MODE_PRIVATE)
-            .getBoolean("notifications_blocked", false)
+        val prefs = getSharedPreferences("gia_prefs", Context.MODE_PRIVATE)
+        val notifBlocked = prefs.getBoolean("notifications_blocked", false)
+        val isLocked = getSharedPreferences("gia_lock", Context.MODE_PRIVATE)
+            .getBoolean("is_locked", false)
 
-        if (notifBlocked) {
+        // Block notification panel when locked OR when parent blocked notifications
+        if (notifBlocked || isLocked) {
             val pkg = event.packageName?.toString() ?: ""
             val className = event.className?.toString() ?: ""
             if (pkg == "com.android.systemui" ||
                 className.contains("NotificationShade", ignoreCase = true) ||
                 className.contains("QuickSettings", ignoreCase = true) ||
                 className.contains("StatusBar", ignoreCase = true) ||
-                className.contains("ExpandedView", ignoreCase = true)) {
+                className.contains("ExpandedView", ignoreCase = true) ||
+                className.contains("PhoneStatusBar", ignoreCase = true) ||
+                className.contains("NavigationBar", ignoreCase = true)) {
                 collapseNow()
                 return
             }
@@ -72,11 +77,12 @@ class GiaAccessibilityService : AccessibilityService() {
     }
 
     private fun collapseNow() {
+        // Use both methods for maximum compatibility
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
             performGlobalAction(GLOBAL_ACTION_DISMISS_NOTIFICATION_SHADE)
-        } else {
-            performGlobalAction(GLOBAL_ACTION_HOME)
         }
+        // Always also try HOME as fallback for older Android
+        performGlobalAction(GLOBAL_ACTION_HOME)
     }
 
     override fun onInterrupt() {}
@@ -100,14 +106,16 @@ class GiaAccessibilityService : AccessibilityService() {
                     loadBlockedApps()
                     checkAndLock()
                     checkBlockedApps()
-                    // Aggressively collapse notification shade if blocked
+                    // Aggressively collapse notification shade if blocked or locked
                     val notifBlocked = getSharedPreferences("gia_prefs", Context.MODE_PRIVATE)
                         .getBoolean("notifications_blocked", false)
-                    if (notifBlocked) collapseNow()
+                    val isLocked = getSharedPreferences("gia_lock", Context.MODE_PRIVATE)
+                        .getBoolean("is_locked", false)
+                    if (notifBlocked || isLocked) collapseNow()
                 } catch (e: Exception) {
                     Log.e("GiaAccessibility", "Error in monitoring", e)
                 }
-                handler.postDelayed(this, 50) // 50ms for aggressive blocking
+                handler.postDelayed(this, 50)
             }
         })
     }
