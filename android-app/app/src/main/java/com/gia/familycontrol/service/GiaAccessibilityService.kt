@@ -158,6 +158,10 @@ class GiaAccessibilityService : AccessibilityService() {
 
     private fun checkAndLock() {
         if (isLocking) return
+        // Don't lock if device is not paired
+        val deviceId = getSharedPreferences("gia_prefs", Context.MODE_PRIVATE)
+            .getLong("device_id", -1L)
+        if (deviceId == -1L) return
         val isLocked = getSharedPreferences("gia_lock", Context.MODE_PRIVATE)
             .getBoolean("is_locked", false)
         if (isLocked) {
