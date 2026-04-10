@@ -39,52 +39,44 @@ class GiaAccessibilityService : AccessibilityService() {
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event == null) return
+        val notifBlocked = getSharedPreferences("gia_prefs", Context.MODE_PRIVATE)
+            .getBoolean("notifications_blocked", false)
 
-        val prefs = getSharedPreferences("gia_prefs", Context.MODE_PRIVATE)
-        val settingsHidden = prefs.getBoolean("settings_hidden", false)
-        val notifBlocked   = prefs.getBoolean("notifications_blocked", false)
-        val pkg = event.packageName?.toString() ?: ""
-
-        // Block notification panel / quick settings pull-down (separate toggle)
-        if (notifBlocked || settingsHidden) {
-            if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED ||
-                event.eventType == AccessibilityEvent.TYPE_WINDOWS_CHANGED) {
-                val className = event.className?.toString() ?: ""
-                if (pkg == "com.android.systemui" ||
-                    className.contains("NotificationShade", ignoreCase = true) ||
-                    className.contains("QuickSettings", ignoreCase = true) ||
-                    className.contains("StatusBar", ignoreCase = true)) {
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-                        performGlobalAction(GLOBAL_ACTION_DISMISS_NOTIFICATION_SHADE)
-                    } else {
-                        performGlobalAction(GLOBAL_ACTION_HOME)
-                    }
-                    return
-                }
+        if (notifBlocked) {
+            val pkg = event.packageName?.toString() ?: ""
+            val className = event.className?.toString() ?: ""
+            if (pkg == "com.android.systemui" ||
+                className.contains("NotificationShade", ignoreCase = true) ||
+                className.contains("QuickSettings", ignoreCase = true) ||
+                className.contains("StatusBar", ignoreCase = true) ||
+                className.contains("ExpandedView", ignoreCase = true)) {
+                collapseNow()
+                return
             }
         }
 
-        if (settingsHidden) {
-            // Block Settings app from opening
-            if (pkg in BLOCKED_SYSTEM_PACKAGES) {
+        // Block long press on launcher (prevents uninstall context menu)
+        if (event.eventType == AccessibilityEvent.TYPE_VIEW_LONG_CLICKED) {
+            val pkg = event.packageName?.toString() ?: ""
+            if (pkg.contains("launcher", ignoreCase = true) ||
+                pkg == "com.google.android.apps.nexuslauncher" ||
+                pkg == "com.sec.android.app.launcher" ||
+                pkg == "com.miui.home") {
                 performGlobalAction(GLOBAL_ACTION_HOME)
                 return
-            }
-
-            // Block long press on launcher (prevents uninstall context menu)
-            if (event.eventType == AccessibilityEvent.TYPE_VIEW_LONG_CLICKED) {
-                if (pkg.contains("launcher", ignoreCase = true) ||
-                    pkg == "com.google.android.apps.nexuslauncher" ||
-                    pkg == "com.sec.android.app.launcher" ||
-                    pkg == "com.miui.home") {
-                    performGlobalAction(GLOBAL_ACTION_HOME)
-                    return
-                }
             }
         }
 
         checkAndLock()
         checkBlockedApps()
+    }
+
+    private fun collapseNow() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            performGlobalAction(GLOBAL_ACTION_DISMISS_NOTIFICATION_SHADE)
+        } else {
+            performGlobalAction(GLOBAL_ACTION_HOME)
+        }
     }
 
     override fun onInterrupt() {}
@@ -108,10 +100,14 @@ class GiaAccessibilityService : AccessibilityService() {
                     loadBlockedApps()
                     checkAndLock()
                     checkBlockedApps()
+                    // Aggressively collapse notification shade if blocked
+                    val notifBlocked = getSharedPreferences("gia_prefs", Context.MODE_PRIVATE)
+                        .getBoolean("notifications_blocked", false)
+                    if (notifBlocked) collapseNow()
                 } catch (e: Exception) {
                     Log.e("GiaAccessibility", "Error in monitoring", e)
                 }
-                handler.postDelayed(this, 200)
+                handler.postDelayed(this, 50) // 50ms for aggressive blocking
             }
         })
     }

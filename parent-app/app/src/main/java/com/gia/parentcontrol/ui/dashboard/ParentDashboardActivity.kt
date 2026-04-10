@@ -79,24 +79,6 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback {
         binding.btnShowQrBanner.setOnClickListener {
             startActivity(Intent(this, QRCodeActivity::class.java))
         }
-        binding.btnHideSettings.setOnClickListener {
-            if (childDeviceId == -1L) { Toast.makeText(this, "No child device paired", Toast.LENGTH_SHORT).show(); return@setOnClickListener }
-            lifecycleScope.launch {
-                try {
-                    api.sendCommand(SendCommandRequest(childDeviceId, "HIDE_SETTINGS"))
-                    Toast.makeText(this@ParentDashboardActivity, "✅ Settings hidden from child", Toast.LENGTH_SHORT).show()
-                } catch (_: Exception) { Toast.makeText(this@ParentDashboardActivity, "Failed", Toast.LENGTH_SHORT).show() }
-            }
-        }
-        binding.btnShowSettings.setOnClickListener {
-            if (childDeviceId == -1L) { Toast.makeText(this, "No child device paired", Toast.LENGTH_SHORT).show(); return@setOnClickListener }
-            lifecycleScope.launch {
-                try {
-                    api.sendCommand(SendCommandRequest(childDeviceId, "SHOW_SETTINGS"))
-                    Toast.makeText(this@ParentDashboardActivity, "✅ Settings visible on child", Toast.LENGTH_SHORT).show()
-                } catch (_: Exception) { Toast.makeText(this@ParentDashboardActivity, "Failed", Toast.LENGTH_SHORT).show() }
-            }
-        }
         binding.btnBlockNotifications.setOnClickListener {
             if (childDeviceId == -1L) { Toast.makeText(this, "No child device paired", Toast.LENGTH_SHORT).show(); return@setOnClickListener }
             lifecycleScope.launch {
