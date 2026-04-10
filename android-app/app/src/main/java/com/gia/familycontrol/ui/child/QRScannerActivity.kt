@@ -66,20 +66,20 @@ class QRScannerActivity : AppCompatActivity() {
     private fun startScanning() {
         binding.barcodeScanner.decodeContinuous(object : BarcodeCallback {
             override fun barcodeResult(result: BarcodeResult) {
-                val pairCode = result.text
-                if (pairCode.startsWith("GIA-")) {
+                val pairCode = result.text?.trim() ?: return
+                // Accept any non-empty scanned code and try to pair
+                if (pairCode.isNotEmpty()) {
                     binding.barcodeScanner.pause()
                     pairWithCode(pairCode)
                 }
             }
-
             override fun possibleResultPoints(resultPoints: List<ResultPoint>) {}
         })
     }
 
     private fun pairWithCode(pairCode: String) {
         binding.tvStatus.text = "Pairing..."
-        
+
         FirebaseMessaging.getInstance().token.addOnSuccessListener { fcmToken ->
             lifecycleScope.launch {
                 try {
@@ -90,23 +90,36 @@ class QRScannerActivity : AppCompatActivity() {
                         androidVersion = Build.VERSION.RELEASE,
                         fcmToken = fcmToken
                     ))
-                    
+
                     if (response.isSuccessful && response.body() != null) {
                         val device = response.body()!!
                         getSharedPreferences("gia_prefs", MODE_PRIVATE).edit()
                             .putLong("device_id", device.id).apply()
-                        
                         Toast.makeText(this@QRScannerActivity, "✅ Paired successfully!", Toast.LENGTH_SHORT).show()
                         finish()
                     } else {
-                        binding.tvStatus.text = "Invalid QR code. Try again."
+                        val errorBody = response.errorBody()?.string() ?: ""
+                        val msg = when {
+                            errorBody.contains("already have a child", ignoreCase = true) ->
+                                "Parent already has a child paired. Unpair first."
+                            errorBody.contains("already paired", ignoreCase = true) ->
+                                "This child is already paired with a parent."
+                            errorBody.contains("Invalid pair code", ignoreCase = true) ->
+                                "Invalid pair code. Make sure you scan the parent's QR."
+                            else -> "Pairing failed (${response.code()}): $errorBody"
+                        }
+                        binding.tvStatus.text = msg
+                        Toast.makeText(this@QRScannerActivity, msg, Toast.LENGTH_LONG).show()
                         binding.barcodeScanner.resume()
                     }
                 } catch (e: Exception) {
-                    binding.tvStatus.text = "Connection error. Try again."
+                    binding.tvStatus.text = "Connection error: ${e.message}"
                     binding.barcodeScanner.resume()
                 }
             }
+        }.addOnFailureListener {
+            binding.tvStatus.text = "Failed to get device token. Try again."
+            binding.barcodeScanner.resume()
         }
     }
 

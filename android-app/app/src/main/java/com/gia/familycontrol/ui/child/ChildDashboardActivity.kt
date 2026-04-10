@@ -399,11 +399,6 @@ class ChildDashboardActivity : AppCompatActivity(), NavigationView.OnNavigationI
             Toast.makeText(this, "Enter parent pair code", Toast.LENGTH_SHORT).show()
             return
         }
-        
-        if (!code.startsWith("GIA-")) {
-            Toast.makeText(this, "Invalid pair code format", Toast.LENGTH_SHORT).show()
-            return
-        }
 
         Log.d("ChildDashboard", "Starting pairing with code: $code")
         
