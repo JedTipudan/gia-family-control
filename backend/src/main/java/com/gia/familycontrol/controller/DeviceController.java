@@ -39,9 +39,13 @@ public class DeviceController {
 
     @PostMapping("/unpair-device/{deviceId}")
     @PreAuthorize("hasRole('PARENT')")
-    public ResponseEntity<Void> unpairDevice(Principal principal, @PathVariable Long deviceId) {
-        deviceService.unpairDevice(principal.getName(), deviceId);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> unpairDevice(Principal principal, @PathVariable Long deviceId) {
+        try {
+            deviceService.unpairDevice(principal.getName(), deviceId);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @PutMapping("/device/status")

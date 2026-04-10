@@ -113,14 +113,21 @@ public class DeviceService {
             throw new RuntimeException("Unauthorized: You don't own this device");
         }
         
-        // Send unpair command to child device
-        if (device.getFcmToken() != null) {
-            fcmService.sendCommand(device.getFcmToken(), "UNPAIR", Map.of());
+        // Send unpair command to child device (ignore if app uninstalled)
+        try {
+            if (device.getFcmToken() != null && !device.getFcmToken().isEmpty()) {
+                fcmService.sendCommand(device.getFcmToken(), "UNPAIR", Map.of());
+            }
+        } catch (Exception e) {
+            System.err.println("FCM unpair failed (app may be uninstalled): " + e.getMessage());
         }
-        
-        // Remove parent relationship
+
+        // Remove parent relationship regardless
         child.setParentId(null);
         userRepository.save(child);
+
+        // Also delete the device record so parent can pair fresh
+        deviceRepository.delete(device);
     }
 
     @Transactional
