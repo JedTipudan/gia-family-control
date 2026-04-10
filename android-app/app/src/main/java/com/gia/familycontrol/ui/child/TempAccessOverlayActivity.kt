@@ -84,6 +84,8 @@ class TempAccessOverlayActivity : AppCompatActivity() {
         SecureAuthManager.revokeTemporaryAccess(this)
         getSharedPreferences("gia_lock", MODE_PRIVATE)
             .edit().putBoolean("is_locked", true).apply()
+        // Cancel temp access notification
+        getSystemService(android.app.NotificationManager::class.java).cancel(7001)
         try {
             val dpm = getSystemService(DevicePolicyManager::class.java)
             val admin = ComponentName(this, GiaDeviceAdminReceiver::class.java)
@@ -115,21 +117,21 @@ class TempAccessOverlayActivity : AppCompatActivity() {
 // Broadcast receiver that fires when temp access alarm expires
 class TempExpiredReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        // Only lock if temp access is actually expired (not if parent granted more time)
         if (SecureAuthManager.isTemporaryAccessActive(context)) return
 
         SecureAuthManager.revokeTemporaryAccess(context)
         context.getSharedPreferences("gia_lock", Context.MODE_PRIVATE)
             .edit().putBoolean("is_locked", true).apply()
 
-        // Lock via Device Admin
+        // Cancel temp access notification
+        context.getSystemService(android.app.NotificationManager::class.java).cancel(7001)
+
         try {
             val dpm = context.getSystemService(DevicePolicyManager::class.java)
             val admin = ComponentName(context, GiaDeviceAdminReceiver::class.java)
             if (dpm.isAdminActive(admin)) dpm.lockNow()
         } catch (_: Exception) {}
 
-        // Show lock screen
         try {
             context.startActivity(Intent(context, LockScreenActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP

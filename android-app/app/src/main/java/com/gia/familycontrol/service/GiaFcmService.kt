@@ -73,20 +73,16 @@ class GiaFcmService : FirebaseMessagingService() {
                 val minutes = message.data["minutes"]?.toIntOrNull()
                     ?: message.data["metadata"]?.toIntOrNull()
                     ?: 30
-                // Grant temp access
                 SecureAuthManager.grantTemporaryAccess(this, minutes)
                 ActionLogger.log(this, "GRANT_TEMP_ACCESS", "${minutes}min")
 
-                // Temporarily clear the lock so LockScreenActivity dismisses itself
-                // The lock will be restored when temp access expires
                 getSharedPreferences("gia_lock", MODE_PRIVATE)
                     .edit().putBoolean("is_locked", false).apply()
-
-                // Dismiss lock screen if showing
                 LockScreenActivity.dismiss()
-
-                // Cancel lock notification
                 getSystemService(NotificationManager::class.java).cancel(8888)
+
+                // Show persistent notification with time granted
+                showTempAccessNotification(minutes)
 
                 // Show countdown overlay
                 com.gia.familycontrol.ui.child.TempAccessOverlayActivity.launch(this, minutes)
@@ -158,6 +154,29 @@ class GiaFcmService : FirebaseMessagingService() {
             "EMERGENCY" -> { /* no-op */ }
             "SOS"       -> handleSosAlert(message.data)
         }
+    }
+
+    private fun showTempAccessNotification(minutes: Int) {
+        val nm = getSystemService(NotificationManager::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            nm.createNotificationChannel(NotificationChannel(
+                "temp_access", "Temporary Access", NotificationManager.IMPORTANCE_HIGH
+            ))
+        val timeText = if (minutes >= 60) {
+            val h = minutes / 60; val m = minutes % 60
+            if (m == 0) "$h hour${if (h > 1) "s" else ""}" else "$h hr $m min"
+        } else "$minutes minute${if (minutes > 1) "s" else ""}"
+
+        nm.notify(7001, NotificationCompat.Builder(this, "temp_access")
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setContentTitle("⏱ Temporary Access Granted")
+            .setContentText("Your parent gave you $timeText of free access. Device will lock when time is up.")
+            .setStyle(NotificationCompat.BigTextStyle()
+                .bigText("Your parent gave you $timeText of free access.\n\nDevice will lock automatically when time is up."))
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setOngoing(true)
+            .setAutoCancel(false)
+            .build())
     }
 
     private fun handleSosAlert(data: Map<String, String>) {
@@ -253,9 +272,22 @@ class GiaFcmService : FirebaseMessagingService() {
     }
 
     private fun unpairDevice() {
+        // Clear ALL state including lock to prevent phantom lock after unpair
         getSharedPreferences("gia_prefs", MODE_PRIVATE).edit().remove("device_id").apply()
+        getSharedPreferences("gia_lock", MODE_PRIVATE).edit().putBoolean("is_locked", false).apply()
+        getSharedPreferences("gia_blocked_apps", MODE_PRIVATE).edit().clear().apply()
+        getSharedPreferences("gia_prefs", MODE_PRIVATE).edit()
+            .putBoolean("notifications_blocked", false)
+            .putBoolean("settings_hidden", false)
+            .apply()
+        // Dismiss lock screen if showing
+        LockScreenActivity.dismiss()
+        // Stop status bar blocker
+        StatusBarBlockerService.stop(this)
         stopService(Intent(this, LocationTrackingService::class.java))
         stopService(Intent(this, AppMonitorService::class.java))
+        stopService(Intent(this, LockMonitorService::class.java))
+        getSystemService(NotificationManager::class.java).cancelAll()
         getSystemService(NotificationManager::class.java).notify(9999,
             NotificationCompat.Builder(this, GiaApplication.CHANNEL_COMMANDS)
                 .setSmallIcon(R.mipmap.ic_launcher)
