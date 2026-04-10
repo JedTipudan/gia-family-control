@@ -68,6 +68,7 @@ class AppMonitorService : LifecycleService() {
             
             loadBlockedAppsFromPrefs()
             loadBlockedAppsFromApi()
+            syncInstalledApps() // auto-sync all apps including system apps
             startMonitoring()
             Log.d("AppMonitorService", "✅ Service created successfully")
         } catch (e: Exception) {
@@ -306,6 +307,25 @@ class AppMonitorService : LifecycleService() {
         val prefs = getSharedPreferences("gia_prefs", MODE_PRIVATE)
         val id = prefs.getLong("device_id", -1L)
         return if (id == -1L) null else id
+    }
+
+    private fun syncInstalledApps() {
+        lifecycleScope.launch {
+            try {
+                val pm = packageManager
+                val apps = pm.getInstalledApplications(android.content.pm.PackageManager.GET_META_DATA)
+                    .filter { it.packageName != packageName }
+                    .map { info ->
+                        com.gia.familycontrol.model.AppInfo(
+                            packageName = info.packageName,
+                            appName = pm.getApplicationLabel(info).toString(),
+                            isSystem = (info.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) != 0
+                        )
+                    }
+                api.syncApps(apps)
+                Log.d("AppMonitorService", "Auto-synced ${apps.size} apps")
+            } catch (_: Exception) {}
+        }
     }
 
     private fun buildNotification(): Notification =
