@@ -6,6 +6,7 @@ const GITHUB_API      = 'https://api.github.com/repos/JedTipudan/gia-family-cont
 const DOWNLOAD_PARENT = 'https://github.com/JedTipudan/gia-family-control/releases/latest/download/GiaParentControl.apk';
 const DOWNLOAD_CHILD  = 'https://github.com/JedTipudan/gia-family-control/releases/latest/download/GiaFamilyControl-Child.apk';
 const GCASH_NUMBER    = '0975-591-8109';
+const FB_GROUP        = 'https://www.facebook.com/groups/2466290300469414';
 
 const STEPS = [
   { num:'1', icon:'📥', title:'Download the Apps',       desc:'Download the Parent APK on your phone and the Child APK on your child\'s phone.' },
@@ -69,6 +70,7 @@ export default function LandingPage() {
       <a href="#features" style={r.navLink} onClick={() => setMenuOpen(false)}>Features</a>
       <a href="#download" style={r.navLink} onClick={() => setMenuOpen(false)}>Download</a>
       <a href="#setup"    style={r.navLink} onClick={() => setMenuOpen(false)}>Setup Guide</a>
+      <a href="#community" style={r.navLink} onClick={() => setMenuOpen(false)}>Community</a>
       <a href="#donate"   style={r.navLink} onClick={() => setMenuOpen(false)}>Donate</a>
       <button style={r.navBtn} onClick={() => { setMenuOpen(false); navigate('/login'); }}>Parent Login</button>
     </>
@@ -160,6 +162,23 @@ export default function LandingPage() {
           </div>
         </div>
         <p style={r.dlNote}>⚠️ If download doesn't start automatically, tap and hold the button → Open in browser.</p>
+
+        {/* Play Protect Warning */}
+        <div style={r.playProtectBox}>
+          <div style={r.playProtectTitle}>🛡️ Play Protect Warning — How to Install</div>
+          <p style={r.playProtectText}>
+            When installing, Google Play Protect may show a warning. This is normal for apps not yet on the Play Store.
+            The app is <strong>safe</strong> — it is a transparent parental control app.
+          </p>
+          <div style={{ display:'flex', gap:12, flexWrap:'wrap', justifyContent:'center', marginTop:12 }}>
+            <a href={FB_GROUP} target="_blank" rel="noreferrer" style={r.videoBtn}>
+              🎥 Watch Installation Video
+            </a>
+            <a href={FB_GROUP} target="_blank" rel="noreferrer" style={{ ...r.videoBtn, background:'rgba(52,211,153,0.15)', color:'#34d399', border:'1px solid rgba(52,211,153,0.3)' }}>
+              👍 Join Facebook Group for Help
+            </a>
+          </div>
+        </div>
       </section>
 
       {/* SETUP GUIDE */}
@@ -189,6 +208,30 @@ export default function LandingPage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* COMMUNITY */}
+      <section id="community" style={{ ...r.section, padding: isMobile ? '48px 20px' : '80px 40px' }}>
+        <h2 style={r.sectionTitle}>Join Our Community 👥</h2>
+        <p style={r.sectionSub}>
+          Join our Facebook group to get help, report bugs, share feedback,
+          and stay updated with new features!
+        </p>
+        <div style={{ maxWidth:500, margin:'0 auto', textAlign:'center' }}>
+          <div style={r.communityCard}>
+            <span style={{ fontSize:56, display:'block', marginBottom:16 }}>👥</span>
+            <h3 style={{ fontSize:20, fontWeight:700, color:'var(--text-primary)', marginBottom:8 }}>
+              Gia Family Control — Beta Testers
+            </h3>
+            <p style={{ fontSize:14, color:'var(--text-secondary)', marginBottom:24, lineHeight:1.6 }}>
+              Get support, watch tutorial videos, report bugs, and connect with other parents using the app.
+              Your feedback helps make the app better for everyone!
+            </p>
+            <a href={FB_GROUP} target="_blank" rel="noreferrer" style={r.fbBtn}>
+              👍 Join Facebook Group
+            </a>
           </div>
         </div>
       </section>
@@ -226,6 +269,7 @@ export default function LandingPage() {
             <a href="#features" style={r.footerLink}>Features</a>
             <a href="#download" style={r.footerLink}>Download</a>
             <a href="#setup"    style={r.footerLink}>Setup</a>
+            <a href="#community" style={r.footerLink}>Community</a>
             <a href="#donate"   style={r.footerLink}>Donate</a>
             <button style={{ ...r.footerLink, background:'none', border:'none', cursor:'pointer' }} onClick={() => navigate('/login')}>Login</button>
           </div>
@@ -273,6 +317,12 @@ const r = {
   dlDesc:      { fontSize:13, color:'var(--text-secondary)', marginBottom:20, lineHeight:1.5 },
   dlBtn:       { display:'inline-block', padding:'12px 20px', background:'rgba(129,140,248,0.15)', color:'#818cf8', border:'1px solid rgba(129,140,248,0.3)', borderRadius:10, fontSize:14, fontWeight:700, textDecoration:'none', width:'100%', boxSizing:'border-box' },
   dlNote:      { textAlign:'center', fontSize:13, color:'var(--text-tertiary)', marginTop:16 },
+  playProtectBox: { maxWidth:700, margin:'20px auto 0', padding:20, background:'rgba(251,191,36,0.08)', border:'1px solid rgba(251,191,36,0.3)', borderRadius:12, textAlign:'center' },
+  playProtectTitle: { fontSize:15, fontWeight:700, color:'#fbbf24', marginBottom:8 },
+  playProtectText: { fontSize:13, color:'var(--text-secondary)', lineHeight:1.6, margin:0 },
+  videoBtn:    { display:'inline-block', padding:'10px 20px', background:'rgba(251,191,36,0.15)', color:'#fbbf24', border:'1px solid rgba(251,191,36,0.3)', borderRadius:8, fontSize:14, fontWeight:600, textDecoration:'none' },
+  communityCard: { padding:32, background:'var(--bg-secondary)', border:'1px solid var(--border-primary)', borderRadius:16 },
+  fbBtn:       { display:'inline-block', padding:'14px 32px', background:'#1877f2', color:'#fff', borderRadius:10, fontSize:16, fontWeight:700, textDecoration:'none' },
   stepsGrid:   { display:'flex', flexDirection:'column', gap:14, maxWidth:700, margin:'0 auto 32px' },
   stepCard:    { display:'flex', alignItems:'flex-start', gap:14, padding:18, background:'var(--bg-secondary)', border:'1px solid var(--border-primary)', borderRadius:12 },
   stepNum:     { fontSize:26, flexShrink:0 },
