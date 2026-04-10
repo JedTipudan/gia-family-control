@@ -120,30 +120,33 @@ class AppMonitorService : LifecycleService() {
     private fun startMonitoring() {
         monitorJob = lifecycleScope.launch {
             var apiRefreshCounter = 0
-            
+            var heartbeatCounter = 0
+
             while (isActive) {
                 try {
-                    // Refresh from API every 3 seconds (10 cycles * 0.3s)
-                    if (apiRefreshCounter >= 10) {
+                    // Heartbeat every 10s — keeps device online even without GPS
+                    if (heartbeatCounter >= 50) { // 50 * 200ms = 10s
+                        sendHeartbeat()
+                        heartbeatCounter = 0
+                    }
+                    heartbeatCounter++
+
+                    // Refresh blocked apps from API every 3s
+                    if (apiRefreshCounter >= 15) {
                         loadBlockedAppsFromApi()
                         apiRefreshCounter = 0
                     }
                     apiRefreshCounter++
-                    
+
                     val foregroundApp = getForegroundApp()
-                    
-                    // Log app changes
                     if (foregroundApp != lastForegroundApp && foregroundApp != null && foregroundApp != packageName) {
-                        Log.d("AppMonitorService", "📱 App changed: $foregroundApp")
                         lastForegroundApp = foregroundApp
-                        consecutiveBlockCount = 0 // Reset counter on app change
+                        consecutiveBlockCount = 0
                     }
-                    
                     if (foregroundApp != null && foregroundApp != packageName) {
                         val isHidden = AppHideManager.isHidden(this@AppMonitorService, foregroundApp)
                         if (!isHidden && foregroundApp in blockedPackages) {
                             consecutiveBlockCount++
-                            Log.d("AppMonitorService", "⛔ BLOCKED APP DETECTED: $foregroundApp (attempt #$consecutiveBlockCount)")
                             forceCloseApp(foregroundApp)
                         }
                         if (isGameApp(foregroundApp) && foregroundApp !in notifiedGames) {
@@ -152,19 +155,40 @@ class AppMonitorService : LifecycleService() {
                         }
                     }
 
-                    // Auto-lock when temp access expires
                     val tempActive = com.gia.familycontrol.util.SecureAuthManager.isTemporaryAccessActive(this@AppMonitorService)
-                    if (tempWasActive && !tempActive) {
-                        Log.d("AppMonitorService", "⏱ Temp access expired — locking device")
-                        lockDeviceNow()
-                    }
+                    if (tempWasActive && !tempActive) lockDeviceNow()
                     tempWasActive = tempActive
                 } catch (e: Exception) {
                     Log.e("AppMonitorService", "Error in monitoring loop", e)
                 }
-                
-                delay(200L) // Check every 0.2 seconds for ultra-fast blocking
+                delay(200L)
             }
+        }
+    }
+
+    private fun sendHeartbeat() {
+        lifecycleScope.launch {
+            try {
+                val bm = getSystemService(android.os.BatteryManager::class.java)
+                val battery = bm.getIntProperty(android.os.BatteryManager.BATTERY_PROPERTY_CAPACITY)
+                val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
+                val network = cm.activeNetwork
+                val caps = if (network != null) cm.getNetworkCapabilities(network) else null
+                val connType = when {
+                    caps == null -> "OFFLINE"
+                    caps.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI) -> "WIFI"
+                    caps.hasTransport(android.net.NetworkCapabilities.TRANSPORT_CELLULAR) -> "MOBILE_DATA"
+                    else -> "OFFLINE"
+                }
+                api.updateDeviceStatus(
+                    com.gia.familycontrol.model.DeviceStatusUpdate(
+                        batteryLevel = battery,
+                        isOnline = true,
+                        fcmToken = null,
+                        connectionType = connType
+                    )
+                )
+            } catch (_: Exception) {}
         }
     }
     

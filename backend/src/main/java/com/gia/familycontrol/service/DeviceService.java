@@ -163,7 +163,7 @@ public class DeviceService {
                     // Calculate if device is truly online (last seen within 15 seconds)
                     if (device.getLastSeen() != null) {
                         long secondsSinceLastSeen = java.time.Duration.between(device.getLastSeen(), LocalDateTime.now()).getSeconds();
-                        boolean isActuallyOnline = secondsSinceLastSeen < 15;
+                        boolean isActuallyOnline = secondsSinceLastSeen < 30;
                         device.setIsOnline(isActuallyOnline);
                         
                         // If offline, clear connection type

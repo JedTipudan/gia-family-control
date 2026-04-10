@@ -46,6 +46,7 @@ class ChildLauncherActivity : AppCompatActivity() {
     }
 
     private var receiverRegistered = false
+    private var lastHiddenHash = 0 // track changes to hidden apps
 
     data class AppItem(val packageName: String, val label: String, val icon: Drawable)
 
@@ -130,48 +131,42 @@ class ChildLauncherActivity : AppCompatActivity() {
             startActivity(Intent(this, LockScreenActivity::class.java))
             return
         }
-        // Only register receiver if launcher is initialized
-        if (::recyclerView.isInitialized && !receiverRegistered) {
-            try {
-                registerReceiver(refreshReceiver, IntentFilter("com.gia.familycontrol.REFRESH_LAUNCHER"))
-                receiverRegistered = true
-            } catch (_: Exception) {}
-        }
         if (::recyclerView.isInitialized) loadAppsAsync()
     }
 
     override fun onPause() {
         super.onPause()
-        if (receiverRegistered) {
-            try { unregisterReceiver(refreshReceiver) } catch (_: Exception) {}
-            receiverRegistered = false
-        }
+        // Keep receiver registered — needed for instant hide when launcher is in background
     }
 
     private fun loadAppsAsync() {
         executor.execute {
-            val pm         = packageManager
-            val hiddenPkgs = AppHideManager.getHiddenPackages(this)
+            try {
+                val pm = packageManager
+                val hiddenPkgs = AppHideManager.getHiddenPackages(this)
+                val newHash = hiddenPkgs.hashCode()
 
-            val loaded = pm.queryIntentActivities(
-                Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER),
-                PackageManager.GET_META_DATA
-            ).filter {
-                val pkg = it.activityInfo.packageName
-                pkg != packageName && pkg !in hiddenPkgs
-            }.map {
-                AppItem(
-                    packageName = it.activityInfo.packageName,
-                    label       = it.loadLabel(pm).toString(),
-                    icon        = it.loadIcon(pm)
-                )
-            }.sortedBy { it.label.lowercase() }
+                val loaded = pm.queryIntentActivities(
+                    Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER),
+                    PackageManager.GET_META_DATA
+                ).filter {
+                    val pkg = it.activityInfo.packageName
+                    pkg != packageName && pkg !in hiddenPkgs
+                }.map {
+                    AppItem(
+                        packageName = it.activityInfo.packageName,
+                        label       = it.loadLabel(pm).toString(),
+                        icon        = it.loadIcon(pm)
+                    )
+                }.sortedBy { it.label.lowercase() }
 
-            mainHandler.post {
-                allApps = loaded
-                val query = if (::etSearch.isInitialized) etSearch.text.toString() else ""
-                filterApps(query)
-            }
+                mainHandler.post {
+                    lastHiddenHash = newHash
+                    allApps = loaded
+                    val query = if (::etSearch.isInitialized) etSearch.text.toString() else ""
+                    filterApps(query)
+                }
+            } catch (_: Exception) {}
         }
     }
 
@@ -213,6 +208,10 @@ class ChildLauncherActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
+        if (receiverRegistered) {
+            try { unregisterReceiver(refreshReceiver) } catch (_: Exception) {}
+            receiverRegistered = false
+        }
         executor.shutdown()
         super.onDestroy()
     }

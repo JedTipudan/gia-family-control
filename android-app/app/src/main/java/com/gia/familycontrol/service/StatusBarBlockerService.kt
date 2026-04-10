@@ -17,14 +17,18 @@ class StatusBarBlockerService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (overlayView == null) addOverlay()
+        return START_STICKY // restart if killed
+    }
+
     override fun onCreate() {
         super.onCreate()
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
-        addOverlay()
     }
 
     private fun addOverlay() {
-        if (overlayView != null) return
+        if (!android.provider.Settings.canDrawOverlays(this)) return
 
         val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
@@ -43,37 +47,29 @@ class StatusBarBlockerService : Service() {
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.START
-            x = 0
-            y = 0
+            x = 0; y = 0
         }
 
-        overlayView = View(this).apply { setBackgroundColor(0x00000000) } // fully transparent
-        try {
-            windowManager?.addView(overlayView, params)
-        } catch (_: Exception) {}
+        overlayView = View(this).apply { setBackgroundColor(0x00000000) }
+        try { windowManager?.addView(overlayView, params) } catch (_: Exception) {}
     }
 
     private fun getStatusBarHeight(): Int {
-        // Cover status bar + extra pull area (200dp to catch swipe gestures)
         val density = resources.displayMetrics.density
         return (200 * density).toInt()
     }
 
     override fun onDestroy() {
-        try {
-            overlayView?.let { windowManager?.removeView(it) }
-        } catch (_: Exception) {}
+        try { overlayView?.let { windowManager?.removeView(it) } } catch (_: Exception) {}
         overlayView = null
         super.onDestroy()
     }
 
     companion object {
         fun start(context: Context) {
-            val intent = Intent(context, StatusBarBlockerService::class.java)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                context.startForegroundService(intent)
-            else
-                context.startService(intent)
+            if (!android.provider.Settings.canDrawOverlays(context)) return
+            // Use regular startService — no foreground notification needed
+            context.startService(Intent(context, StatusBarBlockerService::class.java))
         }
 
         fun stop(context: Context) {
