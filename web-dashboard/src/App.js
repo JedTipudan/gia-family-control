@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
+import LandingPage from './pages/LandingPage';
 
 function PrivateRoute({ children }) {
   const { user } = useAuth();
@@ -21,9 +22,10 @@ export default function App() {
       <AuthProvider>
         <BrowserRouter>
           <Routes>
+            <Route path="/"         element={<LandingPage />} />
             <Route path="/login"     element={<PublicRoute><LoginPage /></PublicRoute>} />
             <Route path="/dashboard" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
-            <Route path="*"          element={<Navigate to="/dashboard" replace />} />
+            <Route path="*"          element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>
