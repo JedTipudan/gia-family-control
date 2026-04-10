@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const GITHUB_RELEASE = 'https://github.com/JedTipudan/gia-family-control/releases/latest';
-const GITHUB_API     = 'https://api.github.com/repos/JedTipudan/gia-family-control/releases/latest';
-const GCASH_NUMBER   = '0975-591-8109';
+const GITHUB_RELEASE  = 'https://github.com/JedTipudan/gia-family-control/releases/latest';
+const GITHUB_API      = 'https://api.github.com/repos/JedTipudan/gia-family-control/releases/latest';
+const DOWNLOAD_PARENT = 'https://github.com/JedTipudan/gia-family-control/releases/latest/download/GiaParentControl.apk';
+const DOWNLOAD_CHILD  = 'https://github.com/JedTipudan/gia-family-control/releases/latest/download/GiaFamilyControl-Child.apk';
+const GCASH_NUMBER    = '0975-591-8109';
 
 const STEPS = [
   { num:'1', icon:'📥', title:'Download the Apps',       desc:'Download the Parent APK on your phone and the Child APK on your child\'s phone.' },
@@ -146,18 +148,18 @@ export default function LandingPage() {
             <span style={r.dlIcon}>👨‍👩‍👧</span>
             <h3 style={r.dlTitle}>Parent App</h3>
             <p style={r.dlDesc}>Install on your phone. Monitor, lock, and control your child's device.</p>
-            <a href={GITHUB_RELEASE} target="_blank" rel="noreferrer" style={r.dlBtn}>📥 Download Parent APK</a>
+            <a href={DOWNLOAD_PARENT} style={r.dlBtn}>📥 Download Parent APK</a>
           </div>
           <div style={r.dlCard}>
             <span style={r.dlIcon}>👦</span>
             <h3 style={r.dlTitle}>Child App</h3>
             <p style={r.dlDesc}>Install on your child's phone. Works openly with child's knowledge.</p>
-            <a href={GITHUB_RELEASE} target="_blank" rel="noreferrer" style={{ ...r.dlBtn, background:'rgba(52,211,153,0.15)', color:'#34d399', border:'1px solid rgba(52,211,153,0.3)' }}>
+            <a href={DOWNLOAD_CHILD} style={{ ...r.dlBtn, background:'rgba(52,211,153,0.15)', color:'#34d399', border:'1px solid rgba(52,211,153,0.3)' }}>
               📥 Download Child APK
             </a>
           </div>
         </div>
-        <p style={r.dlNote}>⚠️ Both APKs are on the same GitHub release page. Download the correct one for each device.</p>
+        <p style={r.dlNote}>⚠️ If download doesn't start automatically, tap and hold the button → Open in browser.</p>
       </section>
 
       {/* SETUP GUIDE */}
