@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Gia Family Control</string>
+    <string name="app_description">A transparent parental control app. Installed with the child&#8217;s full knowledge and consent. Helps parents monitor location, manage screen time, and keep children safe online. This is NOT spyware.</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="accessibility_service_description">Gia Family Control is a transparent parental control app installed with the child&#8217;s knowledge and consent. This accessibility service is used to enforce parental controls set by the parent, including remote device lock and notification panel management. This app is NOT spyware &#8212; it operates openly and is disclosed to the child during setup.</string>
