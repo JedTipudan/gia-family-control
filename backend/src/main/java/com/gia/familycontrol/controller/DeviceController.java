@@ -22,9 +22,13 @@ public class DeviceController {
     private final DeviceService deviceService;
 
     @PostMapping("/pair-device")
-    public ResponseEntity<Device> pairDevice(Principal principal,
+    public ResponseEntity<?> pairDevice(Principal principal,
                                               @Valid @RequestBody AuthDto.PairRequest request) {
-        return ResponseEntity.ok(deviceService.pairDevice(principal.getName(), request));
+        try {
+            return ResponseEntity.ok(deviceService.pairDevice(principal.getName(), request));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @GetMapping("/child-devices")
