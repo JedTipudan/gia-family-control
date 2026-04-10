@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const GITHUB_RELEASE = 'https://github.com/JedTipudan/gia-family-control/releases/latest';
-const GCASH_NUMBER   = '09XX-XXX-XXXX'; // replace with your GCash number
-const PAYPAL_LINK    = 'https://paypal.me/yourname'; // replace with your PayPal
+const GCASH_NUMBER   = '0975-591-8109'; // Jed Tipudan
 
 const STEPS = [
   {
@@ -182,21 +181,14 @@ export default function LandingPage() {
           consider buying me a coffee to keep the servers running!
         </p>
         <div style={s.donateGrid}>
-          <div style={s.donateCard}>
+          <div style={{ ...s.donateCard, maxWidth: 320, margin: '0 auto' }}>
             <span style={s.donateIcon}>💙</span>
             <h3 style={s.donateTitle}>GCash</h3>
+            <p style={s.donateName}>Jed Tipudan</p>
             <p style={s.donateNum}>{GCASH_NUMBER}</p>
             <button style={s.copyBtn} onClick={copyGcash}>
               {copied ? '✅ Copied!' : '📋 Copy Number'}
             </button>
-          </div>
-          <div style={s.donateCard}>
-            <span style={s.donateIcon}>💛</span>
-            <h3 style={s.donateTitle}>PayPal</h3>
-            <p style={s.donateNum}>Any amount helps!</p>
-            <a href={PAYPAL_LINK} target="_blank" rel="noreferrer" style={s.paypalBtn}>
-              💛 Donate via PayPal
-            </a>
           </div>
         </div>
         <p style={s.donateNote}>Your donation helps pay for server costs and future development. Thank you! 🙏</p>
@@ -274,6 +266,7 @@ const s = {
   donateIcon: { fontSize: 48, display: 'block', marginBottom: 12 },
   donateTitle:{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 },
   donateNum:  { fontSize: 18, fontWeight: 700, color: 'var(--accent-primary)', marginBottom: 20, fontFamily: 'ui-monospace, monospace' },
+  donateName: { fontSize: 14, color: 'var(--text-secondary)', marginBottom: 4 },
   copyBtn:    { padding: '10px 20px', background: 'rgba(129,140,248,0.15)', color: '#818cf8', border: '1px solid rgba(129,140,248,0.3)', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer', width: '100%' },
   paypalBtn:  { display: 'block', padding: '10px 20px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 8, fontSize: 14, fontWeight: 600, textDecoration: 'none', width: '100%', boxSizing: 'border-box' },
   donateNote: { textAlign: 'center', fontSize: 13, color: 'var(--text-tertiary)' },

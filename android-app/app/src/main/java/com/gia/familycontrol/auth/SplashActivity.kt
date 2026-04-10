@@ -22,8 +22,12 @@ class SplashActivity : AppCompatActivity() {
             delay(1500)
             val prefs = getSharedPreferences("gia_prefs", MODE_PRIVATE)
             val role  = prefs.getString("role", null)
-            val dest  = if (role == "CHILD") ChildLauncherActivity::class.java
-                        else LoginActivity::class.java
+            val onboardingDone = prefs.getBoolean("onboarding_done", false)
+            val dest = when {
+                role == "CHILD" -> ChildLauncherActivity::class.java
+                !onboardingDone -> OnboardingActivity::class.java
+                else -> LoginActivity::class.java
+            }
             startActivity(Intent(this@SplashActivity, dest))
             finish()
         }

@@ -54,6 +54,7 @@
         </activity>
         <activity android:name=".auth.LoginActivity" android:exported="false"/>
         <activity android:name=".auth.RegisterActivity" android:exported="false"/>
+        <activity android:name=".auth.OnboardingActivity" android:exported="false"/>
 
         <!-- Parent Activities -->
         <activity android:name=".ui.parent.ParentDashboardActivity" android:exported="false"/>
