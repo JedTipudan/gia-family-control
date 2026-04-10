@@ -23,7 +23,7 @@ public class Command {
     @Column(name = "command_type", nullable = false)
     private CommandType commandType;
 
-    @Column(columnDefinition = "JSON")
+    @Column(columnDefinition = "TEXT")
     private String payload;
 
     @Enumerated(EnumType.STRING)
