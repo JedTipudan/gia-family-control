@@ -21,16 +21,17 @@ public class DataSourceConfig {
             ? databaseUrl 
             : "jdbc:" + databaseUrl;
 
-        // Remove driver-class-name and let HikariCP auto-detect
+        // Explicitly load the driver
+        try { Class.forName("org.postgresql.Driver"); } catch (Exception ignored) {}
+
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl(jdbcUrl);
+        config.setDriverClassName("org.postgresql.Driver");
         config.setMaximumPoolSize(3);
         config.setMinimumIdle(1);
         config.setConnectionTimeout(30000);
         config.setIdleTimeout(600000);
         config.setMaxLifetime(1800000);
-        config.addDataSourceProperty("ssl", "true");
-        config.addDataSourceProperty("sslmode", "require");
         return new HikariDataSource(config);
     }
 }
