@@ -7,6 +7,7 @@ const DOWNLOAD_PARENT = 'https://github.com/JedTipudan/gia-family-control/releas
 const DOWNLOAD_CHILD  = 'https://github.com/JedTipudan/gia-family-control/releases/latest/download/GiaFamilyControl-Child.apk';
 const GCASH_NUMBER    = '0975-591-8109';
 const FB_GROUP        = 'https://www.facebook.com/groups/2466290300469414';
+const INSTALL_VIDEO   = 'https://web.facebook.com/groups/2466290300469414/permalink/2466337697131341/';
 
 const STEPS = [
   { num:'1', icon:'📥', title:'Download the Apps',       desc:'Download the Parent APK on your phone and the Child APK on your child\'s phone.' },
@@ -171,7 +172,7 @@ export default function LandingPage() {
             The app is <strong>safe</strong> — it is a transparent parental control app.
           </p>
           <div style={{ display:'flex', gap:12, flexWrap:'wrap', justifyContent:'center', marginTop:12 }}>
-            <a href={FB_GROUP} target="_blank" rel="noreferrer" style={r.videoBtn}>
+            <a href={INSTALL_VIDEO} target="_blank" rel="noreferrer" style={r.videoBtn}>
               🎥 Watch Installation Video
             </a>
             <a href={FB_GROUP} target="_blank" rel="noreferrer" style={{ ...r.videoBtn, background:'rgba(52,211,153,0.15)', color:'#34d399', border:'1px solid rgba(52,211,153,0.3)' }}>
