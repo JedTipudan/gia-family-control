@@ -41,9 +41,11 @@ class ChildLauncherActivity : AppCompatActivity() {
 
     private val refreshReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: android.content.Context?, intent: Intent?) {
-            loadAppsAsync()
+            if (::recyclerView.isInitialized) loadAppsAsync()
         }
     }
+
+    private var receiverRegistered = false
 
     data class AppItem(val packageName: String, val label: String, val icon: Drawable)
 
@@ -111,6 +113,14 @@ class ChildLauncherActivity : AppCompatActivity() {
 
         findViewById<View>(R.id.ivParentSettings).setOnClickListener { showParentAuthDialog() }
 
+        // Register refresh receiver now that launcher is fully initialized
+        if (!receiverRegistered) {
+            try {
+                registerReceiver(refreshReceiver, IntentFilter("com.gia.familycontrol.REFRESH_LAUNCHER"))
+                receiverRegistered = true
+            } catch (_: Exception) {}
+        }
+
         loadAppsAsync()
     }
 
@@ -120,14 +130,22 @@ class ChildLauncherActivity : AppCompatActivity() {
             startActivity(Intent(this, LockScreenActivity::class.java))
             return
         }
-        // Register refresh receiver
-        registerReceiver(refreshReceiver, IntentFilter("com.gia.familycontrol.REFRESH_LAUNCHER"))
+        // Only register receiver if launcher is initialized
+        if (::recyclerView.isInitialized && !receiverRegistered) {
+            try {
+                registerReceiver(refreshReceiver, IntentFilter("com.gia.familycontrol.REFRESH_LAUNCHER"))
+                receiverRegistered = true
+            } catch (_: Exception) {}
+        }
         if (::recyclerView.isInitialized) loadAppsAsync()
     }
 
     override fun onPause() {
         super.onPause()
-        try { unregisterReceiver(refreshReceiver) } catch (_: Exception) {}
+        if (receiverRegistered) {
+            try { unregisterReceiver(refreshReceiver) } catch (_: Exception) {}
+            receiverRegistered = false
+        }
     }
 
     private fun loadAppsAsync() {
@@ -158,6 +176,7 @@ class ChildLauncherActivity : AppCompatActivity() {
     }
 
     private fun filterApps(query: String) {
+        if (!::adapter.isInitialized) return
         val filtered = if (query.isBlank()) allApps
         else allApps.filter { it.label.contains(query, ignoreCase = true) }
 
