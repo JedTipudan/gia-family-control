@@ -50,6 +50,15 @@ class LoginActivity : AppCompatActivity() {
                         .putString("full_name", auth.fullName)
                         .putString("email", email)
                         .apply()
+
+                    // Fetch pair code immediately after login
+                    try {
+                        val profileResp = api.getUserProfile(auth.userId)
+                        profileResp.body()?.pairCode?.let { code ->
+                            getSharedPreferences("parent_prefs", MODE_PRIVATE)
+                                .edit().putString("pair_code", code).apply()
+                        }
+                    } catch (_: Exception) {}
                     startActivity(Intent(this@LoginActivity, ParentDashboardActivity::class.java))
                     finishAffinity()
                 } else {

@@ -45,6 +45,14 @@ class RegisterActivity : AppCompatActivity() {
                         .putLong("user_id", auth.userId)
                         .putString("full_name", auth.fullName)
                         .apply()
+                    // Fetch pair code immediately after register
+                    try {
+                        val profileResp = api.getUserProfile(auth.userId)
+                        profileResp.body()?.pairCode?.let { code ->
+                            getSharedPreferences("parent_prefs", MODE_PRIVATE)
+                                .edit().putString("pair_code", code).apply()
+                        }
+                    } catch (_: Exception) {}
                     startActivity(Intent(this@RegisterActivity, ParentDashboardActivity::class.java))
                     finishAffinity()
                 } else {
