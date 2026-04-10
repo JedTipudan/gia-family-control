@@ -16,6 +16,7 @@ import com.gia.familycontrol.R
 import com.gia.familycontrol.admin.GiaDeviceAdminReceiver
 import com.gia.familycontrol.ui.child.ChildDashboardActivity
 import com.gia.familycontrol.ui.child.LockScreenActivity
+import com.gia.familycontrol.service.StatusBarBlockerService
 import kotlinx.coroutines.*
 
 class LockMonitorService : Service() {
@@ -36,6 +37,8 @@ class LockMonitorService : Service() {
                     
                     if (isLocked) {
                         android.util.Log.d("LockMonitorService", "Screen unlocked but device should be locked")
+                        // Block notification panel immediately
+                        StatusBarBlockerService.start(this@LockMonitorService)
                         // Show lock overlay
                         showLockOverlay()
                         

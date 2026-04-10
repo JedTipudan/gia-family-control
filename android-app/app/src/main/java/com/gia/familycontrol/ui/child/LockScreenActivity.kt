@@ -13,6 +13,7 @@ import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import com.gia.familycontrol.admin.GiaDeviceAdminReceiver
 import com.gia.familycontrol.databinding.ActivityLockScreenBinding
+import com.gia.familycontrol.service.StatusBarBlockerService
 import kotlinx.coroutines.*
 
 class LockScreenActivity : AppCompatActivity() {
@@ -56,6 +57,9 @@ class LockScreenActivity : AppCompatActivity() {
 
         binding.tvMessage.text = "Device locked by parent"
         binding.tvSubMessage.text = "Contact your parent to unlock"
+
+        // Always block notification panel when device is locked
+        StatusBarBlockerService.start(this)
         
         // Start Lock Task Mode (Kiosk Mode)
         startLockTaskMode()
@@ -178,6 +182,12 @@ class LockScreenActivity : AppCompatActivity() {
             }
         } catch (e: Exception) {
             Log.e("LockScreen", "Failed to stop lock task mode", e)
+        }
+        // Stop status bar blocker only if notifications are not explicitly blocked by parent
+        val notifBlocked = getSharedPreferences("gia_prefs", MODE_PRIVATE)
+            .getBoolean("notifications_blocked", false)
+        if (!notifBlocked) {
+            StatusBarBlockerService.stop(this)
         }
     }
 
