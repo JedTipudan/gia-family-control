@@ -17,7 +17,9 @@ class AppManagerActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAppManagerBinding
     private val api by lazy { RetrofitClient.create(this) }
     private var childDeviceId: Long = -1L
-    private val apps = mutableListOf<ManagedApp>()
+    private val allApps = mutableListOf<ManagedApp>()
+    private var showSystem = false
+    private var searchQuery = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,7 +30,38 @@ class AppManagerActivity : AppCompatActivity() {
             Toast.makeText(this, "No child device paired", Toast.LENGTH_SHORT).show()
             finish(); return
         }
+
+        binding.btnToggleSystem.setOnClickListener {
+            showSystem = !showSystem
+            binding.btnToggleSystem.text = if (showSystem) "System: ON" else "System: OFF"
+            applyFilter()
+        }
+
+        binding.etSearch.addTextChangedListener(object : android.text.TextWatcher {
+            override fun afterTextChanged(s: android.text.Editable?) {
+                searchQuery = s.toString().trim()
+                applyFilter()
+            }
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        })
+
         loadApps()
+    }
+
+    private fun applyFilter() {
+        val filtered = allApps.filter { app ->
+            (showSystem || !app.isSystem) &&
+            (searchQuery.isEmpty() ||
+                app.appName.contains(searchQuery, ignoreCase = true) ||
+                app.packageName.contains(searchQuery, ignoreCase = true))
+        }
+        binding.rvApps.layoutManager = LinearLayoutManager(this)
+        binding.rvApps.adapter = AppListAdapter(
+            filtered,
+            onToggleBlock = { app, block -> toggleBlock(app, block) },
+            onToggleHide = { app, hide -> toggleHide(app, hide) }
+        )
     }
 
     private fun loadApps() {
@@ -46,22 +79,19 @@ class AppManagerActivity : AppCompatActivity() {
                 val hidden = ctrlResp.body()
                     ?.filter { it.controlType == "HIDDEN" }?.map { it.packageName }?.toSet() ?: emptySet()
 
-                apps.clear()
-                appsResp.body()?.forEach { app ->
-                    apps.add(ManagedApp(
-                        packageName = app.packageName,
-                        appName = app.appName,
-                        isSystem = app.isSystem,
-                        isBlocked = app.packageName in blocked,
-                        isHidden = app.packageName in hidden
-                    ))
-                }
-                binding.rvApps.layoutManager = LinearLayoutManager(this@AppManagerActivity)
-                binding.rvApps.adapter = AppListAdapter(
-                    apps,
-                    onToggleBlock = { app, block -> toggleBlock(app, block) },
-                    onToggleHide = { app, hide -> toggleHide(app, hide) }
-                )
+                allApps.clear()
+                appsResp.body()
+                    ?.sortedWith(compareBy({ it.isSystem }, { it.appName }))
+                    ?.forEach { app ->
+                        allApps.add(ManagedApp(
+                            packageName = app.packageName,
+                            appName = app.appName,
+                            isSystem = app.isSystem,
+                            isBlocked = app.packageName in blocked,
+                            isHidden = app.packageName in hidden
+                        ))
+                    }
+                applyFilter()
             } catch (e: Exception) {
                 Toast.makeText(this@AppManagerActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
                 finish()
