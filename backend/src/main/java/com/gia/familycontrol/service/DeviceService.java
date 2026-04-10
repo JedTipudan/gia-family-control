@@ -35,6 +35,17 @@ public class DeviceService {
             throw new RuntimeException("Invalid pair code");
         }
 
+        // 1 parent = 1 child only
+        List<User> existingChildren = userRepository.findByParentId(parent.getId());
+        if (!existingChildren.isEmpty()) {
+            throw new RuntimeException("You already have a child device paired. Unpair it first before pairing a new one.");
+        }
+
+        // Child can only be paired with 1 parent
+        if (child.getParentId() != null) {
+            throw new RuntimeException("This child account is already paired with a parent. Unpair first.");
+        }
+
         System.out.println("Pairing: Child=" + child.getEmail() + " (ID=" + child.getId() + ") with Parent=" + parent.getEmail() + " (ID=" + parent.getId() + ")");
         
         child.setParentId(parent.getId());
