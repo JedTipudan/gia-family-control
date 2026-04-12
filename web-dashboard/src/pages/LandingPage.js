@@ -9,6 +9,12 @@ const GCASH_NUMBER    = '0975-591-8109';
 const FB_GROUP        = 'https://www.facebook.com/groups/2466290300469414';
 const INSTALL_VIDEO   = 'https://www.youtube.com/watch?v=I-hzPOM08f4';
 
+const SOCIAL = [
+  { icon: '📘', label: 'Facebook',  href: 'https://www.facebook.com/i11181999',        color: '#1877f2' },
+  { icon: '▶️',  label: 'YouTube',   href: 'https://www.youtube.com/@parokyanijed',     color: '#ff0000' },
+  { icon: '📸', label: 'Instagram', href: 'https://www.instagram.com/jedtipudan_',     color: '#e1306c' },
+];
+
 const STEPS = [
   { num:'1', icon:'📥', title:'Download the Apps',       desc:'Download the Parent APK on your phone and the Child APK on your child\'s phone.' },
   { num:'2', icon:'📱', title:'Install Both APKs',        desc:'Go to Settings → Security → Install unknown apps → allow it. Then open and install each APK.' },
@@ -247,6 +253,14 @@ export default function LandingPage() {
             <a href={FB_GROUP} target="_blank" rel="noreferrer" style={r.fbBtn}>
               👍 Join Facebook Group
             </a>
+            <div style={{ display:'flex', gap:12, justifyContent:'center', marginTop:20 }}>
+              {SOCIAL.map(s => (
+                <a key={s.label} href={s.href} target="_blank" rel="noreferrer"
+                  style={{ ...r.socialBtn, background: s.color + '22', color: s.color, border: `1px solid ${s.color}44` }}>
+                  {s.icon} {s.label}
+                </a>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -280,6 +294,14 @@ export default function LandingPage() {
             <span style={r.footerName}>Gia Family Control</span>
           </div>
           <p style={r.footerText}>Free parental control app for Android. Keep your family safe.</p>
+          <div style={{ display:'flex', justifyContent:'center', gap:12, marginBottom:16, flexWrap:'wrap' }}>
+            {SOCIAL.map(s => (
+              <a key={s.label} href={s.href} target="_blank" rel="noreferrer"
+                style={{ ...r.socialBtn, background: s.color + '22', color: s.color, border: `1px solid ${s.color}44` }}>
+                {s.icon} {s.label}
+              </a>
+            ))}
+          </div>
           <div style={{ ...r.footerLinks, flexWrap:'wrap', gap: isMobile ? 12 : 24 }}>
             <a href="#features" style={r.footerLink}>Features</a>
             <a href="#download" style={r.footerLink}>Download</a>
@@ -337,6 +359,7 @@ const r = {
   playProtectText: { fontSize:13, color:'var(--text-secondary)', lineHeight:1.6, margin:0 },
   videoBtn:    { display:'inline-block', padding:'10px 20px', background:'rgba(251,191,36,0.15)', color:'#fbbf24', border:'1px solid rgba(251,191,36,0.3)', borderRadius:8, fontSize:14, fontWeight:600, textDecoration:'none' },
   communityCard: { padding:32, background:'var(--bg-secondary)', border:'1px solid var(--border-primary)', borderRadius:16 },
+  socialBtn:   { display:'inline-flex', alignItems:'center', gap:6, padding:'8px 16px', borderRadius:8, fontSize:13, fontWeight:600, textDecoration:'none' },
   fbBtn:       { display:'inline-block', padding:'14px 32px', background:'#1877f2', color:'#fff', borderRadius:10, fontSize:16, fontWeight:700, textDecoration:'none' },
   stepsGrid:   { display:'flex', flexDirection:'column', gap:14, maxWidth:700, margin:'0 auto 32px' },
   stepCard:    { display:'flex', alignItems:'flex-start', gap:14, padding:18, background:'var(--bg-secondary)', border:'1px solid var(--border-primary)', borderRadius:12 },

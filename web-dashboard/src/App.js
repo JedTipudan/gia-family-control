@@ -5,6 +5,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import LandingPage from './pages/LandingPage';
+import { ToastContainer } from './components/Toast';
 
 function PrivateRoute({ children }) {
   const { user } = useAuth();
@@ -28,6 +29,7 @@ export default function App() {
             <Route path="*"          element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
+        <ToastContainer />
       </AuthProvider>
     </ThemeProvider>
   );

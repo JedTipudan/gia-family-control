@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { commandApi } from '../services/api';
+import Skeleton from './Skeleton';
 
 const CMD_COLOR = {
   LOCK:               { bg: 'rgba(239,68,68,0.1)',   color: '#f87171',  border: 'rgba(239,68,68,0.2)' },
@@ -37,7 +38,22 @@ export default function ActivityLog({ deviceId }) {
       </div>
 
       {loading ? (
-        <div style={s.empty}>Loading activity…</div>
+        <div style={s.table}>
+          <div style={s.tableHead}>
+            <span style={{ ...s.th, width: 160 }}>Command</span>
+            <span style={{ ...s.th, flex: 1 }}>Details</span>
+            <span style={{ ...s.th, width: 90 }}>Status</span>
+            <span style={{ ...s.th, width: 160, textAlign: 'right' }}>Time</span>
+          </div>
+          {[...Array(5)].map((_, i) => (
+            <div key={i} style={{ ...s.row, borderTop: i === 0 ? 'none' : '1px solid var(--border-primary)', gap: 16 }}>
+              <Skeleton width={100} height={22} radius={6} />
+              <Skeleton style={{ flex: 1 }} height={14} />
+              <Skeleton width={60} height={14} />
+              <Skeleton width={120} height={14} />
+            </div>
+          ))}
+        </div>
       ) : logs.length === 0 ? (
         <div style={s.empty}>No activity recorded yet.</div>
       ) : (

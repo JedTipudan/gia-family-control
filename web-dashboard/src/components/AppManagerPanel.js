@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { appApi, commandApi } from '../services/api';
+import Skeleton from './Skeleton';
+import { toast } from './Toast';
 
 export default function AppManagerPanel({ deviceId }) {
   const [installedApps, setInstalledApps] = useState([]);
@@ -56,7 +58,7 @@ export default function AppManagerPanel({ deviceId }) {
         setControls(prev => [...prev.filter(c => !(c.packageName === packageName && c.controlType === 'BLOCKED')), data]);
         await commandApi.sendApp(deviceId, 'BLOCK_APP', packageName);
       }
-    } catch (e) { alert('Failed to update block: ' + (e?.response?.data?.message || e?.message || 'error')); }
+    } catch (e) { toast('Failed to update block: ' + (e?.response?.data?.message || e?.message || 'error'), 'error'); }
   };
 
   const toggleHide = async (packageName, currentlyHidden) => {
@@ -70,7 +72,7 @@ export default function AppManagerPanel({ deviceId }) {
         setControls(prev => [...prev.filter(c => !(c.packageName === packageName && c.controlType === 'HIDDEN')), data]);
         await commandApi.sendApp(deviceId, 'HIDE_APP', packageName);
       }
-    } catch (e) { alert('Failed to update hide: ' + (e?.response?.data?.message || e?.message || 'error')); }
+    } catch (e) { toast('Failed to update hide: ' + (e?.response?.data?.message || e?.message || 'error'), 'error'); }
   };
 
   const handleAdd = async (e) => {
@@ -82,7 +84,7 @@ export default function AppManagerPanel({ deviceId }) {
       setControls(prev => [...prev.filter(c => !(c.packageName === newPkg.trim() && c.controlType === 'BLOCKED')), data]);
       await commandApi.sendApp(deviceId, 'BLOCK_APP', newPkg.trim());
       setNewPkg('');
-    } catch { alert('Failed to block app'); }
+    } catch { toast('Failed to block app', 'error'); }
     finally { setAdding(false); }
   };
 
@@ -131,7 +133,23 @@ export default function AppManagerPanel({ deviceId }) {
       </form>
 
       {loading ? (
-        <div style={s.empty}>Loading apps…</div>
+        <div style={s.table}>
+          <div style={s.tableHead}>
+            <span style={{ ...s.th, flex: 1 }}>App</span>
+            <span style={{ ...s.th, width: 80, textAlign: 'center' }}>Block</span>
+            <span style={{ ...s.th, width: 80, textAlign: 'center' }}>Hide</span>
+          </div>
+          {[...Array(6)].map((_, i) => (
+            <div key={i} style={{ ...s.row, borderTop: i === 0 ? 'none' : '1px solid var(--border-primary)', gap: 16 }}>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <Skeleton width={120} height={13} />
+                <Skeleton width={200} height={11} />
+              </div>
+              <Skeleton width={56} height={28} radius={6} />
+              <Skeleton width={56} height={28} radius={6} />
+            </div>
+          ))}
+        </div>
       ) : filtered.length === 0 ? (
         <div style={s.empty}>
           {installedApps.length === 0

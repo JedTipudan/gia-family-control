@@ -6,6 +6,8 @@ import { useTheme } from '../context/ThemeContext';
 import AppManagerPanel from '../components/AppManagerPanel';
 import ActivityLog from '../components/ActivityLog';
 import PairingPage from './PairingPage';
+import { toast } from '../components/Toast';
+import Skeleton from '../components/Skeleton';
 
 const MAP_CONTAINER  = { width: '100%', height: '100%' };
 const DEFAULT_CENTER = { lat: 14.5995, lng: 120.9842 };
@@ -47,9 +49,11 @@ export default function DashboardPage() {
   const [page, setPage]                   = useState('overview');
   const [cmdLoading, setCmdLoading]       = useState(null);
   const [sideCollapsed, setSideCollapsed] = useState(false);
-  const [showTempModal, setShowTempModal] = useState(false);
-  const [showPinModal, setShowPinModal]   = useState(false);
-  const [cmdError, setCmdError]           = useState(null);
+  const [showTempModal, setShowTempModal]       = useState(false);
+  const [showPinModal, setShowPinModal]         = useState(false);
+  const [cmdError, setCmdError]                 = useState(null);
+  const [confirmModal, setConfirmModal]         = useState(null); // { message, onConfirm }
+  const [statusLoading, setStatusLoading]       = useState(true);
 
   useEffect(() => {
     pairApi.getChildDevices().then(({ data }) => {
@@ -84,6 +88,11 @@ export default function DashboardPage() {
     return () => clearInterval(id);
   }, [childDeviceId]);
 
+  // Clear status loading once first poll completes
+  useEffect(() => {
+    if (Object.keys(deviceStatus).length > 0) setStatusLoading(false);
+  }, [deviceStatus]);
+
   useEffect(() => {
     const poll = async () => {
       try {
@@ -107,32 +116,45 @@ export default function DashboardPage() {
         await commandApi.sendApp(childDeviceId, type, value);
       else
         await commandApi.send(childDeviceId, type, value);
+      toast(`${type.replace(/_/g,' ')} sent`, 'success');
     } catch (err) {
       const d = err?.response?.data;
-      setCmdError(typeof d === 'string' ? d : d?.message ?? d?.error ?? err?.message ?? 'Error');
+      const msg = typeof d === 'string' ? d : d?.message ?? d?.error ?? err?.message ?? 'Error';
+      setCmdError(msg);
+      toast(msg, 'error');
     } finally { setCmdLoading(null); }
   }, [childDeviceId]);
 
-  const unpairDevice = useCallback(async () => {
+  const unpairDevice = useCallback(() => {
     if (!childDeviceId) return;
-    if (!window.confirm('Unpair this device? The child will lose parental controls.')) return;
-    try {
-      await pairApi.unpair(childDeviceId);
-      setChildDeviceId(0);
-      localStorage.removeItem('child_device_id');
-      setDeviceStatus({});
-    } catch (err) {
-      const d = err?.response?.data;
-      setCmdError(typeof d === 'string' ? d : d?.message ?? 'Unpair failed');
-    }
+    setConfirmModal({
+      message: 'Unpair this device? The child will lose parental controls.',
+      onConfirm: async () => {
+        try {
+          await pairApi.unpair(childDeviceId);
+          setChildDeviceId(0);
+          localStorage.removeItem('child_device_id');
+          setDeviceStatus({});
+          toast('Device unpaired', 'success');
+        } catch (err) {
+          const d = err?.response?.data;
+          const msg = typeof d === 'string' ? d : d?.message ?? 'Unpair failed';
+          setCmdError(msg);
+          toast(msg, 'error');
+        }
+      },
+    });
   }, [childDeviceId]);
 
   const setPin = useCallback(async (pin) => {
     try {
       await commandApi.send(childDeviceId, 'SET_PIN', pin);
+      toast('PIN updated', 'success');
     } catch (err) {
       const d = err?.response?.data;
-      setCmdError(typeof d === 'string' ? d : d?.message ?? 'Set PIN failed');
+      const msg = typeof d === 'string' ? d : d?.message ?? 'Set PIN failed';
+      setCmdError(msg);
+      toast(msg, 'error');
     }
   }, [childDeviceId]);
 
@@ -151,6 +173,13 @@ export default function DashboardPage() {
 
   return (
     <div style={s.shell}>
+      {confirmModal && (
+        <ConfirmModal
+          message={confirmModal.message}
+          onConfirm={() => { confirmModal.onConfirm(); setConfirmModal(null); }}
+          onClose={() => setConfirmModal(null)}
+        />
+      )}
       {showTempModal && (
         <TempAccessModal isDark={isDark}
           onGrant={mins => { sendCommand('GRANT_TEMP_ACCESS', mins.toString()); setShowTempModal(false); }}
@@ -220,8 +249,12 @@ export default function DashboardPage() {
               <span style={{ ...s.dot, background: isOnline ? (isDark?'#34d399':'#137333') : (isDark?'#f87171':'#c5221f') }} />
               {childName} · {isOnline ? 'Online' : 'Offline'}
             </span>
-            <span style={s.statChip}>🔋 {battery === '--' ? '--' : `${battery}%`}</span>
-            <span style={s.statChip}>{isLocked ? '🔒 Locked' : '🔓 Unlocked'}</span>
+            {statusLoading ? (
+              <><Skeleton width={60} height={22} radius={980} /><Skeleton width={80} height={22} radius={980} /></>
+            ) : (
+              <><span style={s.statChip}>🔋 {battery === '--' ? '--' : `${battery}%`}</span>
+              <span style={s.statChip}>{isLocked ? '🔒 Locked' : '🔓 Unlocked'}</span></>
+            )}
             {connType && connType !== 'OFFLINE' && (
               <span style={s.statChip}>{connType === 'WIFI' ? '📶' : '📱'} {connType}</span>
             )}
@@ -305,6 +338,24 @@ function LocationPage({ location, isLoaded, mapStyle }) {
             <span style={s.coords}>{location.lat?.toFixed(6)}, {location.lng?.toFixed(6)}</span>
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+function ConfirmModal({ message, onConfirm, onClose }) {
+  return (
+    <div style={m.overlay} onClick={onClose}>
+      <div style={m.modal} onClick={e => e.stopPropagation()}>
+        <div style={m.header}>
+          <span style={m.title}>⚠️ Confirm</span>
+          <button style={m.closeBtn} onClick={onClose}>✕</button>
+        </div>
+        <p style={{ ...m.sub, marginBottom: 20 }}>{message}</p>
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+          <button style={{ ...m.grantBtn, background: 'var(--bg-tertiary)', color: 'var(--text-secondary)', border: '1px solid var(--border-primary)' }} onClick={onClose}>Cancel</button>
+          <button style={{ ...m.grantBtn, background: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.3)' }} onClick={onConfirm}>Confirm</button>
+        </div>
       </div>
     </div>
   );
