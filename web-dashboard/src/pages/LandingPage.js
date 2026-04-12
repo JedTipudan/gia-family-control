@@ -56,6 +56,7 @@ export default function LandingPage() {
   const isMobile = useIsMobile();
   const { isDark, toggleTheme } = useTheme();
   const [copied, setCopied]           = useState(false);
+  const [donateOpen, setDonateOpen]   = useState(false);
   const [latestVersion, setLatestVersion] = useState(null);
   const [menuOpen, setMenuOpen]       = useState(false);
 
@@ -261,20 +262,52 @@ export default function LandingPage() {
 
       {/* ── DONATE ── */}
       <section id="donate" style={{ ...sec.wrap, padding: isMobile ? '60px 20px' : '80px 40px' }}>
-        <SectionHeader title="Support This Project ❤️" sub="Gia Family Control is completely free. If it helped keep your child safe, consider buying me a coffee!" />
-        <div style={{ maxWidth:320, margin:'0 auto 20px' }}>
-          <div style={{ ...card.base, padding:32, textAlign:'center' }}>
-            <span style={{ fontSize:44, display:'block', marginBottom:14 }}>💙</span>
-            <h3 style={{ fontSize:18, fontWeight:700, marginBottom:6, color:'var(--text-primary)' }}>GCash</h3>
-            <p style={{ fontSize:13, color:'var(--text-secondary)', marginBottom:4 }}>Jed Tipudan</p>
-            <p style={{ fontSize:20, fontWeight:700, color:'var(--accent-primary)', marginBottom:20, fontFamily:'ui-monospace,monospace' }}>{GCASH_NUMBER}</p>
-            <button style={{ width:'100%', padding:'11px 0', background:'var(--accent-subtle)', color:'var(--accent-primary)', border:'1px solid var(--accent-glow)', borderRadius:8, fontSize:14, fontWeight:600, cursor:'pointer' }} onClick={copyGcash}>
-              {copied ? '✅ Copied!' : '📋 Copy Number'}
-            </button>
+        <div style={{ background:'linear-gradient(135deg, var(--bg-secondary) 0%, rgba(99,102,241,0.08) 100%)', border:'1px solid var(--border-primary)', borderRadius:24, padding: isMobile ? '32px 24px' : '56px', display:'flex', alignItems:'center', gap:48, flexWrap:'wrap', maxWidth:900, margin:'0 auto' }}>
+          <div style={{ flex:1, minWidth:260 }}>
+            <span style={{ fontSize:40, display:'block', marginBottom:16 }}>☕</span>
+            <h2 style={{ fontSize: isMobile ? 24 : 32, fontWeight:800, letterSpacing:'-1px', marginBottom:12, color:'var(--text-primary)' }}>Support This Project ❤️</h2>
+            <p style={{ fontSize:15, color:'var(--text-secondary)', lineHeight:1.7, marginBottom:28, maxWidth:420 }}>
+              Gia Family Control is completely free. If it helped keep your child safe, consider buying me a coffee to keep the servers running!
+            </p>
+            <button style={donate.btn} onClick={() => setDonateOpen(true)}>💙 Donate via GCash</button>
+          </div>
+          <div style={{ flexShrink:0, fontSize: isMobile ? 72 : 112, lineHeight:1, filter:'drop-shadow(0 0 30px rgba(99,102,241,0.3))' }}>☕</div>
+        </div>
+      </section>
+
+      {/* ── DONATE MODAL ── */}
+      {donateOpen && (
+        <div style={donate.overlay} onClick={() => setDonateOpen(false)}>
+          <div style={donate.modal} onClick={e => e.stopPropagation()}>
+            <button style={donate.closeBtn} onClick={() => setDonateOpen(false)}>✕</button>
+            <h3 style={{ fontSize:22, fontWeight:800, marginBottom:6, color:'var(--text-primary)' }}>Support Gia Family Control</h3>
+            <p style={{ fontSize:13, color:'var(--text-secondary)', marginBottom:20, lineHeight:1.6 }}>Your donation helps keep the servers running and funds future development. Thank you! 🙏</p>
+            {/* GCash Card */}
+            <div style={donate.gcashCard}>
+              <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12 }}>
+                <span style={{ fontSize:22 }}>💙</span>
+                <span style={{ fontSize:20, fontWeight:900, color:'#fff', letterSpacing:'-0.5px' }}>GCash</span>
+              </div>
+              <div style={{ textAlign:'center' }}>
+                <div style={{ fontSize:12, color:'rgba(255,255,255,0.7)', marginBottom:4 }}>Jed Tipudan</div>
+                <div style={{ fontSize:28, fontWeight:900, color:'#fff', letterSpacing:3, marginBottom:16, fontFamily:'ui-monospace,monospace' }}>{GCASH_NUMBER}</div>
+                <button style={donate.copyBtn} onClick={copyGcash}>
+                  {copied ? '✅ Copied!' : '📋 Copy Number'}
+                </button>
+              </div>
+            </div>
+            {/* Steps */}
+            <div style={donate.steps}>
+              <div style={{ fontSize:13, fontWeight:700, marginBottom:8, color:'var(--text-primary)' }}>How to send:</div>
+              <ol style={{ paddingLeft:18 }}>
+                {['Open your GCash app','Tap Send Money → GCash','Enter the number above','Enter any amount you like','Add a note: "Gia Family Control"','Tap Send — thank you! 🙏'].map((s,i) => (
+                  <li key={i} style={{ fontSize:12, color:'var(--text-secondary)', lineHeight:2 }}>{s}</li>
+                ))}
+              </ol>
+            </div>
           </div>
         </div>
-        <p style={{ textAlign:'center', fontSize:13, color:'var(--text-tertiary)' }}>Your donation helps pay for server costs and future development. Thank you! 🙏</p>
-      </section>
+      )}
 
       {/* ── FOOTER ── */}
       <footer style={{ borderTop:'1px solid var(--border-primary)', padding:'32px 20px', background:'var(--bg-secondary)' }}>
@@ -350,6 +383,16 @@ const hero = {
   badge:       { display:'inline-block', padding:'6px 16px', background:'var(--accent-subtle)', border:'1px solid var(--accent-glow)', borderRadius:980, fontSize:13, color:'var(--accent-primary)', fontWeight:600 },
   btnPrimary:  { padding:'14px 28px', background:'linear-gradient(135deg,#6366f1,#a855f7)', color:'#fff', borderRadius:10, fontSize:15, fontWeight:700, textDecoration:'none', display:'inline-block', boxShadow:'0 4px 20px rgba(99,102,241,0.4)' },
   btnSecondary:{ padding:'14px 28px', background:'var(--bg-secondary)', color:'var(--text-primary)', border:'1px solid var(--border-primary)', borderRadius:10, fontSize:15, fontWeight:600, cursor:'pointer', textDecoration:'none', display:'inline-block' },
+};
+
+const donate = {
+  btn:      { padding:'13px 28px', background:'linear-gradient(135deg,#6366f1,#a855f7)', color:'#fff', border:'none', borderRadius:10, fontSize:15, fontWeight:700, cursor:'pointer', boxShadow:'0 4px 20px rgba(99,102,241,0.4)' },
+  overlay:  { position:'fixed', inset:0, background:'rgba(0,0,0,0.7)', backdropFilter:'blur(8px)', zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center', padding:24 },
+  modal:    { background:'var(--bg-secondary)', border:'1px solid var(--border-primary)', borderRadius:20, padding:32, maxWidth:440, width:'100%', position:'relative', boxShadow:'0 24px 64px rgba(0,0,0,0.5)' },
+  closeBtn: { position:'absolute', top:14, right:14, background:'var(--bg-tertiary)', border:'none', color:'var(--text-tertiary)', width:30, height:30, borderRadius:'50%', cursor:'pointer', fontSize:14, display:'flex', alignItems:'center', justifyContent:'center' },
+  gcashCard:{ background:'linear-gradient(135deg,#007DFF 0%,#0056cc 100%)', borderRadius:16, padding:'24px 20px', marginBottom:16, boxShadow:'0 8px 32px rgba(0,125,255,0.35)' },
+  copyBtn:  { padding:'10px 24px', background:'rgba(255,255,255,0.2)', color:'#fff', border:'1.5px solid rgba(255,255,255,0.4)', borderRadius:8, fontSize:14, fontWeight:600, cursor:'pointer', backdropFilter:'blur(4px)' },
+  steps:    { background:'var(--bg-tertiary)', borderRadius:12, padding:'14px 18px' },
 };
 
 const card = {
