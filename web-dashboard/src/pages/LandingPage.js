@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 
 const GITHUB_API      = 'https://api.github.com/repos/JedTipudan/gia-family-control/releases/latest';
-const DOWNLOAD_PARENT = 'https://github.com/JedTipudan/gia-family-control/releases/download/latest-parent/GiaParentControl.apk';
+const DOWNLOAD_PARENT = 'https://github.com/JedTipudan/gia-family-control/releases/latest/download/GiaParentControl.apk';
 const DOWNLOAD_CHILD  = 'https://github.com/JedTipudan/gia-family-control/releases/latest/download/GiaFamilyControl-Child.apk';
 const GCASH_NUMBER    = '0975-591-8109';
 const FB_GROUP        = 'https://www.facebook.com/groups/2466290300469414';
