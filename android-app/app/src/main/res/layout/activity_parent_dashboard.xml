@@ -343,22 +343,6 @@
 
                         </LinearLayout>
 
-                        <!-- Manage Apps Button -->
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnApps"
-                            android:layout_width="match_parent"
-                            android:layout_height="48dp"
-                            android:text="Manage apps"
-                            android:textSize="13sp"
-                            android:textAllCaps="false"
-                            style="@style/Widget.Material3.Button.TonalButton"
-                            app:backgroundTint="@color/info_bg"
-                            android:textColor="@color/google_blue"
-                            app:cornerRadius="12dp"
-                            app:icon="@android:drawable/ic_menu_manage"
-                            app:iconGravity="textStart"
-                            android:layout_marginBottom="8dp"/>
-
                         <!-- Schedule Lock Button -->
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnSchedule"
@@ -372,6 +356,22 @@
                             android:textColor="@color/warning"
                             app:cornerRadius="12dp"
                             app:icon="@android:drawable/ic_menu_recent_history"
+                            app:iconGravity="textStart"
+                            android:layout_marginBottom="8dp"/>
+
+                        <!-- Manage Apps Button -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnApps"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:text="Manage apps"
+                            android:textSize="13sp"
+                            android:textAllCaps="false"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            app:backgroundTint="@color/info_bg"
+                            android:textColor="@color/google_blue"
+                            app:cornerRadius="12dp"
+                            app:icon="@android:drawable/ic_menu_manage"
                             app:iconGravity="textStart"
                             android:layout_marginBottom="8dp"/>
 
