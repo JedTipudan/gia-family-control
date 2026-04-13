@@ -93,7 +93,9 @@ jobs:
       - name: Add google-services.json
         env:
           PARENT_GOOGLE_SERVICES_JSON: ${{ secrets.PARENT_GOOGLE_SERVICES_JSON }}
-        run: echo "$PARENT_GOOGLE_SERVICES_JSON" | base64 -di > parent-app/app/google-services.json
+        run: |
+          echo "$PARENT_GOOGLE_SERVICES_JSON" | base64 -di > parent-app/app/google-services.json
+          sed -i 's/com\.gia\.familycontrol/com.gia.parentcontrol/g' parent-app/app/google-services.json
 
       - name: Inject Maps API Key
         run: sed -i 's/${MAPS_API_KEY}/${{ secrets.MAPS_API_KEY }}/g' parent-app/app/src/main/AndroidManifest.xml
