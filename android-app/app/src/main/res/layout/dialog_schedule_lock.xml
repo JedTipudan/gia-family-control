@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="20dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Label -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Label"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_secondary"
+            android:layout_marginBottom="6dp"/>
+
+        <EditText
+            android:id="@+id/etLabel"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:hint="e.g. Bedtime"
+            android:inputType="text"
+            android:background="@drawable/input_bg"
+            android:paddingHorizontal="14dp"
+            android:textSize="14sp"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Lock Time -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🔒 Lock Time"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_secondary"
+            android:layout_marginBottom="6dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:id="@+id/tvLockTime"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:gravity="center_vertical"
+                android:text="8:00 PM"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/danger"
+                android:background="@drawable/input_bg"
+                android:paddingHorizontal="14dp"
+                android:layout_marginEnd="10dp"/>
+
+            <Button
+                android:id="@+id/btnPickLock"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="Pick"
+                android:textAllCaps="false"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:textSize="13sp"/>
+
+        </LinearLayout>
+
+        <!-- Unlock Time -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🔓 Unlock Time"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_secondary"
+            android:layout_marginBottom="6dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:id="@+id/tvUnlockTime"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:gravity="center_vertical"
+                android:text="6:00 AM"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/success"
+                android:background="@drawable/input_bg"
+                android:paddingHorizontal="14dp"
+                android:layout_marginEnd="10dp"/>
+
+            <Button
+                android:id="@+id/btnPickUnlock"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="Pick"
+                android:textAllCaps="false"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:textSize="13sp"/>
+
+        </LinearLayout>
+
+        <!-- Days -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Days (empty = every day)"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_secondary"
+            android:layout_marginBottom="8dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <ToggleButton android:id="@+id/tbMon" android:layout_width="0dp" android:layout_height="40dp" android:layout_weight="1" android:textOn="Mon" android:textOff="Mon" android:textSize="11sp" android:layout_marginEnd="3dp"/>
+            <ToggleButton android:id="@+id/tbTue" android:layout_width="0dp" android:layout_height="40dp" android:layout_weight="1" android:textOn="Tue" android:textOff="Tue" android:textSize="11sp" android:layout_marginEnd="3dp"/>
+            <ToggleButton android:id="@+id/tbWed" android:layout_width="0dp" android:layout_height="40dp" android:layout_weight="1" android:textOn="Wed" android:textOff="Wed" android:textSize="11sp" android:layout_marginEnd="3dp"/>
+            <ToggleButton android:id="@+id/tbThu" android:layout_width="0dp" android:layout_height="40dp" android:layout_weight="1" android:textOn="Thu" android:textOff="Thu" android:textSize="11sp" android:layout_marginEnd="3dp"/>
+            <ToggleButton android:id="@+id/tbFri" android:layout_width="0dp" android:layout_height="40dp" android:layout_weight="1" android:textOn="Fri" android:textOff="Fri" android:textSize="11sp" android:layout_marginEnd="3dp"/>
+            <ToggleButton android:id="@+id/tbSat" android:layout_width="0dp" android:layout_height="40dp" android:layout_weight="1" android:textOn="Sat" android:textOff="Sat" android:textSize="11sp" android:layout_marginEnd="3dp"/>
+            <ToggleButton android:id="@+id/tbSun" android:layout_width="0dp" android:layout_height="40dp" android:layout_weight="1" android:textOn="Sun" android:textOff="Sun" android:textSize="11sp"/>
+
+        </LinearLayout>
+
+        <!-- Active toggle -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Active"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"/>
+
+            <Switch
+                android:id="@+id/switchActive"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

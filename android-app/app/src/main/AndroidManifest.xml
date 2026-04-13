@@ -54,6 +54,7 @@
         <!-- Parent Activities -->
         <activity android:name=".ui.parent.ParentDashboardActivity" android:exported="false"/>
         <activity android:name=".ui.parent.AppManagerActivity" android:exported="false"/>
+        <activity android:name=".ui.parent.ScheduleLockActivity" android:exported="false"/>
         <activity android:name=".ui.parent.GeofenceActivity" android:exported="false"/>
 
         <!-- Child Activities -->

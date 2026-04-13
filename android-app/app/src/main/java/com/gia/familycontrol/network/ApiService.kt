@@ -59,4 +59,16 @@ interface ApiService {
 
     @GET("api/child-devices")
     suspend fun getChildDevices(): Response<List<DeviceResponse>>
+
+    @GET("api/schedules")
+    suspend fun getSchedules(): Response<List<ScheduledLock>>
+
+    @POST("api/schedules")
+    suspend fun createSchedule(@Body body: ScheduledLock): Response<ScheduledLock>
+
+    @PUT("api/schedules/{id}")
+    suspend fun updateSchedule(@Path("id") id: Long, @Body body: ScheduledLock): Response<ScheduledLock>
+
+    @DELETE("api/schedules/{id}")
+    suspend fun deleteSchedule(@Path("id") id: Long): Response<Void>
 }

@@ -106,6 +106,16 @@ data class AppInfo(
     val isSystem: Boolean
 )
 
+data class ScheduledLock(
+    val id: Long = 0,
+    val deviceId: Long,
+    val label: String = "Bedtime",
+    val lockTime: String,   // "HH:mm"
+    val unlockTime: String, // "HH:mm"
+    val days: String = "",
+    val isActive: Boolean = true
+)
+
 data class AppResponse(
     val id: Long,
     val packageName: String,

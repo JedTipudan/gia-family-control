@@ -536,6 +536,9 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback, Navigat
             R.id.nav_apps -> {
                 startActivity(Intent(this, AppManagerActivity::class.java))
             }
+            R.id.nav_schedule -> {
+                startActivity(Intent(this, ScheduleLockActivity::class.java))
+            }
             R.id.nav_location -> {
                 Toast.makeText(this, "Location History - Coming Soon", Toast.LENGTH_SHORT).show()
             }
