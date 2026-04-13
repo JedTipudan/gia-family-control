@@ -223,6 +223,9 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback, Navigat
         }
         binding.btnUnpair.setOnClickListener { unpairDevice() }
         binding.btnRefresh.setOnClickListener { refreshDashboard() }
+        binding.btnSchedule.setOnClickListener {
+            startActivity(Intent(this, ScheduleLockActivity::class.java))
+        }
 
         // Launcher mode toggle
         binding.root.findViewById<android.view.View?>(
