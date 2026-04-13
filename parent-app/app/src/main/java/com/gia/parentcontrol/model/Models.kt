@@ -65,6 +65,16 @@ data class AppControlResponse(
     val controlType: String
 )
 
+data class ScheduledLock(
+    val id: Long = 0,
+    val deviceId: Long,
+    val label: String = "Bedtime",
+    val lockTime: String,
+    val unlockTime: String,
+    val days: String = "",
+    val isActive: Boolean = true
+)
+
 data class AppResponse(
     val id: Long,
     val packageName: String,

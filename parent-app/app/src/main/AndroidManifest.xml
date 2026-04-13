@@ -36,6 +36,7 @@
         <activity android:name=".ui.dashboard.ParentDashboardActivity" android:exported="false"/>
         <activity android:name=".ui.apps.AppManagerActivity" android:exported="false"/>
         <activity android:name=".ui.apps.QRCodeActivity" android:exported="false"/>
+        <activity android:name=".ui.dashboard.ScheduleLockActivity" android:exported="false"/>
 
         <!-- FCM -->
         <service

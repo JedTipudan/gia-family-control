@@ -65,6 +65,9 @@ class ParentDashboardActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun setupButtons() {
         binding.btnLock.setOnClickListener { sendCommand("LOCK") }
         binding.btnUnlock.setOnClickListener { sendCommand("UNLOCK") }
+        binding.btnScheduleLock.setOnClickListener {
+            startActivity(Intent(this, ScheduleLockActivity::class.java))
+        }
         binding.btnManageApps.setOnClickListener {
             startActivity(Intent(this, AppManagerActivity::class.java))
         }
