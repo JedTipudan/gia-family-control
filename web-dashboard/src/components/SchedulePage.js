@@ -10,7 +10,8 @@ const EMPTY = { deviceId: null, label: 'Bedtime', lockTime: '20:00', unlockTime:
 export default function SchedulePage({ deviceId }) {
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading]     = useState(true);
-  const [modal, setModal]         = useState(null); // null | { mode:'create'|'edit', data }
+  const [modal, setModal]         = useState(null);
+  const [pairWarn, setPairWarn]   = useState(false); // null | { mode:'create'|'edit', data }
 
   const load = async () => {
     try {
@@ -22,7 +23,10 @@ export default function SchedulePage({ deviceId }) {
 
   useEffect(() => { load(); }, []);
 
-  const openCreate = () => setModal({ mode: 'create', data: { ...EMPTY, deviceId } });
+  const openCreate = () => {
+    if (!deviceId) { setPairWarn(true); return; }
+    setModal({ mode: 'create', data: { ...EMPTY, deviceId } });
+  };
   const openEdit   = (s)  => setModal({ mode: 'edit',   data: { ...s } });
   const closeModal = ()   => setModal(null);
 
@@ -120,6 +124,23 @@ export default function SchedulePage({ deviceId }) {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* PAIR WARNING */}
+      {pairWarn && (
+        <div style={s.overlay} onClick={() => setPairWarn(false)}>
+          <div style={{ ...s.modal, maxWidth: 360, textAlign: 'center', gap: 20 }} onClick={e => e.stopPropagation()}>
+            <span style={{ fontSize: 52 }}>📵</span>
+            <div>
+              <p style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>No Device Paired</p>
+              <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                Please pair with a child device first before creating a schedule.
+                Go to the <strong>Pairing</strong> tab to connect a device.
+              </p>
+            </div>
+            <button style={{ ...s.saveBtn, background: 'var(--bg-tertiary)', color: 'var(--text-primary)', border: '1px solid var(--border-primary)' }} onClick={() => setPairWarn(false)}>Got it</button>
+          </div>
         </div>
       )}
 
