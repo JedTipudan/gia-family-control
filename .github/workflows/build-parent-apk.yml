@@ -1,7 +1,11 @@
 name: Build & Release Parent APK
 
 on:
-  workflow_dispatch:  # manual only — child workflow handles releases
+  push:
+    branches: [ main ]
+    paths:
+      - 'android-app/**'
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -24,24 +28,24 @@ jobs:
         env:
           PARENT_GOOGLE_SERVICES_JSON: ${{ secrets.PARENT_GOOGLE_SERVICES_JSON }}
         run: |
-          echo "$PARENT_GOOGLE_SERVICES_JSON" | base64 -di > parent-app/app/google-services.json
-          echo "File size: $(wc -c < parent-app/app/google-services.json)"
+          echo "$PARENT_GOOGLE_SERVICES_JSON" | base64 -di > android-app/app/google-services.json
+          echo "File size: $(wc -c < android-app/app/google-services.json)"
 
       - name: Decode Keystore
         env:
           PARENT_KEYSTORE_BASE64: ${{ secrets.PARENT_KEYSTORE_BASE64 }}
         run: |
-          echo "$PARENT_KEYSTORE_BASE64" | base64 -di > parent-app/parent-app-release.jks
-          echo "Keystore size: $(wc -c < parent-app/parent-app-release.jks) bytes"
+          echo "$PARENT_KEYSTORE_BASE64" | base64 -di > android-app/parent-app-release.jks
+          echo "Keystore size: $(wc -c < android-app/parent-app-release.jks) bytes"
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
       - name: Grant execute permission for gradlew
-        run: chmod +x parent-app/gradlew
+        run: chmod +x android-app/gradlew
 
       - name: Build Release APK
-        working-directory: parent-app
+        working-directory: android-app
         env:
           STORE_PASSWORD: ${{ secrets.PARENT_STORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.PARENT_KEY_PASSWORD }}
@@ -49,20 +53,20 @@ jobs:
 
       - name: Sign Release APK
         run: |
-          APK_PATH=$(find parent-app/app/build/outputs/apk/release/ -name "*.apk" | head -1)
+          APK_PATH=$(find android-app/app/build/outputs/apk/release/ -name "*.apk" | head -1)
           echo "Found APK: $APK_PATH"
           $ANDROID_HOME/build-tools/34.0.0/apksigner sign \
-            --ks parent-app/parent-app-release.jks \
+            --ks android-app/parent-app-release.jks \
             --ks-pass pass:${{ secrets.PARENT_STORE_PASSWORD }} \
             --ks-key-alias parent-app \
             --key-pass pass:${{ secrets.PARENT_KEY_PASSWORD }} \
-            --out parent-app/app/build/outputs/apk/release/GiaParentControl.apk \
+            --out android-app/app/build/outputs/apk/release/GiaParentControl.apk \
             "$APK_PATH"
 
       - name: Verify APK signature
         run: |
           $ANDROID_HOME/build-tools/34.0.0/apksigner verify \
-            parent-app/app/build/outputs/apk/release/GiaParentControl.apk && \
+            android-app/app/build/outputs/apk/release/GiaParentControl.apk && \
           echo "APK signature verified successfully!"
 
       - name: Create GitHub Release
@@ -89,7 +93,7 @@ jobs:
             ### Permissions Required:
             - Location (for GPS tracking)
             - Notifications (for alerts)
-          files: parent-app/app/build/outputs/apk/release/GiaParentControl.apk
+          files: android-app/app/build/outputs/apk/release/GiaParentControl.apk
           draft: false
           prerelease: false
         env:
