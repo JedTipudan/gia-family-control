@@ -69,13 +69,18 @@ jobs:
             android-app/app/build/outputs/apk/release/GiaParentControl.apk && \
           echo "APK signature verified successfully!"
 
+      - name: Delete old latest-parent tag
+        run: |
+          git tag -d latest-parent 2>/dev/null || true
+          git push origin :refs/tags/latest-parent 2>/dev/null || true
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: parent-v${{ github.run_number }}
-          name: "Gia Parent Control v${{ github.run_number }}"
+          tag_name: latest-parent
+          name: "Gia Parent Control — Latest"
           body: |
-            ## Gia Parent Control - Official Release v${{ github.run_number }}
+            ## Gia Parent Control — Latest Build
 
             ### How to Install on Android:
             1. Download **GiaParentControl.apk** below
@@ -89,10 +94,6 @@ jobs:
 
             ### First Time Setup:
             - Register → Login → share your pair code with the child device
-
-            ### Permissions Required:
-            - Location (for GPS tracking)
-            - Notifications (for alerts)
           files: android-app/app/build/outputs/apk/release/GiaParentControl.apk
           draft: false
           prerelease: false
