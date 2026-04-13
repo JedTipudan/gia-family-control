@@ -22,6 +22,7 @@ const FEATURES = [
   { icon: '🔕', title: 'Block Notifications',  desc: 'Prevent child from accessing the notification panel and quick settings.' },
   { icon: '⏱',  title: 'Temp Access',          desc: 'Grant temporary access for a set time — device locks automatically when time is up.' },
   { icon: '🆘', title: 'SOS Alert',            desc: "Child can send an emergency SOS alert with their location to the parent." },
+  { icon: '⏰', title: 'Scheduled Lock',        desc: 'Set automatic lock and unlock times — e.g. lock at 8 PM and unlock at 6 AM every day.' },
 ];
 
 const STEPS = [
