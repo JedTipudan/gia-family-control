@@ -82,6 +82,18 @@ CREATE TABLE IF NOT EXISTS app_controls (
     UNIQUE (device_id, package_name, control_type)
 );
 
+-- SCHEDULED LOCKS
+CREATE TABLE IF NOT EXISTS scheduled_locks (
+    id          BIGSERIAL PRIMARY KEY,
+    parent_id   BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    device_id   BIGINT NOT NULL REFERENCES devices(id) ON DELETE CASCADE,
+    lock_time   TIME NOT NULL,
+    unlock_time TIME NOT NULL,
+    days        VARCHAR(50) DEFAULT '',
+    label       VARCHAR(100) DEFAULT 'Bedtime',
+    is_active   BOOLEAN DEFAULT TRUE
+);
+
 -- GEOFENCES
 CREATE TABLE IF NOT EXISTS geofences (
     id          BIGSERIAL PRIMARY KEY,

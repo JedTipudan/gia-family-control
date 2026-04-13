@@ -58,4 +58,11 @@ export const appApi = {
     api.delete(`/api/apps/control/${deviceId}/${packageName}`, { params: { controlType } }),
 };
 
+export const scheduleApi = {
+  list:   ()         => api.get('/api/schedules'),
+  create: (data)     => api.post('/api/schedules', data),
+  update: (id, data) => api.put(`/api/schedules/${id}`, data),
+  delete: (id)       => api.delete(`/api/schedules/${id}`),
+};
+
 export default api;

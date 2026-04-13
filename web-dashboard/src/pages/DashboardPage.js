@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import AppManagerPanel from '../components/AppManagerPanel';
 import ActivityLog from '../components/ActivityLog';
+import SchedulePage from '../components/SchedulePage';
 import PairingPage from './PairingPage';
 import { toast } from '../components/Toast';
 import Skeleton from '../components/Skeleton';
@@ -18,6 +19,7 @@ const NAV = [
   { id: 'location', label: 'Location',    icon: '📍' },
   { id: 'apps',     label: 'App Control', icon: '📱' },
   { id: 'activity', label: 'Activity',    icon: '📋' },
+  { id: 'schedule', label: 'Schedule',    icon: '⏰' },
   { id: 'pairing',  label: 'Pairing',     icon: '🔗' },
 ];
 
@@ -274,6 +276,7 @@ export default function DashboardPage() {
           {page === 'location' && <LocationPage location={location} isLoaded={isLoaded} mapStyle={mapStyle} />}
           {page === 'apps'     && <AppManagerPanel deviceId={childDeviceId} />}
           {page === 'activity' && <ActivityLog deviceId={childDeviceId} />}
+          {page === 'schedule' && <SchedulePage deviceId={childDeviceId} />}
           {page === 'pairing'  && <PairingPage />}
         </div>
       </main>
