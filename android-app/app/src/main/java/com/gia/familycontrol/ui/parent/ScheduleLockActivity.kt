@@ -40,7 +40,21 @@ class ScheduleLockActivity : AppCompatActivity() {
         findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabAdd)
             .setOnClickListener { showDialog(null) }
 
-        loadSchedules()
+        // Always try to fetch latest child device from API
+        lifecycleScope.launch {
+            try {
+                val res = api.getChildDevices()
+                if (res.isSuccessful) {
+                    val id = res.body()?.firstOrNull()?.id
+                    if (id != null) {
+                        childDeviceId = id
+                        getSharedPreferences("gia_prefs", MODE_PRIVATE)
+                            .edit().putLong("child_device_id", id).apply()
+                    }
+                }
+            } catch (_: Exception) {}
+            loadSchedules()
+        }
     }
 
     override fun onSupportNavigateUp(): Boolean { finish(); return true }
@@ -64,8 +78,8 @@ class ScheduleLockActivity : AppCompatActivity() {
 
     private fun showDialog(existing: ScheduledLock?) {
         if (childDeviceId == -1L) {
-            Toast.makeText(this, "No child device paired", Toast.LENGTH_SHORT).show()
-            return
+            Toast.makeText(this, "⚠️ No child device paired yet. Pair a device first so the schedule can target it.", Toast.LENGTH_LONG).show()
+            // Still allow opening dialog — deviceId will be set once paired
         }
 
         val view = LayoutInflater.from(this).inflate(R.layout.dialog_schedule_lock, null)
@@ -118,7 +132,7 @@ class ScheduleLockActivity : AppCompatActivity() {
                 val days = dayKeys.filterIndexed { i, _ -> dayButtons[i].isChecked }.joinToString(",")
                 val body = ScheduledLock(
                     id         = existing?.id ?: 0,
-                    deviceId   = childDeviceId,
+                    deviceId   = if (childDeviceId != -1L) childDeviceId else 0,
                     label      = etLabel.text.toString().ifBlank { "Bedtime" },
                     lockTime   = lockTime,
                     unlockTime = unlockTime,
