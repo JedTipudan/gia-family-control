@@ -123,7 +123,12 @@ class ScheduleLockActivity : AppCompatActivity() {
 
     private fun showDialog(existing: ScheduledLock?) {
         if (childDeviceId == -1L) {
-            Toast.makeText(this, "⚠️ No child device paired yet. Pair a device first.", Toast.LENGTH_LONG).show()
+            AlertDialog.Builder(this)
+                .setTitle("No Device Paired")
+                .setMessage("Please pair with a child device first before creating a schedule. Go back to the dashboard and tap QR to pair.")
+                .setPositiveButton("Got it", null)
+                .show()
+            return
         }
 
         val ctx = this

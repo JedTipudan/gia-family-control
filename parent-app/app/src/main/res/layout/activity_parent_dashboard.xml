@@ -177,7 +177,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Tap QR to show your pair code. On the child device: open the child app → login → enter the pair code."
+                        android:text="Tap the QR button above to show your pair code, then on the child\'s phone: open the child app → login → enter the pair code."
                         android:textSize="13sp"
                         android:textColor="#5F6368"
                         android:layout_marginBottom="12dp"/>
