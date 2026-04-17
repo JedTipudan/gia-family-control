@@ -7,7 +7,7 @@ const DOWNLOAD_PARENT = 'https://github.com/JedTipudan/gia-family-control/releas
 const DOWNLOAD_CHILD  = 'https://github.com/JedTipudan/gia-family-control/releases/latest/download/GiaFamilyControl-Child.apk';
 const GCASH_NUMBER    = '0975-591-8109';
 const FB_GROUP        = 'https://www.facebook.com/groups/2466290300469414';
-const INSTALL_VIDEO   = 'https://www.facebook.com/reel/1272438015080121';
+const INSTALL_VIDEO   = 'https://www.facebook.com/reel/1650815919442781';
 
 const SOCIAL = [
   { icon: '📘', label: 'Facebook',  href: 'https://www.facebook.com/i11181999',    color: '#1877f2' },
@@ -199,9 +199,9 @@ export default function LandingPage() {
       {/* ── SETUP ── */}
       <section id="setup" style={{ ...sec.wrap, padding: isMobile ? '60px 20px' : '80px 40px' }}>
         <SectionHeader title="Setup Guide" sub="Follow these steps to get started in under 10 minutes." />
-        <div style={{ maxWidth:700, margin:'0 auto 36px', borderRadius:16, overflow:'hidden', border:'1px solid var(--border-primary)' }}>
-          <div style={{ position:'relative', paddingBottom:'56.25%', height:0 }}>
-            <iframe src="https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Freel%2F1272438015080121&show_text=false&appId" 
+        <div style={{ maxWidth:340, margin:'0 auto 36px', borderRadius:16, overflow:'hidden', border:'1px solid var(--border-primary)' }}>
+          <div style={{ position:'relative', paddingBottom:'177.78%', height:0 }}>
+            <iframe src="https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Freel%2F1650815919442781&show_text=false&appId"
               title="Tutorial"
               frameBorder="0"
               allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
